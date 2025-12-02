@@ -2,8 +2,8 @@
    КОМПОНЕНТЫ ИНТЕРФЕЙСА
    =========================== */
 
-const UI = (function() {
-    const { log, error, escapeHtml, formatPrice, formatDate, getTeaTypeClass } = Utils;
+window.UI = (function() {
+    const Utils = window.Utils;
     
     // DOM кэш
     const domCache = {};
@@ -118,13 +118,13 @@ const UI = (function() {
                             padding: 14px 16px;
                             font-weight: 700;
                             font-size: 16px;
-                        ">${escapeHtml(title)}</div>
+                        ">${Utils.escapeHtml(title)}</div>
                         <div style="
                             padding: 16px;
                             font-size: 15px;
                             color: #333;
                             line-height: 1.5;
-                        ">${escapeHtml(message)}</div>
+                        ">${Utils.escapeHtml(message)}</div>
                         <div style="
                             display: flex;
                             gap: 10px;
@@ -237,7 +237,7 @@ const UI = (function() {
                         margin-top: 16px;
                         color: #333;
                         font-size: 14px;
-                    ">${escapeHtml(message)}</div>
+                    ">${Utils.escapeHtml(message)}</div>
                 `;
                 
                 document.body.appendChild(this.element);
@@ -280,90 +280,6 @@ const UI = (function() {
         });
     }
     
-    // Создание модального окна
-    function createModal(options = {}) {
-        const modalId = options.id || 'modal-' + Date.now();
-        const modal = document.createElement('div');
-        modal.id = modalId;
-        modal.className = 'modal';
-        modal.style.cssText = `
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.45);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        `;
-        
-        if (options.bottomSheet) {
-            modal.style.alignItems = 'flex-end';
-        }
-        
-        const content = document.createElement('div');
-        content.className = 'modal-content';
-        content.style.cssText = `
-            background: white;
-            border-radius: ${options.bottomSheet ? '16px 16px 0 0' : '14px'};
-            overflow: hidden;
-            width: ${options.bottomSheet ? '100%' : '92%'};
-            max-width: ${options.bottomSheet ? 'none' : '420px'};
-            max-height: ${options.bottomSheet ? '85vh' : '90vh'};
-            overflow-y: auto;
-            transform: ${options.bottomSheet ? 'translateY(100%)' : 'scale(0.95)'};
-            transition: transform 0.3s ease;
-        `;
-        
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-        
-        modal.onclick = (e) => {
-            if (e.target === modal && options.closeOnBackdrop !== false) {
-                closeModal(modalId);
-            }
-        };
-        
-        return {
-            id: modalId,
-            element: modal,
-            content,
-            show: () => showModal(modalId, options.bottomSheet),
-            hide: () => closeModal(modalId),
-            setContent: (html) => {
-                content.innerHTML = html;
-            }
-        };
-    }
-    
-    function showModal(modalId, bottomSheet = false) {
-        const modal = getElement(modalId);
-        if (!modal) return;
-        
-        closeAllModals();
-        
-        modal.style.display = 'flex';
-        requestAnimationFrame(() => {
-            modal.querySelector('.modal-content').style.transform = 
-                bottomSheet ? 'translateY(0)' : 'scale(1)';
-        });
-    }
-    
-    function closeModal(modalId) {
-        const modal = getElement(modalId);
-        if (!modal) return;
-        
-        const isBottomSheet = modal.style.alignItems === 'flex-end';
-        modal.querySelector('.modal-content').style.transform = 
-            isBottomSheet ? 'translateY(100%)' : 'scale(0.95)';
-        
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-    }
-    
     // Обновление счетчика корзины
     function updateCartBadge(count) {
         const badge = document.querySelector('.cart-badge');
@@ -386,7 +302,7 @@ const UI = (function() {
         
         if (cartTotal && checkoutBtn) {
             if (totalItems > 0) {
-                cartTotal.innerHTML = `Итого: <span>${formatPrice(totalPrice)}</span>`;
+                cartTotal.innerHTML = `Итого: <span>${Utils.formatPrice(totalPrice)}</span>`;
                 checkoutBtn.textContent = `Оформить (${totalItems})`;
                 checkoutBtn.disabled = false;
             } else {
@@ -402,13 +318,13 @@ const UI = (function() {
         const div = document.createElement('div');
         div.className = 'product-card';
         div.innerHTML = `
-            <div class="product-image ${getTeaTypeClass(product.type)}">
-                ${product.tag ? `<div class="product-tag">${escapeHtml(product.tag)}</div>` : ''}
+            <div class="product-image ${Utils.getTeaTypeClass(product.type)}">
+                ${product.tag ? `<div class="product-tag">${Utils.escapeHtml(product.tag)}</div>` : ''}
             </div>
             <div class="product-info">
-                <h3 class="product-name">${escapeHtml(product.name)}</h3>
-                <div class="product-subtitle">${escapeHtml(product.subtitle)}</div>
-                <div class="product-price">${formatPrice(product.price)}</div>
+                <h3 class="product-name">${Utils.escapeHtml(product.name)}</h3>
+                <div class="product-subtitle">${Utils.escapeHtml(product.subtitle)}</div>
+                <div class="product-price">${Utils.formatPrice(product.price)}</div>
                 <button class="product-button" data-id="${product.id}">+ В корзину</button>
             </div>
         `;
@@ -438,9 +354,6 @@ const UI = (function() {
         Confirm,
         Loader,
         closeAllModals,
-        createModal,
-        showModal,
-        closeModal,
         updateCartBadge,
         updateCartFooter,
         createProductCard
