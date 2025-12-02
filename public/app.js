@@ -1052,7 +1052,345 @@ window.addEventListener('beforeunload', () => {
 function showCatalog() {
     showFullCatalog();
 }
+// ========== МАГИЧЕСКИЕ ЭФФЕКТЫ ==========
 
+// Эффект пара
+function createSteamEffect(element) {
+    const steam = document.createElement('div');
+    steam.className = 'steam';
+    steam.style.left = Math.random() * 80 + 10 + '%';
+    element.appendChild(steam);
+    
+    setTimeout(() => {
+        steam.remove();
+    }, 4000);
+}
+
+// Конфетти при покупке
+function createConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.cssText = `
+            left: ${Math.random() * 100}%;
+            width: ${Math.random() * 10 + 5}px;
+            height: ${Math.random() * 10 + 5}px;
+            background: hsl(${Math.random() * 360}, 100%, 60%);
+            border-radius: 50%;
+            animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
+            position: fixed;
+            z-index: 1001;
+        `;
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 5000);
+    }
+}
+
+// Кастомные уведомления
+function showTeaNotification(message, icon = 'fas fa-leaf', color = 'green') {
+    const notification = document.createElement('div');
+    notification.className = 'tea-notification';
+    notification.innerHTML = `
+        <i class="${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Цвета уведомлений
+    const colors = {
+        green: 'linear-gradient(135deg, var(--tea-green), var(--tea-green-light))',
+        gold: 'linear-gradient(135deg, var(--tea-gold), var(--tea-gold-light))',
+        red: 'linear-gradient(135deg, var(--tea-red), var(--tea-red-light))',
+        purple: 'linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light))'
+    };
+    
+    notification.style.background = colors[color] || colors.green;
+    
+    document.body.appendChild(notification);
+    
+    // Тактильная обратная связь
+    if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+    
+    // Автоматическое скрытие
+    setTimeout(() => {
+        notification.style.animation = 'notificationSlideIn 0.5s var(--ease-spring) reverse forwards';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
+// Эффект "сердечко" при добавлении в корзину
+function createHeartEffect(x, y) {
+    const heart = document.createElement('div');
+    heart.innerHTML = '❤️';
+    heart.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        font-size: 24px;
+        pointer-events: none;
+        z-index: 1000;
+        animation: heartFloat 1.5s var(--ease-smooth) forwards;
+    `;
+    
+    document.body.appendChild(heart);
+    
+    // Анимация
+    const keyframes = [
+        { transform: 'translateY(0) scale(1)', opacity: 1 },
+        { transform: 'translateY(-60px) scale(1.5)', opacity: 0.8 },
+        { transform: 'translateY(-100px) scale(0.5)', opacity: 0 }
+    ];
+    
+    heart.animate(keyframes, {
+        duration: 1500,
+        easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+    });
+    
+    setTimeout(() => heart.remove(), 1500);
+}
+
+// ========== УЛУЧШЕННОЕ ДОБАВЛЕНИЕ В КОРЗИНУ ==========
+
+function addToCart(productId) {
+    const product = teaCatalog.find(p => p.id === productId);
+    if (!product) return;
+    
+    const existingItem = cart.find(item => item.id === productId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ 
+            ...product, 
+            quantity: 1
+        });
+    }
+    
+    saveCart();
+    
+    // Спецэффекты
+    const button = event?.target || document.querySelector(`[onclick*="addToCart(${productId})"]`);
+    if (button) {
+        const rect = button.getBoundingClientRect();
+        createHeartEffect(rect.left + rect.width/2, rect.top + rect.height/2);
+    }
+    
+    // Эффект пара
+    createSteamEffect(document.querySelector('.cart-icon') || document.body);
+    
+    // Уведомление с разными иконками
+    const icons = ['🍵', '✨', '🌿', '💚', '🥰'];
+    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+    
+    showTeaNotification(
+        `${randomIcon} ${product.name} добавлен в корзину!`,
+        'fas fa-cart-plus',
+        'green'
+    );
+}
+
+// ========== АНИМИРОВАННОЕ ОФОРМЛЕНИЕ ЗАКАЗА ==========
+
+async function checkout() {
+    if (cart.length === 0) {
+        showTeaNotification('🛒 Добавьте что-нибудь в корзину!', 'fas fa-shopping-cart', 'gold');
+        return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // Эффект загрузки
+    showTeaNotification('🧘‍♂️ Создаем вашу чайную гармонию...', 'fas fa-spinner fa-spin', 'purple');
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Конфетти и эффекты
+    createConfetti();
+    
+    const order = {
+        id: Date.now(),
+        user_id: userId,
+        cart: [...cart],
+        total: total,
+        timestamp: new Date().toISOString()
+    };
+    
+    await saveOrder(order);
+    
+    // Очищаем корзину с анимацией
+    cart = [];
+    await saveCart();
+    
+    // Финальное уведомление
+    showTeaNotification(
+        `🎉 Заказ #${order.id} на ${total}₽ оформлен! Скоро свяжемся!`,
+        'fas fa-check-circle',
+        'gold'
+    );
+    
+    // Эффект "волшебной пыли"
+    setTimeout(createConfetti, 500);
+    
+    closeModal();
+}
+
+// ========== ОБНОВЛЕННЫЙ ПОКАЗ ПРОФИЛЯ ==========
+
+function showProfile() {
+    const modal = document.getElementById('profile-modal');
+    const userPhotoUrl = userData.photo_url || '';
+    const firstName = userData.first_name || 'Гость';
+    const fullName = `${firstName} ${userData.last_name || ''}`.trim();
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-spa"></i> Моя чайная гармония</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 32px; position: relative;">
+                    <div style="width: 120px; height: 120px; margin: 0 auto 20px; 
+                         background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
+                         border-radius: 50%; display: flex; align-items: center; 
+                         justify-content: center; font-size: 48px; color: white;
+                         overflow: hidden; border: 4px solid white;
+                         box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+                         animation: gentleBob 6s infinite;">
+                        ${userPhotoUrl ? 
+                            `<img src="${userPhotoUrl}" alt="${fullName}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">` : 
+                            `<i class="fas fa-user-circle"></i>`
+                        }
+                    </div>
+                    <h3 style="margin-bottom: 8px; font-size: 24px;">${fullName}</h3>
+                    ${userData.username ? 
+                        `<p style="color: var(--tea-purple); font-weight: 600;">@${userData.username}</p>` : 
+                        ''
+                    }
+                    <div class="loading-bar">
+                        <div class="loading-bar-fill"></div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                    <div style="text-align: center; padding: 20px; background: var(--tea-bg); 
+                         border-radius: var(--radius-soft); transition: all 0.3s var(--ease-spring);
+                         cursor: pointer;" onclick="createConfetti()">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🍵</div>
+                        <div style="font-weight: 600;">${cart.length || 0}</div>
+                        <div style="font-size: 14px; color: var(--tea-text-light);">В корзине</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 20px; background: var(--tea-bg); 
+                         border-radius: var(--radius-soft); transition: all 0.3s var(--ease-spring);
+                         cursor: pointer;" onclick="showOrders()">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+                        <div style="font-weight: 600;">3</div>
+                        <div style="font-size: 14px; color: var(--tea-text-light);">Заказов</div>
+                    </div>
+                </div>
+                
+                <button onclick="openChannel()" style="width: 100%; padding: 16px; margin-bottom: 12px;
+                    background: linear-gradient(135deg, #0088cc, #00aced); color: white;
+                    border: none; border-radius: var(--radius-round); font-weight: 600;
+                    cursor: pointer; display: flex; align-items: center; justify-content: center;
+                    gap: 10px; transition: all 0.3s var(--ease-spring);">
+                    <i class="fab fa-telegram"></i> Наш чайный канал
+                </button>
+                
+                <button onclick="showTeaNotification('🧘‍♀️ Вы в гармонии с миром чая!', 'fas fa-heart', 'red')" 
+                        style="width: 100%; padding: 16px;
+                        background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); 
+                        color: white; border: none; border-radius: var(--radius-round); 
+                        font-weight: 600; cursor: pointer; display: flex; align-items: center; 
+                        justify-content: center; gap: 10px; transition: all 0.3s var(--ease-spring);">
+                    <i class="fas fa-magic"></i> Волшебная кнопка
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+// ========== АВТОМАТИЧЕСКИЕ ЭФФЕКТЫ ПРИ ЗАГРУЗКЕ ==========
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Задержка для плавной загрузки
+    setTimeout(() => {
+        initApp();
+        // Показываем приветственный эффект
+        setTimeout(() => {
+            if (isTelegramUser) {
+                showTeaNotification(
+                    `🌸 Добро пожаловать, ${userData.first_name}! Наслаждайтесь чаем!`,
+                    'fas fa-heart',
+                    'purple'
+                );
+            }
+        }, 1000);
+    }, 1500);
+    
+    // Добавляем эффект пара на логотип
+    setInterval(() => {
+        if (Math.random() > 0.7) {
+            createSteamEffect(document.querySelector('.logo-icon'));
+        }
+    }, 3000);
+});
+
+// ========== ИНИЦИАЛИЗАЦИЯ С АНИМАЦИЯМИ ==========
+
+async function initApp() {
+    tg.ready();
+    tg.expand();
+    
+    // Плавная настройка цветов
+    tg.setHeaderColor('#4CAF50');
+    tg.setBackgroundColor('#FFF8F0');
+    
+    // Загружаем данные с индикацией
+    const loaderStatus = document.getElementById('loader-status');
+    const steps = [
+        'Определяем ваш вкус чая...',
+        'Готовим чайные листья...',
+        'Нагреваем воду до идеальной температуры...',
+        'Наслаждаемся ароматом...',
+        'Почти готово!'
+    ];
+    
+    let step = 0;
+    const interval = setInterval(() => {
+        if (loaderStatus && step < steps.length) {
+            loaderStatus.textContent = steps[step];
+            step++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 400);
+    
+    userData = await getUserData();
+    userId = generateUserId();
+    await loadCart();
+    await loadOrders();
+    
+    showMainInterface();
+    
+    // Плавное скрытие загрузчика
+    setTimeout(() => {
+        const loader = document.getElementById('loader');
+        loader.style.opacity = '0';
+        loader.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            loader.style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            // Финальный эффект
+            createConfetti();
+        }, 600);
+    }, 2000);
+}
 // Функция для отладки (можно вызывать из консоли)
 function debugUser() {
     console.log('User Data:', userData);
