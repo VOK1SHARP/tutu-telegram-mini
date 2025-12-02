@@ -1,393 +1,990 @@
 /* ================================
-   OPTIMIZED & CLEANED GLOBAL CSS
+   ЧАЙНАЯ ГАРМОНИЯ - ЭСТЕТИКА И УДОВОЛЬСТВИЕ
    ================================ */
 
-/* ---------- Root Variables ---------- */
 :root {
-    /* Primary palette */
-    --green: #4CAF50;
-    --green-dark: #2E7D32;
-
-    --orange: #FF9800;
-    --orange-dark: #F57C00;
-
-    --blue: #2196F3;
-    --blue-dark: #0D47A1;
-
-    --purple: #764ba2;
-    --purple-light: #667eea;
-    --purple-dark: #6A1B9A;
-
-    --red: #FF5252;
-    --red-dark: #D32F2F;
-
-    --white: #ffffff;
-    --gray-100: #f8f9fa;
-    --gray-200: #e9ecef;
-    --gray-300: #dee2e6;
-    --gray-600: #666;
-    --gray-700: #333;
-
-    --radius-lg: 20px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
-
-    --transition-fast: 0.25s ease;
+    /* Цветовая палитра вдохновлена чайной церемонией */
+    --tea-green: #4CAF50;
+    --tea-green-light: #8BC34A;
+    --tea-green-dark: #2E7D32;
+    --tea-gold: #FFC107;
+    --tea-gold-light: #FFD54F;
+    --tea-earth: #8D6E63;
+    --tea-earth-light: #A1887F;
+    --tea-red: #F44336;
+    --tea-red-light: #EF5350;
+    --tea-purple: #7B1FA2;
+    --tea-purple-light: #BA68C8;
+    --tea-bg: #FFF8F0;
+    --tea-card: #FFFFFF;
+    --tea-text: #3E2723;
+    --tea-text-light: #795548;
+    --tea-shadow: rgba(62, 39, 35, 0.08);
+    
+    /* Эргономика */
+    --radius-soft: 20px;
+    --radius-round: 50px;
+    --spacing-comfort: 16px;
+    --tap-target: 44px;
+    
+    /* Анимации */
+    --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-float: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* ---------- Reset ---------- */
+/* ========== СБРОС С БОЛЬШЕЙ ГАРМОНИЕЙ ========== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    background: linear-gradient(135deg, var(--purple-light), var(--purple));
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--tea-bg) 0%, #FFF5E6 100%);
+    color: var(--tea-text);
     min-height: 100vh;
-    color: var(--gray-700);
     overflow-x: hidden;
+    line-height: 1.6;
 }
 
-/* ========== Loader ========== */
+/* ========== МАГИЯ ЗАГРУЗКИ ========== */
 #loader {
     position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-gold));
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    transition: opacity var(--transition-fast);
+    animation: fadeIn 0.5s var(--ease-smooth);
 }
 
-.loader-content { text-align: center; color: var(--white); }
+.loader-content {
+    text-align: center;
+    transform: translateY(0);
+    animation: float 3s var(--ease-float) infinite;
+}
 
 .loader-spinner {
-    font-size: 60px;
-    margin-bottom: 20px;
-    animation: pulse 2s infinite;
+    font-size: 72px;
+    margin-bottom: 24px;
+    color: white;
+    animation: 
+        teaLeafSpin 2s var(--ease-spring) infinite,
+        glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: .7; }
-    100% { transform: scale(1); opacity: 1; }
+.loader-spinner i {
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
 }
 
-#loader h2 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
-#loader p { font-size: 15px; opacity: .9; }
+@keyframes teaLeafSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
 
-/* ========== App Container ========== */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes glow {
+    from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); }
+    to { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)); }
+}
+
+#loader h2 {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, white, var(--tea-gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+#loader p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+}
+
+/* ========== КОНТЕЙНЕР С МАГИЧЕСКИМ ЭФФЕКТОМ ========== */
 #app {
     display: none;
     max-width: 500px;
     margin: 0 auto;
     min-height: 100vh;
-    background: var(--white);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    background: var(--tea-card);
+    border-radius: 0 0 var(--radius-soft) var(--radius-soft);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    position: relative;
 }
 
-/* ========== Header ========== */
+#app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        var(--tea-green) 0%, 
+        var(--tea-gold) 25%, 
+        var(--tea-purple) 50%, 
+        var(--tea-red) 75%, 
+        var(--tea-green) 100%);
+    background-size: 200% 100%;
+    animation: gradientFlow 3s linear infinite;
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========== ЗАГОЛОВОК КАК ПРОИЗВЕДЕНИЕ ИСКУССТВА ========== */
 .header {
-    background: linear-gradient(135deg, var(--green), var(--green-dark));
-    padding: 22px 20px;
-    color: var(--white);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-dark));
+    padding: 24px var(--spacing-comfort);
+    color: white;
+    border-radius: 0 0 var(--radius-soft) var(--radius-soft);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    cursor: pointer;
+    transition: transform 0.3s var(--ease-spring);
+}
+
+.logo:hover {
+    transform: scale(1.02);
 }
 
 .logo-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    color: var(--green);
-}
-
-.logo-text h1 { font-size: 26px; font-weight: 700; }
-.logo-text .subtitle { font-size: 13px; opacity: .9; margin-top: 3px; }
-
-.user-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    cursor: pointer;
-    position: relative;
-    transition: transform var(--transition-fast), background var(--transition-fast);
-}
-
-.user-avatar:hover {
-    background: rgba(255,255,255,0.3);
-    transform: scale(1.07);
-}
-
-/* Telegram badge */
-.tg-badge {
-    position: absolute;
-    bottom: -4px;
-    right: -4px;
-    background: #0088cc;
-    color: var(--white);
-    font-size: 10px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--white);
-    font-weight: bold;
-}
-
-/* ========== Banner ========== */
-.banner {
-    background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-    margin: 20px;
-    padding: 18px;
-    border-radius: var(--radius-md);
-    color: var(--white);
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(255,152,0,0.25);
-}
-
-.banner h2 { font-size: 22px; margin-bottom: 8px; }
-.banner p { font-size: 13px; margin-bottom: 12px; opacity: .9; }
-
-.banner-button {
-    display: inline-block;
-    padding: 10px 26px;
-    background: var(--white);
-    color: var(--orange);
-    border-radius: 22px;
-    font-weight: 600;
-    transition: var(--transition-fast);
-    text-decoration: none;
-}
-.banner-button:hover { transform: translateY(-3px); }
-
-/* ========== Navigation Grid ========== */
-.nav-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    padding: 0 20px;
-    margin: 20px 0;
-}
-
-.nav-item {
-    background: var(--gray-100);
-    padding: 18px;
-    border-radius: var(--radius-md);
-    text-align: center;
-    transition: var(--transition-fast);
-    cursor: pointer;
-    border: 2px solid transparent;
-}
-
-.nav-item:hover {
-    transform: translateY(-4px);
-    background: var(--white);
-    border-color: var(--green);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.10);
-}
-
-.nav-icon {
-    width: 58px;
-    height: 58px;
-    margin: 0 auto 12px;
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 26px;
-    color: var(--white);
-    transition: transform var(--transition-fast);
+    color: var(--tea-green);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    animation: gentleBob 6s var(--ease-float) infinite;
 }
 
-.nav-item:hover .nav-icon { transform: scale(1.1); }
+@keyframes gentleBob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-4px) rotate(2deg); }
+    75% { transform: translateY(4px) rotate(-2deg); }
+}
 
-.icon-tea { background: var(--green); }
-.icon-orders { background: var(--blue); }
-.icon-cart { background: var(--orange); }
-.icon-profile { background: var(--purple-dark); }
+.logo-text h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, white, var(--tea-gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-.nav-item h3 { font-size: 15px; color: var(--gray-700); }
-.nav-item p { font-size: 12px; color: var(--gray-600); }
+.logo-text .subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-top: 2px;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
 
-/* ========== Products ========== */
-.products-section { padding: 0 20px; margin: 28px 0; }
-.section-title { font-size: 20px; margin-bottom: 18px; display: flex; gap: 10px; color: var(--gray-700); }
+/* ========== АВАТАР С МАГИЧЕСКИМ ЭФФЕКТОМ ========== */
+.user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.4s var(--ease-spring);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.user-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--tea-gold);
+    box-shadow: 
+        0 12px 28px rgba(0, 0, 0, 0.2),
+        0 0 0 4px rgba(255, 193, 7, 0.2);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tg-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #0088cc, #00aced);
+    color: white;
+    font-size: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 136, 204, 0.4);
+    animation: pulse 2s infinite;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, var(--tea-red), var(--tea-red-light));
+    color: white;
+    font-size: 12px;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-weight: 700;
+    box-shadow: 0 3px 10px rgba(244, 67, 54, 0.3);
+    animation: badgePop 0.3s var(--ease-spring);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ========== ПРИВЕТСТВЕННЫЙ БАННЕР ========== */
+.welcome-banner {
+    margin: 24px;
+    padding: 28px;
+    background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
+    border-radius: var(--radius-soft);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s var(--ease-smooth) 0.2s both;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.welcome-banner h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-banner p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    font-weight: 300;
+}
+
+.welcome-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--tea-purple);
+    border-radius: var(--radius-round);
+    font-weight: 600;
+    transition: all 0.3s var(--ease-spring);
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border: 2px solid transparent;
+}
+
+.welcome-button:hover {
+    transform: translateY(-3px) scale(1.05);
+    background: white;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    border-color: var(--tea-gold);
+}
+
+.welcome-button i {
+    transition: transform 0.3s var(--ease-spring);
+}
+
+.welcome-button:hover i {
+    transform: translateX(4px) rotate(15deg);
+}
+
+/* ========== НАВИГАЦИЯ С 3D ЭФФЕКТОМ ========== */
+.nav-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 0 24px;
+    margin: 32px 0;
+    animation: slideUp 0.6s var(--ease-smooth) 0.3s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-item {
+    background: linear-gradient(135deg, var(--tea-card), #f8f4f0);
+    padding: 22px;
+    border-radius: var(--radius-soft);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s var(--ease-spring);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(142, 110, 99, 0.1);
+    box-shadow: 
+        0 4px 15px var(--tea-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    animation: cardAppear 0.5s var(--ease-smooth) backwards;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.2s; }
+.nav-item:nth-child(3) { animation-delay: 0.3s; }
+.nav-item:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) rotateX(-20deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotateX(0);
+    }
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tea-green), var(--tea-gold));
+    transform: scaleX(0);
+    transition: transform 0.4s var(--ease-spring);
+}
+
+.nav-item:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.nav-item:hover::before {
+    transform: scaleX(1);
+}
+
+.nav-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    transition: all 0.4s var(--ease-spring);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    border-radius: 50%;
+}
+
+.nav-item:hover .nav-icon {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 
+        0 12px 28px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.icon-tea { background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); }
+.icon-orders { background: linear-gradient(135deg, #2196F3, #21CBF3); }
+.icon-cart { background: linear-gradient(135deg, var(--tea-gold), var(--tea-gold-light)); }
+.icon-profile { background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light)); }
+
+.nav-item h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--tea-text);
+    margin-bottom: 4px;
+}
+
+.nav-item p {
+    font-size: 13px;
+    color: var(--tea-text-light);
+    font-weight: 400;
+}
+
+/* ========== КАРТОЧКИ ТОВАРОВ С ИНТЕРАКТИВОМ ========== */
+.products-section {
+    padding: 0 24px;
+    margin: 40px 0;
+    animation: slideUp 0.6s var(--ease-smooth) 0.4s both;
+}
+
+.section-title {
+    font-size: 22px;
+    margin-bottom: 24px;
+    color: var(--tea-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+}
+
+.section-title i {
+    color: var(--tea-gold);
+    animation: gentleBob 4s var(--ease-float) infinite;
+}
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
 }
 
 .product-card {
-    background: var(--white);
-    border-radius: var(--radius-md);
+    background: var(--tea-card);
+    border-radius: var(--radius-soft);
     overflow: hidden;
-    transition: var(--transition-fast);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.4s var(--ease-spring);
+    position: relative;
+    box-shadow: 
+        0 6px 18px var(--tea-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(142, 110, 99, 0.08);
+    animation: productCardAppear 0.6s var(--ease-smooth) backwards;
+}
+
+@keyframes productCardAppear {
+    from {
+        opacity: 0;
+        transform: translateY(30px) rotateX(-15deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+    }
 }
 
 .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.12),
+        0 0 0 2px rgba(255, 193, 7, 0.15);
 }
 
 .product-image {
-    height: 115px;
+    height: 140px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
-/* Types */
-.product-image[data-type="puer"] { background: linear-gradient(135deg, #8D6E63, #5D4037); }
-.product-image[data-type="red-tea"] { background: linear-gradient(135deg, var(--red), var(--red-dark)); }
-
-/* === Optimized CSS (continued) === */
-
-/* Layout Containers */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-md);
+.product-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
 }
 
-.section {
-  padding: var(--spacing-xl) 0;
+.product-image .tea-icon {
+    font-size: 48px;
+    color: white;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    transition: transform 0.5s var(--ease-spring);
 }
 
-/* Typography */
-.h1 {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin-bottom: var(--spacing-lg);
+.product-card:hover .tea-icon {
+    transform: scale(1.2) rotate(15deg);
 }
 
-.h2 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
+.product-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, var(--tea-gold), #ff9800);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    animation: tagPulse 2s infinite;
 }
 
-/* Buttons */
-.btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background: var(--accent);
-  color: var(--text-light);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+@keyframes tagPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+.product-info {
+    padding: 18px;
 }
 
-.btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.product-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--tea-text);
+    margin-bottom: 4px;
+    line-height: 1.3;
 }
 
-/* Product Cards */
-.product-card {
-  background: var(--bg-light);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+.product-subtitle {
+    font-size: 13px;
+    color: var(--tea-text-light);
+    margin-bottom: 12px;
+    opacity: 0.8;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+.product-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--tea-green);
+    margin-bottom: 16px;
 }
 
-.product-image {
-  width: 100%;
-  height: 180px;
-  border-radius: var(--radius-md);
-  background-size: cover;
-  background-position: center;
-  margin-bottom: var(--spacing-md);
+.product-button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    color: white;
+    border: none;
+    border-radius: var(--radius-round);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-spring);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
 }
 
-/* Tea Types (via data attributes) */
-.product-image[data-type="puer"] { background: linear-gradient(135deg, #4b3b2f, #6e4e32); }
-.product-image[data-type="red"] { background: linear-gradient(135deg, #8b1e1e, #c0392b); }
-.product-image[data-type="green"] { background: linear-gradient(135deg, #3fa34d, #2e7d32); }
-.product-image[data-type="white"]{ background: linear-gradient(135deg, #dcdcdc, #f2f2f2); }
-.product-image[data-type="oolong"]{ background: linear-gradient(135deg, #4b5320, #7d8f50); }
-.product-image[data-type="yellow"]{ background: linear-gradient(135deg, #f1c40f, #f39c12); }
-
-/* Navigation */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md) 0;
+.product-button:hover {
+    transform: translateY(-2px) scale(1.05);
+    background: linear-gradient(135deg, var(--tea-green-light), var(--tea-green));
+    box-shadow: 0 10px 24px rgba(76, 175, 80, 0.4);
 }
 
-.navbar a {
-  color: var(--text-dark);
-  text-decoration: none;
-  font-weight: 600;
-  margin-left: var(--spacing-lg);
-  transition: opacity var(--transition-fast);
+.product-button:active {
+    transform: translateY(0) scale(0.98);
 }
 
-.navbar a:hover { opacity: 0.7; }
-
-/* Footer */
-.footer {
-  padding: var(--spacing-xl) 0;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
+/* ========== ФУТЕР КОРЗИНЫ ========== */
+.cart-footer {
+    position: sticky;
+    bottom: 0;
+    background: var(--tea-card);
+    border-top: 1px solid rgba(142, 110, 99, 0.1);
+    padding: 16px 24px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.6s var(--ease-smooth) 0.5s both;
 }
 
-/* Adaptive */
-@media (max-width: 768px) {
-  .h1 { font-size: 1.8rem; }
-  .h2 { font-size: 1.4rem; }
-  .product-card { padding: var(--spacing-sm); }
+.cart-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
 
+.cart-total {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tea-text);
+}
+
+.cart-total span {
+    color: var(--tea-green);
+    font-weight: 800;
+}
+
+.checkout-button {
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
+    color: white;
+    border: none;
+    border-radius: var(--radius-round);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-spring);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 20px rgba(123, 31, 162, 0.3);
+    min-width: 140px;
+    justify-content: center;
+}
+
+.checkout-button:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(123, 31, 162, 0.4);
+}
+
+.checkout-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ========== МОДАЛЬНЫЕ ОКНА С МАГИЕЙ ========== */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(62, 39, 35, 0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: modalFadeIn 0.4s var(--ease-smooth);
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(10px);
+    }
+}
+
+.modal-content {
+    background: var(--tea-card);
+    border-radius: var(--radius-soft);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideUp 0.5s var(--ease-spring);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-dark));
+    padding: 20px 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.modal-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s var(--ease-spring);
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 80px);
+    overflow-y: auto;
+}
+
+/* ========== ТИПЫ ЧАЯ ========== */
+.puer { background: linear-gradient(135deg, #5D4037, #8D6E63); }
+.red-tea { background: linear-gradient(135deg, #D32F2F, #F44336); }
+.oolong { background: linear-gradient(135deg, #F57C00, #FF9800); }
+.gaba { background: linear-gradient(135deg, #7B1FA2, #BA68C8); }
+.green-tea { background: linear-gradient(135deg, #2E7D32, #4CAF50); }
+
+/* ========== АДАПТИВНОСТЬ ========== */
 @media (max-width: 480px) {
-  .navbar a { margin-left: var(--spacing-md); }
-  .product-image { height: 150px; }
+    .nav-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-banner h2 {
+        font-size: 24px;
+    }
+    
+    .logo-text h1 {
+        font-size: 28px;
+    }
+}
+
+/* ========== СПЕЦИАЛЬНЫЕ ЭФФЕКТЫ ========== */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ========== УВЕДОМЛЕНИЯ ========== */
+.tea-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    color: white;
+    padding: 16px 24px;
+    border-radius: var(--radius-soft);
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1002;
+    animation: notificationSlideIn 0.5s var(--ease-spring);
+    transform-origin: top right;
+}
+
+@keyframes notificationSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.tea-notification i {
+    font-size: 24px;
+    animation: gentleBob 3s infinite;
+}
+
+/* ========== ЭФФЕКТ ПАР ========== */
+.steam {
+    position: absolute;
+    width: 40px;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent);
+    border-radius: 50%;
+    filter: blur(10px);
+    animation: steamRise 4s infinite;
+    opacity: 0;
+}
+
+@keyframes steamRise {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(-100px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* ========== ПРОГРЕСС БАР ========== */
+.loading-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--tea-gold), white);
+    border-radius: 3px;
+    animation: loadingProgress 2s var(--ease-smooth) infinite;
+}
+
+@keyframes loadingProgress {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+}
+
+/* ========== ЭФФЕКТ ВИБРАЦИИ ТЕКСТА ========== */
+.text-vibrate {
+    animation: textVibrate 0.3s var(--ease-spring);
+}
+
+@keyframes textVibrate {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* ========== ПЛАВНЫЕ ПЕРЕХОДЫ ========== */
+.fade-in {
+    animation: fadeIn 0.6s var(--ease-smooth) both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
