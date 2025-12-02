@@ -48,37 +48,6 @@
             min-height: -webkit-fill-available;
             min-height: 100vh;
         }
-        
-        /* Анимации для страниц */
-        .page-enter {
-            animation: pageEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        .page-exit {
-            animation: pageExit 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        @keyframes pageEnter {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes pageExit {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-        }
     </style>
 </head>
 <body class="min-height-ios">
@@ -93,22 +62,22 @@
     <!-- Основной контейнер -->
     <div id="app" style="display: none;">
         <!-- Главная страница -->
-        <div id="main-page" class="page active"></div>
+        <div id="main-page" class="page" style="display: none;"></div>
         
         <!-- Страница каталога -->
-        <div id="catalog-page" class="page"></div>
+        <div id="catalog-page" class="page" style="display: none;"></div>
         
         <!-- Страница товара -->
-        <div id="product-page" class="page"></div>
+        <div id="product-page" class="page" style="display: none;"></div>
         
         <!-- Страница корзины -->
-        <div id="cart-page" class="page"></div>
+        <div id="cart-page" class="page" style="display: none;"></div>
         
         <!-- Страница заказов -->
-        <div id="orders-page" class="page"></div>
+        <div id="orders-page" class="page" style="display: none;"></div>
         
         <!-- Страница профиля -->
-        <div id="profile-page" class="page"></div>
+        <div id="profile-page" class="page" style="display: none;"></div>
     </div>
 
     <!-- Уведомления -->
