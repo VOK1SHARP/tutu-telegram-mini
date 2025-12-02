@@ -4,9 +4,10 @@
 
 // Инициализация приложения
 async function initApp() {
+    console.log('[App] 1. Начало инициализации...');
     try {
-        console.log('[App] Инициализация приложения...');
-        
+        console.log('[App] 2. Показываем загрузчик...');
+        // ... существующий код
         // Показываем загрузчик
         if (window.UI && window.UI.Loader) {
             window.UI.Loader.show('Загрузка приложения...');
@@ -51,7 +52,14 @@ if (window.Utils) {
         }
         
         // Показ основного интерфейса
-        showMainInterface();
+        // Показ основного интерфейса
+showMainInterface();
+console.log('[App] showMainInterface вызвана');
+// Принудительно показываем приложение
+const app = document.getElementById('app');
+if (app) {
+    app.style.display = 'block';
+}
         
         // Анимация загрузки
         setTimeout(() => {
@@ -72,39 +80,44 @@ if (window.Utils) {
             }
         }, 800);
         
-    } catch (error) {
-        console.error('[App] Критическая ошибка инициализации:', error);
-        
-        // Показ сообщения об ошибке
-        const app = document.getElementById('app');
-        if (app) {
-            app.innerHTML = `
-                <div style="padding: 40px 20px; text-align: center;">
-                    <h2 style="color: #f44336;">Ошибка загрузки</h2>
-                    <p style="color: #666; margin: 16px 0;">
-                        Не удалось загрузить приложение. Пожалуйста, обновите страницу.
-                    </p>
-                    <button onclick="window.location.reload()" 
-                            style="padding: 10px 20px; background: #4CAF50; color: white; 
-                                   border: none; border-radius: 8px; cursor: pointer;">
-                        Обновить страницу
-                    </button>
-                </div>
-            `;
-        }
-        
-        if (window.UI && window.UI.Loader) {
-            window.UI.Loader.hide();
-        }
-        
-        showToast('Ошибка загрузки приложения', 'error');
+    } } catch (error) {
+    console.error('[App] Критическая ошибка инициализации:', error);
+    
+    // Показ сообщения об ошибке
+    const app = document.getElementById('app');
+    if (app) {
+        app.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center;">
+                <h2 style="color: #f44336;">Ошибка загрузки</h2>
+                <p style="color: #666; margin: 16px 0;">
+                    Не удалось загрузить приложение. Пожалуйста, обновите страницу.
+                </p>
+                <button onclick="window.location.reload()" 
+                        style="padding: 10px 20px; background: #4CAF50; color: white; 
+                               border: none; border-radius: 8px; cursor: pointer;">
+                    Обновить страницу
+                </button>
+            </div>
+        `;
+        app.style.display = 'block'; // ← ДОБАВЬТЕ ЭТУ СТРОКУ
     }
+    
+    if (window.UI && window.UI.Loader) {
+        window.UI.Loader.hide();
+    }
+    
+    showToast('Ошибка загрузки приложения', 'error');
 }
 
 // Показ основного интерфейса
 function showMainInterface() {
+    console.log('[App] showMainInterface: начало');
     const app = document.getElementById('app');
-    if (!app) return;
+    console.log('[App] app элемент найден?', !!app);
+    if (!app) {
+        console.error('[App] Элемент #app не найден!');
+        return;
+    }
     
     const userData = window.Utils ? window.Utils.getUserData() : { first_name: 'Гость' };
     const isTelegramUser = window.Utils ? window.Utils.getIsTelegramUser() : false;
