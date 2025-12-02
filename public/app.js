@@ -1,8 +1,3 @@
-// ===================================
-// ТИ•ТИ - ЧАЙНАЯ ЛАВКА (ФИНАЛЬНАЯ ВЕРСИЯ С АНИМАЦИЯМИ)
-// Исправлены все проблемы с iOS, добавлены анимации переходов
-// ===================================
-
 // Глобальные переменные
 let tg = window.Telegram.WebApp;
 let cart = [];
@@ -13,8 +8,13 @@ let orders = [];
 let currentPage = 'main';
 let isTransitioning = false;
 
-// Определение iOS устройства
+// Определение устройств
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isAndroid = /Android/.test(navigator.userAgent);
+
+// При загрузке добавляем классы для устройств
+if (isIOS) document.body.classList.add('ios-device');
+if (isAndroid) document.body.classList.add('android-device');
 
 // Полный каталог чая с описаниями
 const teaCatalog = [
