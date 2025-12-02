@@ -2,16 +2,16 @@
    ХРАНИЛИЩЕ
    =========================== */
 
-const Storage = (function() {
-    const { log, error, getAppKeys, getUserId } = Utils;
+window.Storage = (function() {
+    const Utils = window.Utils;
     
     async function loadCart() {
-        const userId = getUserId();
-        const key = getAppKeys().CART_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().CART_KEY(userId);
         const cart = [];
         
         // Cloud Storage для Telegram
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 const cloud = await new Promise(res => 
@@ -22,12 +22,12 @@ const Storage = (function() {
                 if (cloud) {
                     const parsed = JSON.parse(cloud);
                     if (Array.isArray(parsed)) {
-                        log('Cart loaded from cloud:', parsed.length, 'items');
+                        Utils.log('Cart loaded from cloud:', parsed.length, 'items');
                         return parsed;
                     }
                 }
             } catch(e) { 
-                error('Cloud cart error:', e); 
+                Utils.error('Cloud cart error:', e); 
             }
         }
         
@@ -37,38 +37,38 @@ const Storage = (function() {
             try {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) {
-                    log('Cart loaded from localStorage:', parsed.length, 'items');
+                    Utils.log('Cart loaded from localStorage:', parsed.length, 'items');
                     return parsed;
                 }
             } catch(e) {
-                error('LocalStorage cart parse error:', e);
+                Utils.error('LocalStorage cart parse error:', e);
                 // Восстановление из backup
                 const backup = localStorage.getItem('tutu_cart_backup');
                 if (backup) {
                     try {
                         const backupData = JSON.parse(backup);
                         if (backupData.cart && Array.isArray(backupData.cart)) {
-                            log('Cart restored from backup');
+                            Utils.log('Cart restored from backup');
                             return backupData.cart;
                         }
                     } catch(backupError) {
-                        error('Backup restore error:', backupError);
+                        Utils.error('Backup restore error:', backupError);
                     }
                 }
             }
         }
         
-        log('Cart initialized as empty');
+        Utils.log('Cart initialized as empty');
         return [];
     }
     
     async function saveCart(cart) {
-        const userId = getUserId();
-        const key = getAppKeys().CART_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().CART_KEY(userId);
         
         // Валидация корзины
         if (!Array.isArray(cart)) {
-            error('Invalid cart format');
+            Utils.error('Invalid cart format');
             return;
         }
         
@@ -76,11 +76,11 @@ const Storage = (function() {
         try {
             localStorage.setItem(key, JSON.stringify(cart));
         } catch(e) {
-            error('LocalStorage write failed:', e);
+            Utils.error('LocalStorage write failed:', e);
         }
         
         // Cloud Storage для Telegram
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 await new Promise((res, rej) => 
@@ -88,9 +88,9 @@ const Storage = (function() {
                         err ? rej(err) : res()
                     )
                 );
-                log('Cart saved to cloud');
+                Utils.log('Cart saved to cloud');
             } catch(e) {
-                error('Cloud save cart failed:', e);
+                Utils.error('Cloud save cart failed:', e);
             }
         }
         
@@ -102,18 +102,18 @@ const Storage = (function() {
                 timestamp: new Date().toISOString()
             }));
         } catch(e) {
-            error('Backup save failed:', e);
+            Utils.error('Backup save failed:', e);
         }
         
-        log('Cart saved:', cart.length, 'items');
+        Utils.log('Cart saved:', cart.length, 'items');
     }
     
     async function loadOrders() {
-        const userId = getUserId();
-        const key = getAppKeys().ORDERS_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().ORDERS_KEY(userId);
         
         // Cloud Storage
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 const cloud = await new Promise(res => 
@@ -124,12 +124,12 @@ const Storage = (function() {
                 if (cloud) {
                     const parsed = JSON.parse(cloud);
                     if (Array.isArray(parsed)) {
-                        log('Orders loaded from cloud:', parsed.length, 'orders');
+                        Utils.log('Orders loaded from cloud:', parsed.length, 'orders');
                         return parsed;
                     }
                 }
             } catch(e) {
-                error('Cloud orders error:', e);
+                Utils.error('Cloud orders error:', e);
             }
         }
         
@@ -139,11 +139,11 @@ const Storage = (function() {
             try {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) {
-                    log('Orders loaded from localStorage:', parsed.length, 'orders');
+                    Utils.log('Orders loaded from localStorage:', parsed.length, 'orders');
                     return parsed;
                 }
             } catch(e) {
-                error('LocalStorage orders parse error:', e);
+                Utils.error('LocalStorage orders parse error:', e);
             }
         }
         
@@ -152,12 +152,12 @@ const Storage = (function() {
     
     async function saveOrder(order) {
         if (!order || !order.id) {
-            error('Invalid order format');
+            Utils.error('Invalid order format');
             return;
         }
         
-        const userId = getUserId();
-        const key = getAppKeys().ORDERS_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().ORDERS_KEY(userId);
         const orders = await loadOrders();
         
         // Проверяем, нет ли уже такого заказа
@@ -172,11 +172,11 @@ const Storage = (function() {
         try {
             localStorage.setItem(key, JSON.stringify(orders));
         } catch(e) {
-            error('LocalStorage order save failed:', e);
+            Utils.error('LocalStorage order save failed:', e);
         }
         
         // Cloud Storage
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 await new Promise((res, rej) => 
@@ -184,23 +184,23 @@ const Storage = (function() {
                         err ? rej(err) : res()
                     )
                 );
-                log('Order saved to cloud');
+                Utils.log('Order saved to cloud');
             } catch(e) {
-                error('Cloud save order failed:', e);
+                Utils.error('Cloud save order failed:', e);
             }
         }
         
-        log('Order saved:', order.id);
+        Utils.log('Order saved:', order.id);
         return order;
     }
     
     async function loadPopularity() {
-        const userId = getUserId();
-        const key = getAppKeys().POP_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().POP_KEY(userId);
         let popularity = {};
         
         // Cloud Storage
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 const cloud = await new Promise(res => 
@@ -210,11 +210,11 @@ const Storage = (function() {
                 );
                 if (cloud) {
                     popularity = JSON.parse(cloud);
-                    log('Popularity loaded from cloud');
+                    Utils.log('Popularity loaded from cloud');
                     return popularity;
                 }
             } catch(e) {
-                error('Cloud popularity error:', e);
+                Utils.error('Cloud popularity error:', e);
             }
         }
         
@@ -224,7 +224,7 @@ const Storage = (function() {
             try {
                 popularity = JSON.parse(saved);
             } catch(e) {
-                error('LocalStorage popularity parse error:', e);
+                Utils.error('LocalStorage popularity parse error:', e);
                 popularity = {};
             }
         }
@@ -234,21 +234,21 @@ const Storage = (function() {
     
     async function savePopularity(popularity) {
         if (!popularity || typeof popularity !== 'object') {
-            error('Invalid popularity format');
+            Utils.error('Invalid popularity format');
             return;
         }
         
-        const userId = getUserId();
-        const key = getAppKeys().POP_KEY(userId);
+        const userId = Utils.getUserId();
+        const key = Utils.getAppKeys().POP_KEY(userId);
         
         try {
             localStorage.setItem(key, JSON.stringify(popularity));
         } catch(e) {
-            error('LocalStorage popularity save failed:', e);
+            Utils.error('LocalStorage popularity save failed:', e);
         }
         
         // Cloud Storage
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 await new Promise((res, rej) => 
@@ -256,9 +256,9 @@ const Storage = (function() {
                         err ? rej(err) : res()
                     )
                 );
-                log('Popularity saved to cloud');
+                Utils.log('Popularity saved to cloud');
             } catch(e) {
-                error('Cloud save popularity failed:', e);
+                Utils.error('Cloud save popularity failed:', e);
             }
         }
     }
@@ -277,8 +277,8 @@ const Storage = (function() {
     }
     
     async function clearUserData() {
-        const userId = getUserId();
-        const keys = getAppKeys();
+        const userId = Utils.getUserId();
+        const keys = Utils.getAppKeys();
         
         Object.values(keys).forEach(keyFn => {
             const key = keyFn(userId);
@@ -286,7 +286,7 @@ const Storage = (function() {
         });
         
         // Cloud Storage
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         if (tg && tg.CloudStorage && Utils.getIsTelegramUser()) {
             try {
                 await Promise.all([
@@ -295,11 +295,11 @@ const Storage = (function() {
                     new Promise(res => tg.CloudStorage.removeItem('popularity', () => res()))
                 ]);
             } catch(e) {
-                error('Cloud clear error:', e);
+                Utils.error('Cloud clear error:', e);
             }
         }
         
-        log('User data cleared');
+        Utils.log('User data cleared');
     }
     
     return {
