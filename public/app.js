@@ -720,7 +720,8 @@ function showCartPage() {
             </div>
         </div>
         
-        <div class="cart-items">
+        <!-- Добавляем класс для Android -->
+        <div class="cart-container ${isAndroid ? 'android-cart' : ''}" style="padding-bottom: 100px;">
             ${cart.length === 0 ? `
                 <div class="cart-empty">
                     <i class="fas fa-shopping-cart"></i>
@@ -734,29 +735,31 @@ function showCartPage() {
                     </button>
                 </div>
             ` : `
-                ${cart.map((item, index) => `
-                    <div class="cart-item" style="animation-delay: ${index * 0.05}s">
-                        <div class="cart-item-image ${getTeaTypeClass(item.type)}">
-                            <i class="fas fa-leaf"></i>
+                <div class="cart-items-list">
+                    ${cart.map((item, index) => `
+                        <div class="cart-item" style="animation-delay: ${index * 0.05}s">
+                            <div class="cart-item-image ${getTeaTypeClass(item.type)}">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div class="cart-item-info">
+                                <div class="cart-item-name">${item.name}</div>
+                                <div class="cart-item-price">${item.price}₽/шт</div>
+                            </div>
+                            <div class="cart-item-controls">
+                                <button class="quantity-btn minus" onclick="updateCartQuantity(${item.id}, -1)" style="cursor: pointer;">
+                                    −
+                                </button>
+                                <span class="cart-item-quantity">${item.quantity}</span>
+                                <button class="quantity-btn plus" onclick="updateCartQuantity(${item.id}, 1)" style="cursor: pointer;">
+                                    +
+                                </button>
+                            </div>
+                            <div class="cart-item-total">${item.price * item.quantity}₽</div>
                         </div>
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">${item.price}₽/шт</div>
-                        </div>
-                        <div class="cart-item-controls">
-                            <button class="quantity-btn minus" onclick="updateCartQuantity(${item.id}, -1)" style="cursor: pointer;">
-                                −
-                            </button>
-                            <span class="cart-item-quantity">${item.quantity}</span>
-                            <button class="quantity-btn plus" onclick="updateCartQuantity(${item.id}, 1)" style="cursor: pointer;">
-                                +
-                            </button>
-                        </div>
-                        <div class="cart-item-total">${item.price * item.quantity}₽</div>
-                    </div>
-                `).join('')}
+                    `).join('')}
+                </div>
                 
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--tea-green); animation: fadeInUp 0.5s ease 0.4s both">
+                <div class="cart-summary" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--tea-green); animation: fadeInUp 0.5s ease 0.4s both">
                     <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: 700; margin-bottom: 24px;">
                         <span>Итого:</span>
                         <span>${total}₽</span>
