@@ -199,3 +199,17 @@ window.Utils = (function() {
         getAppKeys: () => APP_KEYS
     };
 })();
+async function getUserData() {
+    // ... весь существующий код ...
+    
+    // Убедитесь, что последняя строка ВСЕГДА возвращает объект:
+    return { 
+        id: null, 
+        first_name: 'Гость', 
+        last_name: '', 
+        username: '', 
+        photo_url: '', 
+        is_bot: false, 
+        language_code: 'ru' 
+    };
+}
