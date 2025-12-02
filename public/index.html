@@ -11,82 +11,76 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4CAF50">
     
-    <!-- Open Graph для красивого отображения в Telegram -->
+    <!-- Open Graph -->
     <meta property="og:title" content="ТИ•ТИ - Чайная лавка">
     <meta property="og:description" content="Заказывайте аутентичный китайский чай прямо в Telegram!">
-    <meta property="og:image" content="https://ваш-сайт.netlify.app/images/og-image.jpg">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/4CAF50/FFFFFF?text=TEA+SHOP">
     <meta property="og:url" content="https://ваш-сайт.netlify.app">
     
-    <!-- Скрипт для проверки Telegram WebApp -->
-    <script>
-        // Проверяем, запущено ли в Telegram
-        function isTelegramWebApp() {
-            return window.Telegram && window.Telegram.WebApp;
+    <!-- Иконки -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍵</text></svg>">
+    
+    <style>
+        /* Быстрый лоадер перед загрузкой CSS */
+        body { 
+            margin: 0; 
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
-        // Функция для отладки
-        function debugTelegram() {
-            if (isTelegramWebApp()) {
-                console.log('Telegram WebApp доступен');
-                console.log('Версия:', Telegram.WebApp.version);
-                console.log('Платформа:', Telegram.WebApp.platform);
-                console.log('Инициализация:', Telegram.WebApp.initData);
-                console.log('Пользователь:', Telegram.WebApp.initDataUnsafe?.user);
-            } else {
-                console.log('Telegram WebApp НЕ доступен');
-            }
+        .quick-loader {
+            text-align: center;
+            color: white;
         }
-        
-        // Вызываем отладку при загрузке
-        window.addEventListener('load', debugTelegram);
-    </script>
+        .quick-loader i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <!-- Индикатор синхронизации -->
-    <div id="sync-indicator" class="sync-indicator" style="display: none;">
-        <i class="fas fa-sync-alt fa-spin"></i> Синхронизация...
+    <div class="quick-loader">
+        <i class="fas fa-leaf"></i>
+        <h2>ТИ•ТИ</h2>
+        <p>Загружаем чайную гармонию...</p>
     </div>
-    
-    <div id="app">
-        <!-- Контент загружается через JavaScript -->
+
+    <div id="app" style="display: none;">
+        <!-- Загружается через JavaScript -->
     </div>
-    
-    <!-- Загрузочный экран -->
-    <div id="loader">
-        <div class="loader-content">
-            <div class="loader-spinner">
-                <i class="fas fa-leaf fa-spin"></i>
-            </div>
-            <h2>ТИ•ТИ</h2>
-            <p id="loader-text">Загружаем чайную лавку...</p>
-            <p id="loader-status" style="font-size: 12px; opacity: 0.7; margin-top: 10px;"></p>
-        </div>
-    </div>
+
+    <!-- Модальные окна -->
+    <div id="cart-modal" class="modal"></div>
+    <div id="product-modal" class="modal"></div>
+    <div id="order-modal" class="modal"></div>
+    <div id="profile-modal" class="modal"></div>
+    <div id="catalog-modal" class="modal"></div>
+    <div id="checkout-modal" class="modal"></div>
+
+    <!-- Уведомления -->
+    <div id="notification-container"></div>
 
     <script src="app.js"></script>
     
     <script>
-        // Дополнительная проверка для Telegram
-        document.addEventListener('DOMContentLoaded', function() {
-            const loaderText = document.getElementById('loader-text');
-            const loaderStatus = document.getElementById('loader-status');
-            
-            if (isTelegramWebApp()) {
-                loaderStatus.textContent = 'Определяем пользователя Telegram...';
-                
-                // Небольшая задержка для инициализации Telegram WebApp
-                setTimeout(() => {
-                    const tg = window.Telegram.WebApp;
-                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        loaderStatus.textContent = `Привет, ${tg.initDataUnsafe.user.first_name || 'пользователь'}!`;
-                    } else {
-                        loaderStatus.textContent = 'Telegram WebApp загружен, но данные пользователя недоступны';
-                    }
-                }, 1000);
-            } else {
-                loaderStatus.textContent = 'Запущено вне Telegram';
-            }
+        // Скрываем быстрый лоадер когда загрузится основной
+        window.addEventListener('load', function() {
+            document.querySelector('.quick-loader').style.display = 'none';
         });
+        
+        // Определяем мобильное устройство
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            document.documentElement.classList.add('mobile-device');
+        }
     </script>
 </body>
 </html>
