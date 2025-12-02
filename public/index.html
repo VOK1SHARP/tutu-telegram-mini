@@ -179,5 +179,24 @@
             });
         })();
     </script>
+    <script>
+    // Определение устройства
+    function detectDevice() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isAndroid = /Android/.test(navigator.userAgent);
+        
+        if (isIOS) {
+            document.body.classList.add('ios-device');
+            console.log('📱 iOS устройство обнаружено');
+        }
+        if (isAndroid) {
+            document.body.classList.add('android-device');
+            console.log('📱 Android устройство обнаружено');
+        }
+    }
+    
+    // Запускаем при загрузке
+    window.addEventListener('load', detectDevice);
+</script>
 </body>
 </html>
