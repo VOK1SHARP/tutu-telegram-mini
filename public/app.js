@@ -17,23 +17,28 @@ async function initApp() {
             window.Utils.initTelegram();
         }
         
-        // Загрузка данных пользователя
-        let userData = { first_name: 'Гость', last_name: '', username: '' };
-        if (window.Utils) {
-            userData = await window.Utils.getUserData();
-            window.Utils.setUserData(userData);
-            window.Utils.setIsTelegramUser(!!userData.id);
-            
-            // Генерация/получение ID пользователя
-            const userId = window.Utils.generateUserId();
-            window.Utils.setUserId(userId);
-            
-            console.log('[App] Пользователь:', {
-                name: userData.first_name,
-                id: userId,
-                isTelegram: window.Utils.getIsTelegramUser()
-            });
-        }
+    // Загрузка данных пользователя
+let userData = { first_name: 'Гость', last_name: '', username: '' };
+if (window.Utils) {
+    userData = await window.Utils.getUserData();
+    // Проверяем, что userData не null/undefined
+    if (!userData) {
+        userData = { first_name: 'Гость', last_name: '', username: '' };
+    }
+    window.Utils.setUserData(userData);
+    // Безопасная проверка на Telegram пользователя
+    window.Utils.setIsTelegramUser(!!(userData && userData.id));
+    
+    // Генерация/получение ID пользователя
+    const userId = window.Utils.generateUserId();
+    window.Utils.setUserId(userId);
+    
+    console.log('[App] Пользователь:', {
+        name: userData.first_name || 'Гость',
+        id: userId,
+        isTelegram: window.Utils.getIsTelegramUser()
+    });
+}
         
         // Инициализация модулей
         if (window.Catalog) {
