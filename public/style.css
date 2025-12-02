@@ -741,11 +741,12 @@ body {
 }
 
 /* ========== МОДАЛЬНЫЕ ОКНА С МАГИЕЙ ========== */
+/* ========== ФИКС КАТАЛОГА И ПРОДУКТОВ ========== */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(62, 39, 35, 0.8);
-    backdrop-filter: blur(10px);
+    background: rgba(62, 39, 35, 0.9); /* Более темный фон для лучшего контраста */
+    backdrop-filter: blur(15px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -754,84 +755,72 @@ body {
     animation: modalFadeIn 0.4s var(--ease-smooth);
 }
 
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        backdrop-filter: blur(0);
-    }
-    to {
-        opacity: 1;
-        backdrop-filter: blur(10px);
-    }
-}
-
 .modal-content {
     background: var(--tea-card);
     border-radius: var(--radius-soft);
     width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
+    max-width: 450px; /* Немного меньше для мобильных */
+    max-height: 85vh; /* Уменьшаем высоту */
     overflow: hidden;
     animation: modalSlideUp 0.5s var(--ease-spring);
     box-shadow: 
-        0 25px 50px rgba(0, 0, 0, 0.25),
+        0 25px 50px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+/* Улучшаем видимость содержимого в модалках */
+.modal-body {
+    padding: 24px;
+    max-height: calc(85vh - 80px); /* Уменьшаем высоту тела */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
 }
 
-.modal-header {
-    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-dark));
-    padding: 20px 24px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* Стили для каталога */
+.catalog-item {
+    padding: 16px;
+    border-bottom: 1px solid rgba(142, 110, 99, 0.1);
+    cursor: pointer;
+    transition: all 0.3s var(--ease-smooth);
+    background: var(--tea-card);
+    margin-bottom: 8px;
+    border-radius: var(--radius-soft);
+}
+
+.catalog-item:hover {
+    background: var(--tea-bg);
+    transform: translateX(4px);
+}
+
+/* Улучшаем видимость текста в продуктах */
+.product-modal-content {
+    padding-bottom: 20px;
+}
+
+.product-details h4 {
+    color: var(--tea-text);
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.product-details ul {
+    margin-bottom: 20px;
+}
+
+.product-details li {
+    margin-bottom: 8px;
+    padding-left: 20px;
     position: relative;
 }
 
-.modal-header h3 {
-    font-size: 20px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s var(--ease-spring);
-}
-
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg) scale(1.1);
-}
-
-.modal-body {
-    padding: 24px;
-    max-height: calc(90vh - 80px);
-    overflow-y: auto;
+.product-details li:before {
+    content: "•";
+    color: var(--tea-green);
+    position: absolute;
+    left: 0;
+    font-size: 18px;
 }
 
 /* ========== ТИПЫ ЧАЯ ========== */
