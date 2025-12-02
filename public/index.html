@@ -11,29 +11,17 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4CAF50">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="ТИ•ТИ - Чайная лавка">
-    <meta property="og:description" content="Заказывайте аутентичный китайский чай прямо в Telegram!">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630/4CAF50/FFFFFF?text=TEA+SHOP">
-    <meta property="og:url" content="https://ваш-сайт.netlify.app">
-    
-    <!-- Иконки -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍵</text></svg>">
-    
     <style>
-        /* Быстрый лоадер перед загрузкой CSS */
-        body { 
-            margin: 0; 
+        .quick-loader {
+            position: fixed;
+            inset: 0;
             background: linear-gradient(135deg, #4CAF50, #2E7D32);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        .quick-loader {
-            text-align: center;
+            z-index: 9999;
             color: white;
+            text-align: center;
         }
         .quick-loader i {
             font-size: 60px;
@@ -44,26 +32,47 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Анимации для переходов между страницами */
+        .page-transition {
+            animation: pageFadeIn 0.3s ease;
+        }
+        
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
     <div class="quick-loader">
-        <i class="fas fa-leaf"></i>
-        <h2>ТИ•ТИ</h2>
-        <p>Загружаем чайную гармонию...</p>
+        <div>
+            <i class="fas fa-leaf"></i>
+            <h2>ТИ•ТИ</h2>
+            <p>Загружаем чайную гармонию...</p>
+        </div>
     </div>
 
+    <!-- Основной контейнер -->
     <div id="app" style="display: none;">
-        <!-- Загружается через JavaScript -->
+        <!-- Главная страница (загружается по умолчанию) -->
+        <div id="main-page" class="page" style="display: none;"></div>
+        
+        <!-- Страница каталога -->
+        <div id="catalog-page" class="page" style="display: none;"></div>
+        
+        <!-- Страница товара -->
+        <div id="product-page" class="page" style="display: none;"></div>
+        
+        <!-- Страница корзины -->
+        <div id="cart-page" class="page" style="display: none;"></div>
+        
+        <!-- Страница заказов -->
+        <div id="orders-page" class="page" style="display: none;"></div>
+        
+        <!-- Страница профиля -->
+        <div id="profile-page" class="page" style="display: none;"></div>
     </div>
-
-    <!-- Модальные окна -->
-    <div id="cart-modal" class="modal"></div>
-    <div id="product-modal" class="modal"></div>
-    <div id="order-modal" class="modal"></div>
-    <div id="profile-modal" class="modal"></div>
-    <div id="catalog-modal" class="modal"></div>
-    <div id="checkout-modal" class="modal"></div>
 
     <!-- Уведомления -->
     <div id="notification-container"></div>
@@ -73,14 +82,11 @@
     <script>
         // Скрываем быстрый лоадер когда загрузится основной
         window.addEventListener('load', function() {
-            document.querySelector('.quick-loader').style.display = 'none';
+            setTimeout(() => {
+                document.querySelector('.quick-loader').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+            }, 500);
         });
-        
-        // Определяем мобильное устройство
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            document.documentElement.classList.add('mobile-device');
-        }
     </script>
 </body>
 </html>
