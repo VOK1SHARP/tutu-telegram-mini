@@ -733,6 +733,7 @@ function startCheckout() {
     modal.style.display = 'flex';
 }
 
+// ========== ОФОРМЛЕНИЕ ЗАКАЗА - ИСПРАВЛЕННАЯ ВЕРСИЯ ==========
 async function confirmCheckout() {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
@@ -756,39 +757,54 @@ async function confirmCheckout() {
     // Сохраняем заказ
     await saveOrder(order);
     
-    // Формируем сообщение для Telegram
+    // Формируем полное сообщение для Telegram
     const message = `🎉 *Новый заказ #${order.id}*\n\n` +
                    `👤 *Покупатель:* ${order.user_name}${order.user_username ? ` (@${order.user_username})` : ''}\n` +
                    `💰 *Сумма:* ${order.total}₽\n` +
                    `📅 *Дата:* ${order.timestamp}\n\n` +
                    `🛒 *Состав заказа:*\n` +
-                   order.cart.map(item => `▫️ ${item.name} × ${item.quantity} = ${item.total}₽`).join('\n') + '\n\n' +
+                   order.cart.map(item => 
+                       `▫️ ${item.name} × ${item.quantity} = ${item.total}₽`
+                   ).join('\n') + '\n\n' +
                    `📱 *Источник:* ТИ•ТИ Чайная лавка\n` +
                    `🆔 *ID заказа:* ${order.id}`;
     
-    // Кодируем сообщение для URL
-    const encodedMessage = encodeURIComponent(message);
+    // Кодируем сообщение для URL (без экранирования *)
+    const encodedMessage = encodeURIComponent(
+        message.replace(/\*/g, '*') // Сохраняем звездочки
+    );
+    
+    console.log('Отправляем сообщение:', message); // Для отладки
     
     // Пытаемся отправить через Telegram WebApp
     if (tg.sendData) {
         try {
-            tg.sendData(JSON.stringify({
+            const data = {
                 action: 'checkout',
                 order_id: order.id,
+                user_id: order.user_id,
                 user_name: order.user_name,
-                cart: order.cart,
-                total: order.total
-            }));
+                user_username: order.user_username,
+                cart: JSON.stringify(order.cart),
+                total: order.total,
+                timestamp: order.timestamp,
+                full_message: message
+            };
+            tg.sendData(JSON.stringify(data));
+            console.log('Данные отправлены через sendData:', data);
         } catch (error) {
             console.log('WebApp sendData failed:', error);
         }
     }
     
-    // Открываем чат с менеджером
+    // Открываем чат с менеджером с полным сообщением
     const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
+    console.log('Telegram URL:', telegramUrl);
     
     if (tg.openLink) {
         tg.openLink(telegramUrl);
+    } else if (tg.openTelegramLink) {
+        tg.openTelegramLink(telegramUrl);
     } else {
         window.open(telegramUrl, '_blank');
     }
@@ -800,7 +816,7 @@ async function confirmCheckout() {
     // Показываем успех
     closeModal();
     createConfetti();
-    showNotification(`🎉 Заказ #${order.id} оформлен! Менеджер свяжется с вами.`, 'green');
+    showNotification(`🎉 Заказ #${order.id} на ${total}₽ оформлен! Менеджер свяжется с вами.`, 'green');
     
     // Показываем кнопку для копирования заказа
     setTimeout(() => {
