@@ -1457,3 +1457,124 @@ body {
     padding: var(--space-md) var(--space-lg);
     z-index: 100;
 }
+/* Исправления для iOS Safari */
+button, 
+input, 
+select, 
+textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+}
+
+/* Улучшаем нажатия на iOS */
+@media (hover: none) and (pointer: coarse) {
+    .nav-item,
+    .product-card,
+    .catalog-product-item,
+    .category-item,
+    .action-btn {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(76, 175, 80, 0.2);
+        min-height: 44px;
+    }
+    
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Исправляем z-index для модальных окон */
+.modal {
+    z-index: 9999 !important;
+}
+
+.checkout-button:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+/* Улучшаем видимость футера корзины */
+.main-cart-footer {
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* Улучшаем скролл на iOS */
+.page-body,
+.modal-body,
+.catalog-list {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* Фикс для анимаций на iOS */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Улучшаем отображение текста */
+.product-detail-section p,
+.product-detail-section li,
+.product-detail-section div {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Улучшаем кнопки для iOS */
+.checkout-button,
+.catalog-btn,
+.popular-btn,
+.action-btn {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+/* Фикс для фокуса на iOS */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+}
+
+/* Улучшаем производительность */
+.product-detail,
+.catalog-list {
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* Исправляем прыгающий контент */
+html {
+    overflow-x: hidden;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+/* Фикс для safe-area на новых iPhone */
+@supports (padding: max(0px)) {
+    .main-cart-footer,
+    .product-detail-actions {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    
+    .page-header {
+        padding-top: max(12px, env(safe-area-inset-top));
+    }
+}
