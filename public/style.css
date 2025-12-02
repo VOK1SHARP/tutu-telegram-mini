@@ -282,19 +282,7 @@ body {
     }
 }
 
-.header-with-pattern::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    /* Уменьшаем непрозрачность с 0.85 до 0.5-0.6 */
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.6), rgba(46, 125, 50, 0.6));
-    backdrop-filter: blur(2px);
-}
 
-.dark-theme .header-with-pattern::before {
-    /* Для темной темы тоже делаем прозрачнее */
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.7), rgba(46, 125, 50, 0.7));
-}
 .logo-centered {
     position: relative;
     z-index: 2;
