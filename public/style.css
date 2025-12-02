@@ -286,14 +286,15 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.85), rgba(46, 125, 50, 0.85));
+    /* Уменьшаем непрозрачность с 0.85 до 0.5-0.6 */
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.6), rgba(46, 125, 50, 0.6));
     backdrop-filter: blur(2px);
 }
 
 .dark-theme .header-with-pattern::before {
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(46, 125, 50, 0.8));
+    /* Для темной темы тоже делаем прозрачнее */
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.7), rgba(46, 125, 50, 0.7));
 }
-
 .logo-centered {
     position: relative;
     z-index: 2;
