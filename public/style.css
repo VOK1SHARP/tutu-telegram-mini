@@ -257,7 +257,7 @@ body {
 
 /* ---------- ШАПКА С ПАТТЕРНОМ И ЛОГО ---------- */
 .header-with-pattern {
-    background-image: url('tea_tea_pattern.png');
+    background-image: url('tu-tu-pattern.png');
     background-size: 300px auto;
     background-position: center;
     background-repeat: repeat;
