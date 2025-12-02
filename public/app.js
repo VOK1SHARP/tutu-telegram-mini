@@ -1683,3 +1683,29 @@ window.addEventListener('beforeunload', () => {
         saveCart(); 
     } catch(e){} 
 });
+(async () => {
+
+  try {
+    userData = await getUserData();
+    userId = generateUserId();
+
+    await loadPopularity();
+    await loadCart();
+
+    showMainInterface();
+
+    // скрываем loader
+    const loader = document.getElementById("loader");
+    loader.style.opacity = "0";
+
+    setTimeout(() => {
+        loader.style.display = "none";
+        document.getElementById("app").style.display = "block";
+    }, 500);
+
+  } catch (e) {
+    console.error("Init error:", e);
+    alert("Ошибка запуска приложения");
+  }
+
+})();
