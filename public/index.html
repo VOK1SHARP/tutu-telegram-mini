@@ -3,17 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4CAF50" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1E1E1E" media="(prefers-color-scheme: dark)">
     <title>ТИ•ТИ - Чайная лавка</title>
-    <meta name="description" content="Онлайн-заказ китайского чая в Telegram Mini App">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4CAF50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <style>
+        /* iOS Specific Fixes */
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --vh: 1vh;
+        }
+        
         .quick-loader {
             position: fixed;
             inset: 0;
@@ -34,9 +41,15 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Фикс для 100vh на iOS */
+        .min-height-ios {
+            min-height: -webkit-fill-available;
+            min-height: 100vh;
+        }
     </style>
 </head>
-<body>
+<body class="min-height-ios">
     <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
@@ -72,8 +85,21 @@
     <script src="app.js"></script>
     
     <script>
-        // Скрываем быстрый лоадер когда загрузится основной
+        // Фикс для viewport на iOS
+        function fixViewportHeight() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // Фикс для fixed элементов
+                document.body.classList.add('ios-device');
+            }
+        }
+        
         window.addEventListener('load', function() {
+            fixViewportHeight();
+            
             setTimeout(() => {
                 const loader = document.querySelector('.quick-loader');
                 if (loader) {
@@ -88,11 +114,20 @@
             }, 500);
         });
         
-        // Проверяем iOS
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (isIOS) {
-            document.documentElement.classList.add('ios-device');
+        window.addEventListener('resize', fixViewportHeight);
+        
+        // Определение темной темы системы
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        if (prefersDarkScheme.matches) {
+            document.body.classList.add('dark-theme');
         }
+        prefersDarkScheme.addListener(e => {
+            if (e.matches) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        });
     </script>
 </body>
 </html>
