@@ -2,10 +2,10 @@
    ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
    =========================== */
 
-const Profile = (function() {
-    const { log, error, escapeHtml } = Utils;
-    const { UI, createModal } = UI;
-    const { clearUserData } = Storage;
+window.Profile = (function() {
+    const Utils = window.Utils;
+    const UI = window.UI;
+    const Storage = window.Storage;
     
     // Показ профиля
     function showProfile() {
@@ -18,15 +18,14 @@ const Profile = (function() {
         const fullName = `${firstName} ${lastName}`.trim();
         const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
         
-        const modal = createModal({
-            id: 'profile-modal'
-        });
+        const modal = document.getElementById('profile-modal');
+        if (!modal) return;
         
         const html = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-user"></i> Мой профиль</h3>
-                    <button class="modal-close" onclick="window.Profile.closeProfile()">×</button>
+                    <button class="modal-close" onclick="closeModal('profile-modal')">×</button>
                 </div>
                 <div class="modal-body">
                     <div style="text-align: center; margin-bottom: 20px;">
@@ -35,15 +34,15 @@ const Profile = (function() {
                                     display: flex; align-items: center; justify-content: center; 
                                     background: ${hasPhoto ? 'transparent' : 'linear-gradient(135deg, #667eea, #764ba2)'};">
                             ${hasPhoto ? 
-                                `<img src="${escapeHtml(userData.photo_url)}" alt="${escapeHtml(fullName)}" 
+                                `<img src="${Utils.escapeHtml(userData.photo_url)}" alt="${Utils.escapeHtml(fullName)}" 
                                       style="width: 100%; height: 100%; object-fit: cover;"
-                                      onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\\'font-size: 36px; color: white;\\'>${escapeHtml(firstName.charAt(0))}</div>'">` 
+                                      onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\\'font-size: 36px; color: white;\\'>${Utils.escapeHtml(firstName.charAt(0))}</div>'">` 
                                 : 
-                                `<div style="font-size: 36px; color: white;">${escapeHtml(firstName.charAt(0) || 'G')}</div>`
+                                `<div style="font-size: 36px; color: white;">${Utils.escapeHtml(firstName.charAt(0) || 'G')}</div>`
                             }
                         </div>
-                        <h3 style="margin: 0 0 6px 0;">${escapeHtml(fullName)}</h3>
-                        ${username ? `<p style="color: #666; margin: 6px 0;">${escapeHtml(username)}</p>` : ''}
+                        <h3 style="margin: 0 0 6px 0;">${Utils.escapeHtml(fullName)}</h3>
+                        ${username ? `<p style="color: #666; margin: 6px 0;">${Utils.escapeHtml(username)}</p>` : ''}
                         ${isTelegramUser ? 
                             `<span style="background: #0088cc; color: white; padding: 4px 8px; 
                                           border-radius: 12px; font-size: 12px; margin-top: 4px;">
@@ -57,7 +56,7 @@ const Profile = (function() {
                         }
                         ${userData.id ? 
                             `<p style="color: #999; font-size: 13px; margin-top: 6px;">
-                                ID: ${escapeHtml(String(userData.id))}
+                                ID: ${Utils.escapeHtml(String(userData.id))}
                             </p>` 
                             : ''
                         }
@@ -101,13 +100,13 @@ const Profile = (function() {
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 16px;">
-                        <button onclick="window.Profile.openChannel()" 
+                        <button onclick="Profile.openChannel()" 
                                 style="flex: 1; padding: 12px; border-radius: 10px; 
                                        background: linear-gradient(135deg, #4CAF50, #2E7D32); 
                                        color: white; border: none; cursor: pointer;">
                             <i class="fab fa-telegram"></i> Наш канал
                         </button>
-                        <button onclick="window.Profile.clearData()" 
+                        <button onclick="Profile.clearData()" 
                                 style="flex: 1; padding: 12px; border-radius: 10px; 
                                        background: #f8f9fa; color: #666; border: 1px solid #ddd; 
                                        cursor: pointer;">
@@ -118,14 +117,18 @@ const Profile = (function() {
             </div>
         `;
         
-        modal.setContent(html);
-        modal.show();
+        modal.innerHTML = html;
+        modal.classList.remove('bottom-sheet');
+        modal.style.display = 'flex';
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal('profile-modal');
+        };
     }
     
     // Открытие канала
     function openChannel() {
         const url = 'https://t.me/teatea_bar';
-        const tg = Utils.tg;
+        const tg = Utils.getTg();
         
         try {
             if (tg && tg.openLink) {
@@ -134,7 +137,7 @@ const Profile = (function() {
                 window.open(url, '_blank');
             }
         } catch (e) {
-            error('Failed to open channel:', e);
+            Utils.error('Failed to open channel:', e);
             window.open(url, '_blank');
         }
     }
@@ -152,11 +155,13 @@ const Profile = (function() {
             UI.Loader.show('Очищаем данные...');
             
             // Очищаем все данные
-            await clearUserData();
+            await Storage.clearUserData();
             
             // Очищаем локальные переменные
-            Cart.clear();
-            Cart.updateUI();
+            if (window.Cart) {
+                window.Cart.clear();
+                window.Cart.updateUI();
+            }
             
             // Перезагружаем страницу
             setTimeout(() => {
@@ -164,22 +169,25 @@ const Profile = (function() {
             }, 1000);
             
         } catch (e) {
-            error('Failed to clear data:', e);
+            Utils.error('Failed to clear data:', e);
             UI.Toast.show('Ошибка при очистке данных', { type: 'error' });
         } finally {
             UI.Loader.hide();
         }
     }
     
-    // Закрытие профиля
-    function closeProfile() {
-        UI.closeModal('profile-modal');
+    // Вспомогательная функция закрытия модального окна
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
     
+    // Экспорт публичных методов
     return {
         showProfile,
         openChannel,
-        clearData,
-        closeProfile
+        clearData
     };
 })();
