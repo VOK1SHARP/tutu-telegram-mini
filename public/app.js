@@ -474,101 +474,111 @@ function showMainInterface() {
     // Проверяем наличие фото
     const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
     
-    app.innerHTML = `
-        <!-- Header -->
-        <div class="header fade-in">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
-                    <div class="logo-text">
-                        <h1>ТИ•ТИ</h1>
-                        <div class="subtitle">Чайная лавка</div>
-                    </div>
+ // В функции showMainInterface() обновляем баннер:
+app.innerHTML = `
+    <!-- Header -->
+    <div class="header fade-in">
+        <div class="header-content">
+            <div class="logo" onclick="showFullCatalog()">
+                <div class="logo-icon">
+                    <i class="fas fa-leaf"></i>
                 </div>
-                <div class="user-avatar" onclick="showProfile()" title="${fullName}${username ? ` (${username})` : ''}">
-                    ${hasPhoto ? 
-                        `<img src="${userData.photo_url}" alt="${fullName}" 
-                             onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';"
-                             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : 
-                        `<i class="fas fa-user"></i>`
-                    }
-                    <span class="cart-badge" style="display: none;">0</span>
-                    ${isTelegramUser ? `<div class="tg-badge" title="Telegram пользователь">TG</div>` : ''}
+                <div class="logo-text">
+                    <h1>ТИ•ТИ</h1>
+                    <div class="subtitle">Чайная лавка</div>
                 </div>
             </div>
+            <div class="user-avatar" onclick="showProfile()" title="${fullName}${username ? ` (${username})` : ''}">
+                ${hasPhoto ? 
+                    `<img src="${userData.photo_url}" alt="${fullName}" 
+                         onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';"
+                         style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : 
+                    `<i class="fas fa-user"></i>`
+                }
+                <span class="cart-badge" style="display: none;">0</span>
+                ${isTelegramUser ? `<div class="tg-badge" title="Telegram пользователь">TG</div>` : ''}
+            </div>
         </div>
-        
-        <!-- Баннер -->
-        <div class="banner fade-in" style="animation-delay: 0.1s">
-            <h2>🍵 Добро пожаловать, ${firstName}!</h2>
+    </div>
+    
+    <!-- Баннер -->
+    <div class="welcome-banner fade-in" style="animation-delay: 0.1s">
+        <div class="banner-content">
+            <h2>🍵 ${getWelcomeMessage()}</h2>
             <p>${isTelegramUser ? 'Рады видеть вас снова!' : 'Аутентичный китайский чай с доставкой'}</p>
-            <a href="#" class="banner-button" onclick="showFullCatalog()">Смотреть каталог</a>
-        </div>
-        
-        <!-- Навигация -->
-        <div class="nav-grid fade-in" style="animation-delay: 0.2s">
-            <div class="nav-item" onclick="showFullCatalog()">
-                <div class="nav-icon icon-tea">
-                    <i class="fas fa-mug-hot"></i>
-                </div>
-                <h3>Каталог</h3>
-                <p>${teaCatalog.length}+ сортов чая</p>
-            </div>
-            
-            <div class="nav-item" onclick="showOrders()">
-                <div class="nav-icon icon-orders">
-                    <i class="fas fa-box"></i>
-                </div>
-                <h3>Заказы</h3>
-                <p>История покупок</p>
-            </div>
-            
-            <div class="nav-item" onclick="showCartModal()">
-                <div class="nav-icon icon-cart">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h3>Корзина</h3>
-                <p>Товары: <span class="cart-count">0</span></p>
-            </div>
-            
-            <div class="nav-item" onclick="showProfile()">
-                <div class="nav-icon icon-profile">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h3>Профиль</h3>
-                <p>${username || 'Ваш профиль'}</p>
-            </div>
-        </div>
-        
-        <!-- Популярные товары -->
-        <div class="products-section fade-in" style="animation-delay: 0.3s">
-            <h2 class="section-title">
-                <i class="fas fa-fire"></i> Популярное
-            </h2>
-            <div class="products-grid" id="popular-products">
-                <!-- Товары загружаются динамически -->
-            </div>
-        </div>
-        
-        <!-- Футер корзины -->
-        <div class="cart-footer fade-in" style="animation-delay: 0.4s">
-            <div class="cart-content">
-                <div class="cart-total" id="cart-total">Корзина пуста</div>
-                <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>
-                    Оформить заказ
+            <div class="banner-actions">
+                <button class="catalog-btn" onclick="showFullCatalog()">
+                    <i class="fas fa-search"></i> Искать чай
+                </button>
+                <button class="popular-btn" onclick="scrollToPopular()">
+                    <i class="fas fa-fire"></i> Популярное
                 </button>
             </div>
         </div>
+    </div>
+    
+    <!-- Навигация -->
+    <div class="nav-grid fade-in" style="animation-delay: 0.2s">
+        <div class="nav-item" onclick="showFullCatalog()">
+            <div class="nav-icon icon-tea">
+                <i class="fas fa-mug-hot"></i>
+            </div>
+            <h3>Каталог</h3>
+            <p>${teaCatalog.length}+ сортов чая</p>
+        </div>
         
-        <!-- Модальные окна -->
-        <div id="cart-modal" class="modal"></div>
-        <div id="product-modal" class="modal"></div>
-        <div id="order-modal" class="modal"></div>
-        <div id="profile-modal" class="modal"></div>
-        <div id="catalog-modal" class="modal"></div>
-    `;
+        <div class="nav-item" onclick="showOrders()">
+            <div class="nav-icon icon-orders">
+                <i class="fas fa-box"></i>
+            </div>
+            <h3>Заказы</h3>
+            <p>История покупок</p>
+        </div>
+        
+        <div class="nav-item" onclick="showCartModal()">
+            <div class="nav-icon icon-cart">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3>Корзина</h3>
+            <p>Товары: <span class="cart-count">0</span></p>
+        </div>
+        
+        <div class="nav-item" onclick="showProfile()">
+            <div class="nav-icon icon-profile">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3>Профиль</h3>
+            <p>${username || 'Ваш профиль'}</p>
+        </div>
+    </div>
+    
+    <!-- Популярные товары -->
+    <div class="products-section fade-in" style="animation-delay: 0.3s">
+        <h2 class="section-title">
+            <i class="fas fa-fire"></i> Популярное
+        </h2>
+        <div class="products-grid" id="popular-products">
+            <!-- Товары загружаются динамически -->
+        </div>
+    </div>
+    
+    <!-- Футер корзины -->
+    <div class="cart-footer fade-in" style="animation-delay: 0.4s">
+        <div class="cart-content">
+            <div class="cart-total" id="cart-total">Корзина пуста</div>
+            <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>
+                <i class="fas fa-paper-plane"></i> Оформить
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модальные окна -->
+    <div id="cart-modal" class="modal"></div>
+    <div id="product-modal" class="modal"></div>
+    <div id="order-modal" class="modal"></div>
+    <div id="profile-modal" class="modal"></div>
+    <div id="catalog-modal" class="modal"></div>
+`;
     
     // Загружаем популярные товары
     loadPopularProducts();
