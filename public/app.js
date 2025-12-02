@@ -465,3 +465,293 @@ window.addEventListener('beforeunload', () => {
         console.warn('[App] Ошибка сохранения при закрытии:', error);
     }
 });
+// Вспомогательные функции для модальных окон
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function showModal(modalId, bottomSheet = false) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    if (window.UI) {
+        window.UI.closeAllModals();
+    }
+    
+    modal.style.display = 'flex';
+    if (bottomSheet) {
+        modal.classList.add('bottom-sheet');
+    } else {
+        modal.classList.remove('bottom-sheet');
+    }
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal(modalId);
+        }
+    };
+}
+
+// Переопределяем функции модулей
+window.addEventListener('load', function() {
+    // Переопределяем функции Catalog
+    if (window.Catalog) {
+        window.Catalog.showCatalog = function() {
+            showCatalogModal();
+        };
+        
+        window.Catalog.showProductDetail = function(productId) {
+            showProductModal(productId);
+        };
+    }
+    
+    // Переопределяем функции Cart
+    if (window.Cart) {
+        window.Cart.showCartModal = function() {
+            showCartModal();
+        };
+        
+        window.Cart.clearAll = async function() {
+            return await clearCart();
+        };
+    }
+});
+
+// Реализация модального окна каталога
+function showCatalogModal() {
+    const modal = document.getElementById('catalog-modal');
+    if (!modal) return;
+    
+    const products = window.Catalog ? window.Catalog.getAllProducts() : [];
+    
+    let html = `
+        <div class="modal-content" style="max-height:85vh; overflow:auto;">
+            <div class="modal-header">
+                <h3><i class="fas fa-list"></i> Каталог</h3>
+                <button class="modal-close" onclick="closeModal('catalog-modal')">×</button>
+            </div>
+            <div class="modal-body" style="padding:10px;">
+    `;
+    
+    products.forEach(product => {
+        const teaClass = window.Utils ? window.Utils.getTeaTypeClass(product.type) : '';
+        html += `
+            <div class="catalog-item" onclick="showProductModal(${product.id})" 
+                 style="padding:12px;border-radius:10px;display:flex;gap:12px;align-items:center;margin-bottom:10px;background:#fff;cursor:pointer;">
+                <div style="width:64px;height:64px;border-radius:10px;display:flex;align-items:center;justify-content:center;" 
+                     class="tea-icon ${teaClass}"><i class="fas fa-leaf"></i></div>
+                <div style="flex:1;">
+                    <div style="font-weight:700;">${product.name}</div>
+                    <div style="color:#666;font-size:14px;">${product.subtitle}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:#4CAF50;font-weight:700;margin-bottom:8px;">${product.price}₽</div>
+                    <button onclick="event.stopPropagation(); addToCart(${product.id});" 
+                            style="padding:6px 10px;border-radius:10px;background:#4CAF50;color:white;border:none;cursor:pointer;">
+                        + Добавить
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div></div>`;
+    modal.innerHTML = html;
+    showModal('catalog-modal', true);
+}
+
+// Реализация модального окна товара
+function showProductModal(productId) {
+    const modal = document.getElementById('product-modal');
+    if (!modal) return;
+    
+    const product = window.Catalog ? window.Catalog.getProductById(productId) : null;
+    if (!product) return;
+    
+    const teaClass = window.Utils ? window.Utils.getTeaTypeClass(product.type) : '';
+    
+    const html = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-leaf"></i> ${product.name}</h3>
+                <button class="modal-close" onclick="closeModal('product-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div style="font-weight:700;">${product.subtitle}</div>
+                    <div style="background:#4CAF50;color:#fff;padding:6px 10px;border-radius:12px;font-weight:700;">
+                        ${product.type}
+                    </div>
+                </div>
+                ${product.tag ? `<div style="background:#FF9800;color:white;padding:6px 8px;border-radius:8px;display:inline-block;margin-bottom:12px;">${product.tag}</div>` : ''}
+                
+                <div style="background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:12px;">
+                    <h4 style="margin:0 0 8px 0;color:#333;">Описание:</h4>
+                    <p style="margin:0;color:#666;line-height:1.5;">${product.description}</p>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <h4 style="margin:0 0 8px 0;color:#333;">🍶 Способ заваривания:</h4>
+                    <ul style="margin:0;color:#666;padding-left:20px;line-height:1.6;">
+                        ${product.brewing.map(b => `<li>${b}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:12px;">
+                    <h4 style="margin:0 0 8px 0;color:#333;">🌿 Полезные свойства:</h4>
+                    <ul style="margin:0;color:#666;padding-left:20px;line-height:1.6;">
+                        ${product.benefits ? product.benefits.map(b => `<li>${b}</li>`).join('') : ''}
+                    </ul>
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #eee;">
+                    <div style="font-size:20px;font-weight:700;color:#4CAF50;">
+                        ${product.price}₽
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="addToCart(${product.id})" 
+                                style="padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#4CAF50,#2E7D32);color:white;border:none;cursor:pointer;">
+                            Добавить в корзину
+                        </button>
+                        <button onclick="showCatalogModal()" 
+                                style="padding:10px 14px;border-radius:10px;background:#eee;border:none;cursor:pointer;">
+                            Каталог
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.innerHTML = html;
+    showModal('product-modal', true);
+}
+
+// Реализация модального окна корзины
+function showCartModal() {
+    const modal = document.getElementById('cart-modal');
+    if (!modal) return;
+    
+    const cart = window.Cart ? window.Cart.get() : [];
+    const totalPrice = window.Cart ? window.Cart.getTotalPrice() : 0;
+    const isCartEmpty = window.Cart ? window.Cart.isEmpty() : true;
+    
+    let html = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
+                <button class="modal-close" onclick="closeModal('cart-modal')">×</button>
+            </div>
+            <div class="modal-body">
+    `;
+    
+    if (isCartEmpty) {
+        html += `
+            <div style="text-align: center; padding: 40px 10px; color: #888;">
+                <i class="fas fa-box-open" style="font-size: 42px; color: #ddd;"></i>
+                <div style="margin-top: 12px;">Корзина пуста</div>
+            </div>
+        `;
+    } else {
+        html += `
+            <div style="max-height: 40vh; overflow: auto; margin-bottom: 12px;">
+        `;
+        
+        cart.forEach(item => {
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding: 12px; border-radius: 10px; background: #f8f9fa; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700;">${item.name}</div>
+                        <div style="color: #666; font-size: 13px;">
+                            ${item.type} • ${item.price}₽/шт
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button onclick="updateCartQuantity(${item.id}, -1)" 
+                                style="width: 32px; height: 32px; border-radius: 50%; border: none; 
+                                       background: #eee; cursor: pointer;">-</button>
+                        <div style="min-width: 28px; text-align: center; font-weight: 700;">
+                            ${item.quantity}
+                        </div>
+                        <button onclick="updateCartQuantity(${item.id}, 1)" 
+                                style="width: 32px; height: 32px; border-radius: 50%; border: none; 
+                                       background: #4CAF50; color: white; cursor: pointer;">+</button>
+                        <div style="min-width: 70px; text-align: right; font-weight: 700; 
+                                    color: #4CAF50; margin-left: 8px;">
+                            ${item.price * item.quantity}₽
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+    }
+    
+    html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding-top: 12px; border-top: 2px solid #e9f5ee;">
+                    <div style="font-weight: 700; font-size: 18px;">
+                        Итого: <span style="color: #4CAF50;">${totalPrice}₽</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        ${!isCartEmpty ? `
+                            <button onclick="clearCart()" 
+                                    style="padding: 10px 12px; border-radius: 10px; 
+                                           background: #f44336; color: white; border: none; 
+                                           cursor: pointer;">
+                                Очистить
+                            </button>
+                        ` : ''}
+                        <button onclick="window.checkout()" 
+                                style="padding: 10px 14px; border-radius: 10px; 
+                                       background: linear-gradient(135deg, #667eea, #764ba2); 
+                                       color: white; border: none; cursor: pointer;"
+                                ${isCartEmpty ? 'disabled' : ''}>
+                            ${isCartEmpty ? 'Добавьте товары' : 'Оформить'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.innerHTML = html;
+    showModal('cart-modal', true);
+}
+
+// Вспомогательные функции для корзины
+async function addToCart(productId) {
+    if (window.Cart) {
+        await window.Cart.addToCart(productId);
+    }
+}
+
+async function updateCartQuantity(productId, delta) {
+    if (window.Cart) {
+        await window.Cart.updateQuantity(productId, delta);
+        showCartModal(); // Переоткрываем модалку
+    }
+}
+
+async function clearCart() {
+    if (window.UI && window.UI.Confirm) {
+        const confirmed = await window.UI.Confirm.show(
+            'Очистить всю корзину? Это действие необратимо.',
+            'Очистка корзины'
+        );
+        
+        if (!confirmed) return;
+    }
+    
+    if (window.Cart) {
+        window.Cart.clear();
+        await window.Cart.save();
+        showToast('Корзина очищена');
+        showCartModal();
+    }
+}
