@@ -1,42 +1,84 @@
 /* ===========================
-   ТИ•ТИ - ЧАЙНАЯ ЛАВКА
-   Полная версия в одном файле
+   ИНИЦИАЛИЗАЦИЯ / ГЛОБАЛЫ
    =========================== */
-
-// Глобальные переменные
 let tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 let cart = [];
 let userData = null;
 let userId = null;
 let isTelegramUser = false;
-let popularity = {};
+let popularity = {}; // { teaId: count }
 
-// Каталог чая
+const APP_KEYS = {
+    CART_KEY: (uid) => `tutu_cart_${uid}`,
+    ORDERS_KEY: (uid) => `tutu_orders_${uid}`,
+    POP_KEY: (uid) => `tutu_popularity_${uid}`
+};
+
+/* ===========================
+   КАТАЛОГ ЧАЯ
+   =========================== */
 const teaCatalog = [
-    { id:1, name:'ЛАО ЧА ТОУ', subtitle:'Старые чайные головы', type:'Пуэр', price:1200, description:'Насыщенный и бархатистый чай с землистыми нотами и долгим послевкусием.', brewing:['🌿 5 гр чая на 500 мл воды','🌡 95°C','⏳ 3-5 минут'], benefits:['♥️ Антиоксидант', '🧠 Улучшает концентрацию'], tag:'Хит' },
-    { id:2, name:'ХЭЙ ЦЗИНЬ', subtitle:'Черное золото', type:'Красный чай', price:950, description:'Аромат сладости с нотками меда и сухофруктов, мягкий вкус.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-95°C','⏳ 20-30 секунд'], benefits:['❄️ Согревает', '💆 Расслабляет'], tag:'Популярное' },
-    { id:3, name:'ЖОУ ГУЙ НУН СЯН', subtitle:'Мясистая корица', type:'Улун', price:1100, description:'Чай для концентрации с пряными нотками корицы и карамели.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 80-90°C','⏳ 30-40 секунд'], benefits:['🦋 Стимулирует обмен веществ', '🔥 Тонизирует'], tag:'Рекомендуем' },
-    { id:4, name:'ДЯНЬ ХУН', subtitle:'Красный чай из Юньнани', type:'Красный чай', price:850, description:'Теплый, хлебно-медовый аромат с фруктовым послевкусием.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-95°C','⏳ 20-30 секунд'], benefits:['❄️ Согревает', '🍎 Улучшает пищеварение'] },
-    { id:5, name:'ГАБА МАО ЧА', subtitle:'Чай-сырец', type:'Габа', price:1400, description:'В аромате жареные семечки и карамель, богатый ГАБА-аминокислотами.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85°C','⏳ 20-30 секунд'], benefits:['♥️ Полезен для сердца', '🧘 Успокаивает нервную систему'], tag:'Новинка' },
-    { id:6, name:'ГУ ШУ ХУН ЧА', subtitle:'Красный чай со старых деревьев', type:'Красный чай', price:1300, description:'Насыщенные медово-сливовые оттенки с древесными нотками.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-90°C','⏳ 20-30 секунд'], benefits:['❄️ Согревает', '🌿 Детоксикация'] },
-    { id:7, name:'ТЕ ГУАНЬ ИНЬ', subtitle:'Железная богиня милосердия', type:'Улун', price:1050, description:'Классический расслабляющий светлый улун с цветочным ароматом.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85°C','⏳ 20-25 секунд'], benefits:['👨🏻‍🦳 Антиоксиданты', '🌱 Очищает организм'], tag:'Классика' },
-    { id:8, name:'МО ЛИ ХУА ЧА', subtitle:'Жасмин', type:'Зеленый чай', price:900, description:'Свежий жасминовый аромат в сочетании с нежным вкусом зеленого чая.', brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 70°C','⏳ 20-40 секунд'], benefits:['🧘🏻‍♀️ Снимает стресс', '🌸 Освежает'] }
+    { id:1, name:'ЛАО ЧА ТОУ', subtitle:'Старые чайные головы', type:'Пуэр', price:1200, 
+      description:'Насыщенный и бархатистый чай с землистыми нотами и долгим послевкусием.', 
+      brewing:['🌿 5 гр чая на 500 мл воды','🌡 95°C','⏳ 3-5 минут'], 
+      benefits:['♥️ Антиоксидант', '🧠 Улучшает концентрацию'], 
+      tag:'Хит' },
+    { id:2, name:'ХЭЙ ЦЗИНЬ', subtitle:'Черное золото', type:'Красный чай', price:950, 
+      description:'Аромат сладости с нотками меда и сухофруктов, мягкий вкус.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-95°C','⏳ 20-30 секунд'], 
+      benefits:['❄️ Согревает', '💆 Расслабляет'], 
+      tag:'Популярное' },
+    { id:3, name:'ЖОУ ГУЙ НУН СЯН', subtitle:'Мясистая корица', type:'Улун', price:1100, 
+      description:'Чай для концентрации с пряными нотками корицы и карамели.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 80-90°C','⏳ 30-40 секунд'], 
+      benefits:['🦋 Стимулирует обмен веществ', '🔥 Тонизирует'], 
+      tag:'Рекомендуем' },
+    { id:4, name:'ДЯНЬ ХУН', subtitle:'Красный чай из Юньнани', type:'Красный чай', price:850, 
+      description:'Теплый, хлебно-медовый аромат с фруктовым послевкусием.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-95°C','⏳ 20-30 секунд'], 
+      benefits:['❄️ Согревает', '🍎 Улучшает пищеварение'] },
+    { id:5, name:'ГАБА МАО ЧА', subtitle:'Чай-сырец', type:'Габа', price:1400, 
+      description:'В аромате жареные семечки и карамель, богатый ГАБА-аминокислотами.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85°C','⏳ 20-30 секунд'], 
+      benefits:['♥️ Полезен для сердца', '🧘 Успокаивает нервную систему'], 
+      tag:'Новинка' },
+    { id:6, name:'ГУ ШУ ХУН ЧА', subtitle:'Красный чай со старых деревьев', type:'Красный чай', price:1300, 
+      description:'Насыщенные медово-сливовые оттенки с древесными нотками.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85-90°C','⏳ 20-30 секунд'], 
+      benefits:['❄️ Согревает', '🌿 Детоксикация'] },
+    { id:7, name:'ТЕ ГУАНЬ ИНЬ', subtitle:'Железная богиня милосердия', type:'Улун', price:1050, 
+      description:'Классический расслабляющий светлый улун с цветочным ароматом.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 85°C','⏳ 20-25 секунд'], 
+      benefits:['👨🏻‍🦳 Антиоксиданты', '🌱 Очищает организм'], 
+      tag:'Классика' },
+    { id:8, name:'МО ЛИ ХУА ЧА', subtitle:'Жасмин', type:'Зеленый чай', price:900, 
+      description:'Свежий жасминовый аромат в сочетании с нежным вкусом зеленого чая.', 
+      brewing:['🌿 5-8 гр на 150-200 мл воды','🌡 70°C','⏳ 20-40 секунд'], 
+      benefits:['🧘🏻‍♀️ Снимает стресс', '🌸 Освежает'] }
 ];
 
-// ------------ Утилиты ------------
-function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
-function log(...args){ console.log('[app]', ...args); }
-function error(...args){ console.error('[app]', ...args); }
+/* ===========================
+   УТИЛИТЫ
+   =========================== */
+function sleep(ms) { 
+    return new Promise(res => setTimeout(res, ms)); 
+}
+
+function log(...args) { 
+    console.log('[app]', ...args); 
+}
+
+function error(...args) {
+    console.error('[app]', ...args);
+}
 
 function escapeHtml(text) {
-    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
 function formatPrice(price) {
-    if (!price && price !== 0) return '0₽';
     return new Intl.NumberFormat('ru-RU', { 
         style: 'currency', 
         currency: 'RUB',
@@ -46,167 +88,74 @@ function formatPrice(price) {
 }
 
 function formatDate(dateString) {
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } catch (e) {
-        return dateString || '';
-    }
+    const date = new Date(dateString);
+    return date.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function getTeaTypeClass(type) {
-    const classes = {'Пуэр':'puer','Красный чай':'red-tea','Улун':'oolong','Габа':'gaba','Зеленый чай':'green-tea'};
+    const classes = {
+        'Пуэр': 'puer',
+        'Красный чай': 'red-tea',
+        'Улун': 'oolong',
+        'Габа': 'gaba',
+        'Зеленый чай': 'green-tea'
+    };
     return classes[type] || '';
 }
 
-// ------------ Хранилище ------------
-function loadCart() {
-    try {
-        const saved = localStorage.getItem('tutu_cart');
-        if (saved) {
-            cart = JSON.parse(saved);
-            updateCartUI();
+function validateCartItem(item) {
+    return item && 
+           typeof item.id === 'number' && 
+           typeof item.quantity === 'number' && 
+           item.quantity > 0 &&
+           typeof item.price === 'number' &&
+           item.price > 0;
+}
+
+function hapticFeedback(type = 'light') {
+    if (tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+        try {
+            tg.HapticFeedback.impactOccurred(type);
+        } catch (e) {
+            log('Haptic feedback error:', e);
         }
-    } catch(e) {
-        console.error('Ошибка загрузки корзины:', e);
-        cart = [];
     }
 }
 
-function saveCart() {
-    try {
-        localStorage.setItem('tutu_cart', JSON.stringify(cart));
-        updateCartUI();
-    } catch(e) {
-        console.error('Ошибка сохранения корзины:', e);
-    }
-}
-
-function loadOrders() {
-    try {
-        const saved = localStorage.getItem('tutu_orders');
-        return saved ? JSON.parse(saved) : [];
-    } catch(e) {
-        console.error('Ошибка загрузки заказов:', e);
-        return [];
-    }
-}
-
-function saveOrder(order) {
-    try {
-        const orders = loadOrders();
-        orders.push(order);
-        localStorage.setItem('tutu_orders', JSON.stringify(orders));
-        
-        // Обновляем популярность
-        updatePopularityFromOrder(order);
-        return true;
-    } catch(e) {
-        console.error('Ошибка сохранения заказа:', e);
-        return false;
-    }
-}
-
-function loadPopularity() {
-    try {
-        const saved = localStorage.getItem('tutu_popularity');
-        popularity = saved ? JSON.parse(saved) : {};
-    } catch(e) {
-        console.error('Ошибка загрузки популярности:', e);
-        popularity = {};
-    }
-}
-
-function savePopularity() {
-    try {
-        localStorage.setItem('tutu_popularity', JSON.stringify(popularity));
-    } catch(e) {
-        console.error('Ошибка сохранения популярности:', e);
-    }
-}
-
-function updatePopularityFromOrder(order) {
-    if (!order || !Array.isArray(order.cart)) return;
-    order.cart.forEach(it => {
-        const id = String(it.id);
-        const q = Number(it.quantity || 1);
-        popularity[id] = (popularity[id] || 0) + q;
-    });
-    savePopularity();
-}
-
-// ------------ Пользователь ------------
-async function getUserData() {
-    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const u = tg.initDataUnsafe.user;
-        isTelegramUser = true;
-        return { 
-            id: u.id || null, 
-            first_name: u.first_name || '', 
-            last_name: u.last_name || '', 
-            username: u.username || '', 
-            photo_url: u.photo_url || '', 
-            is_bot: u.is_bot || false, 
-            language_code: u.language_code || 'ru' 
-        };
-    }
-    
-    // Гость
-    return { 
-        id: null, 
-        first_name: 'Гость', 
-        last_name: '', 
-        username: '', 
-        photo_url: '', 
-        is_bot: false, 
-        language_code: 'ru' 
-    };
-}
-
-function generateUserId() {
-    if (userData && userData.id) return `tg_${userData.id}`;
-    let guest = localStorage.getItem('tutu_guest_id');
-    if (!guest) { 
-        guest = 'guest_' + Date.now() + '_' + Math.random().toString(36).slice(2,9); 
-        localStorage.setItem('tutu_guest_id', guest); 
-    }
-    return guest;
-}
-
-// ------------ Toast уведомления ------------
-const TOAST_TIMEOUT = 3000;
-let toastContainer = null;
-
+/* ===========================
+   TOAST УВЕДОМЛЕНИЯ
+   =========================== */
+const TOAST_TIMEOUT = 3500;
 function ensureToastContainer() {
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.style.cssText = `
-            position: fixed;
-            right: 14px;
-            top: 14px;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        `;
-        document.body.appendChild(toastContainer);
-    }
+    if (document.getElementById('toast-container')) return;
+    const c = document.createElement('div');
+    c.id = 'toast-container';
+    c.style.cssText = `
+        position: fixed;
+        right: 14px;
+        top: 14px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+    `;
+    document.body.appendChild(c);
 }
 
-function showToast(text, options = {}) {
+function createToast(text, options = {}) {
     ensureToastContainer();
-    
-    const toast = document.createElement('div');
-    toast.className = 'app-toast';
-    toast.style.cssText = `
-        background: ${options.type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 'rgba(0,0,0,0.8)'};
+    const container = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'app-toast';
+    t.style.cssText = `
+        background: ${options.type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
         color: white;
         padding: 10px 14px;
         border-radius: 12px;
@@ -216,28 +165,35 @@ function showToast(text, options = {}) {
         opacity: 0;
         transform: translateY(-6px);
         transition: opacity 220ms ease, transform 220ms ease;
+        pointer-events: auto;
     `;
-    toast.textContent = text;
-    
-    toastContainer.appendChild(toast);
+    t.textContent = text;
+    container.appendChild(t);
     
     requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
+        t.style.opacity = '1';
+        t.style.transform = 'translateY(0)';
     });
     
     const timeout = options.timeout || TOAST_TIMEOUT;
     setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-6px)';
-        setTimeout(() => toast.remove(), 260);
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(-6px)';
+        setTimeout(() => t.remove(), 260);
     }, timeout);
 }
 
-// ------------ Confirm диалог ------------
-function showConfirm(message, title = 'Подтвердите действие') {
+/* ===========================
+   CONFIRM DIALOG
+   =========================== */
+async function showConfirm(message, title = 'Подтвердите действие') {
     return new Promise(resolve => {
-        const overlay = document.createElement('div');
+        let overlay = document.getElementById('confirm-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+        
+        overlay = document.createElement('div');
         overlay.id = 'confirm-overlay';
         overlay.style.cssText = `
             position: fixed;
@@ -321,7 +277,9 @@ function showConfirm(message, title = 'Подтвердите действие')
             overlay.querySelector('div').style.transform = 'scale(0.95)';
             
             setTimeout(() => {
-                overlay.remove();
+                if (overlay && overlay.parentNode) {
+                    overlay.remove();
+                }
                 resolve(result);
             }, 180);
         };
@@ -334,46 +292,378 @@ function showConfirm(message, title = 'Подтвердите действие')
                 close(false);
             }
         };
+        
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                close(false);
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
     });
 }
 
-// ------------ Модальные окна ------------
-function closeAllModals() {
-    document.querySelectorAll('.modal').forEach(m => {
-        m.style.display = 'none';
-        m.classList.remove('bottom-sheet');
-        m.onclick = null;
+/* ===========================
+   LOADER ИНДИКАТОР
+   =========================== */
+function showLoader(message = 'Загрузка...') {
+    let element = document.getElementById('global-loader');
+    if (!element) {
+        element = document.createElement('div');
+        element.id = 'global-loader';
+        element.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        element.innerHTML = `
+            <div style="
+                width: 50px;
+                height: 50px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #4CAF50;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            "></div>
+            <div style="
+                margin-top: 16px;
+                color: #333;
+                font-size: 14px;
+            ">${escapeHtml(message)}</div>
+        `;
+        
+        document.body.appendChild(element);
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    element.style.display = 'flex';
+    requestAnimationFrame(() => {
+        element.style.opacity = '1';
     });
 }
 
-function closeModalById(id) {
-    const m = document.getElementById(id);
-    if (m) {
-        m.style.display = 'none';
-        m.classList.remove('bottom-sheet');
-        m.onclick = null;
+function hideLoader() {
+    const element = document.getElementById('global-loader');
+    if (element) {
+        element.style.opacity = '0';
+        setTimeout(() => {
+            if (element) {
+                element.style.display = 'none';
+            }
+        }, 300);
     }
 }
 
-function showModal(modalId, bottomSheet = false) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
+/* ===========================
+   STORAGE: cart / orders / popularity
+   =========================== */
+async function loadCart() {
+    cart = [];
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.CART_KEY(userId);
     
-    closeAllModals();
-    
-    modal.style.display = 'flex';
-    if (bottomSheet) {
-        modal.classList.add('bottom-sheet');
-    }
-    
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            closeModalById(modalId);
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            const cloud = await new Promise(res => 
+                tg.CloudStorage.getItem('cart', (err, val) => 
+                    res(!err && val ? val : null)
+                )
+            );
+            if (cloud) {
+                cart = JSON.parse(cloud);
+                updateCartUI();
+                log('Cart loaded from cloud:', cart.length, 'items');
+                return;
+            }
+        } catch(e) { 
+            log('Cloud cart error:', e); 
         }
+    }
+    
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            cart = JSON.parse(saved);
+        } catch(e) {
+            cart = [];
+        }
+    }
+    
+    updateCartUI();
+    log('Cart loaded from localStorage:', cart.length, 'items');
+}
+
+async function saveCart() {
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.CART_KEY(userId);
+    
+    try {
+        localStorage.setItem(key, JSON.stringify(cart));
+    } catch(e) {
+        log('LocalStorage write failed:', e);
+    }
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            await new Promise((res, rej) => 
+                tg.CloudStorage.setItem('cart', JSON.stringify(cart), err => 
+                    err ? rej(err) : res()
+                )
+            );
+            log('Cart saved to cloud');
+        } catch(e) {
+            log('Cloud save cart failed:', e);
+        }
+    }
+    
+    try {
+        localStorage.setItem('tutu_cart_backup', JSON.stringify({
+            userId,
+            cart,
+            timestamp: new Date().toISOString()
+        }));
+    } catch(e) {}
+    
+    updateCartUI();
+}
+
+async function loadOrders() {
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.ORDERS_KEY(userId);
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            const cloud = await new Promise(res => 
+                tg.CloudStorage.getItem('orders', (err, val) => 
+                    res(!err && val ? val : null)
+                )
+            );
+            if (cloud) {
+                log('Orders loaded from cloud');
+                return JSON.parse(cloud);
+            }
+        } catch(e) {
+            log('Cloud orders error:', e);
+        }
+    }
+    
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            return JSON.parse(saved);
+        } catch(e) {
+            return [];
+        }
+    }
+    
+    return [];
+}
+
+async function saveOrder(order) {
+    if (!order || !order.id) {
+        error('Invalid order format');
+        return;
+    }
+    
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.ORDERS_KEY(userId);
+    const orders = await loadOrders();
+    
+    const existingOrderIndex = orders.findIndex(o => o.id === order.id);
+    if (existingOrderIndex >= 0) {
+        orders[existingOrderIndex] = order;
+    } else {
+        orders.push(order);
+    }
+    
+    try {
+        localStorage.setItem(key, JSON.stringify(orders));
+    } catch(e) {
+        log('LocalStorage order save failed:', e);
+    }
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            await new Promise((res, rej) => 
+                tg.CloudStorage.setItem('orders', JSON.stringify(orders), err => 
+                    err ? rej(err) : res()
+                )
+            );
+            log('Order saved to cloud');
+        } catch(e) {
+            log('Cloud save order failed:', e);
+        }
+    }
+    
+    updatePopularityFromOrder(order);
+    await savePopularity();
+    log('Order saved:', order.id);
+    return order;
+}
+
+async function loadPopularity() {
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.POP_KEY(userId);
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            const cloud = await new Promise(res => 
+                tg.CloudStorage.getItem('popularity', (err, val) => 
+                    res(!err && val ? val : null)
+                )
+            );
+            if (cloud) {
+                popularity = JSON.parse(cloud);
+                log('Popularity loaded from cloud');
+                return;
+            }
+        } catch(e) {
+            log('Cloud popularity error:', e);
+        }
+    }
+    
+    const saved = localStorage.getItem(key);
+    popularity = saved ? JSON.parse(saved) : {};
+}
+
+async function savePopularity() {
+    if (!userId) userId = generateUserId();
+    const key = APP_KEYS.POP_KEY(userId);
+    
+    try {
+        localStorage.setItem(key, JSON.stringify(popularity));
+    } catch(e) {
+        log('LocalStorage popularity save failed:', e);
+    }
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            await new Promise((res, rej) => 
+                tg.CloudStorage.setItem('popularity', JSON.stringify(popularity), err => 
+                    err ? rej(err) : res()
+                )
+            );
+            log('Popularity saved to cloud');
+        } catch(e) {
+            log('Cloud save popularity failed:', e);
+        }
+    }
+}
+
+function updatePopularityFromOrder(order) {
+    if (!order || !Array.isArray(order.cart)) return;
+    
+    order.cart.forEach(item => {
+        const id = String(item.id);
+        const qty = Number(item.quantity || 1);
+        popularity[id] = (popularity[id] || 0) + qty;
+    });
+}
+
+async function clearUserData() {
+    if (!userId) userId = generateUserId();
+    const keys = APP_KEYS;
+    
+    Object.values(keys).forEach(keyFn => {
+        const key = keyFn(userId);
+        localStorage.removeItem(key);
+    });
+    
+    if (tg && tg.CloudStorage && isTelegramUser) {
+        try {
+            await Promise.all([
+                new Promise(res => tg.CloudStorage.removeItem('cart', () => res())),
+                new Promise(res => tg.CloudStorage.removeItem('orders', () => res())),
+                new Promise(res => tg.CloudStorage.removeItem('popularity', () => res()))
+            ]);
+        } catch(e) {
+            error('Cloud clear error:', e);
+        }
+    }
+    
+    log('User data cleared');
+}
+
+/* ===========================
+   ID & USER DATA
+   =========================== */
+function generateUserId() {
+    if (userData && userData.id) return `tg_${userData.id}`;
+    let guest = localStorage.getItem('tutu_guest_id');
+    if (!guest) { 
+        guest = 'guest_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9); 
+        localStorage.setItem('tutu_guest_id', guest); 
+    }
+    return guest;
+}
+
+async function getUserData() {
+    if (window.Telegram && window.Telegram.WebApp) {
+        for (let i = 0; i < 6; i++) {
+            const maybe = window.Telegram.WebApp.initDataUnsafe;
+            if (maybe && maybe.user) {
+                const u = maybe.user;
+                isTelegramUser = true;
+                const data = { 
+                    id: u.id || null, 
+                    first_name: u.first_name || '', 
+                    last_name: u.last_name || '', 
+                    username: u.username || '', 
+                    photo_url: u.photo_url || '', 
+                    is_bot: u.is_bot || false, 
+                    language_code: u.language_code || 'ru' 
+                };
+                log('Telegram user detected:', data);
+                return data;
+            }
+            await sleep(120);
+        }
+    }
+    
+    try {
+        const p = new URLSearchParams(window.location.search).get('tgUser');
+        if (p) {
+            const debugUser = JSON.parse(decodeURIComponent(p));
+            log('Debug user from URL:', debugUser);
+            return debugUser;
+        }
+    } catch(e) { 
+        log('tgUser parse fail', e); 
+    }
+    
+    return { 
+        id: null, 
+        first_name: 'Гость', 
+        last_name: '', 
+        username: '', 
+        photo_url: '', 
+        is_bot: false, 
+        language_code: 'ru' 
     };
 }
 
-// ------------ Основной интерфейс ------------
+/* ===========================
+   UI: MAIN INTERFACE
+   =========================== */
 function showMainInterface() {
     const app = document.getElementById('app');
     if (!app) return;
@@ -383,31 +673,28 @@ function showMainInterface() {
     const username = userData.username ? `@${userData.username}` : '';
     const fullName = `${firstName} ${lastName}`.trim();
     const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
-
+    
     app.innerHTML = `
         <!-- Header -->
         <div class="header fade-in">
             <div class="header-content">
-                <div class="logo" onclick="showCatalog()" style="cursor: pointer;">
+                <div class="logo">
                     <div class="logo-icon"><i class="fas fa-leaf"></i></div>
                     <div class="logo-text">
                         <h1>ТИ•ТИ</h1>
                         <div class="subtitle">Чайная лавка</div>
                     </div>
                 </div>
-                <div class="user-avatar" onclick="showProfile()" title="${escapeHtml(fullName)}${username ? ` (${escapeHtml(username)})` : ''}">
+                <div class="user-avatar" onclick="showProfile()" title="${fullName}${username ? ` (${username})` : ''}">
                     ${hasPhoto ? 
                         `<img src="${escapeHtml(userData.photo_url)}" alt="${escapeHtml(fullName)}" 
-                              onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'" 
-                              style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` 
-                        : 
-                        `<i class="fas fa-user"></i>`
+                              onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>'">` 
+                        : `<i class="fas fa-user"></i>`
                     }
                     <span class="cart-badge" style="display:none">0</span>
                     ${isTelegramUser ? 
                         `<div class="tg-badge" title="Telegram пользователь">TG</div>` 
-                        : ''
-                    }
+                        : ''}
                 </div>
             </div>
         </div>
@@ -416,19 +703,17 @@ function showMainInterface() {
         <div class="banner fade-in" style="animation-delay:0.1s">
             <h2>🍵 Добро пожаловать, ${escapeHtml(firstName)}!</h2>
             <p>${isTelegramUser ? 'Рады видеть вас снова!' : 'Аутентичный китайский чай с доставкой'}</p>
-            <a href="#" class="banner-button" onclick="showCatalog(); return false;">
-                Смотреть каталог
-            </a>
+            <a href="#" class="banner-button" onclick="showFullCatalog(); return false;">Смотреть каталог</a>
         </div>
 
         <!-- Navigation -->
         <div class="nav-grid fade-in" style="animation-delay:0.2s">
-            <div class="nav-item" onclick="showCatalog()">
+            <div class="nav-item" onclick="showFullCatalog()">
                 <div class="nav-icon icon-tea"><i class="fas fa-mug-hot"></i></div>
                 <h3>Каталог</h3>
                 <p>${teaCatalog.length}+ сортов чая</p>
             </div>
-            <div class="nav-item" onclick="showOrders()">
+            <div class="nav-item" onclick="showOrdersHistory()">
                 <div class="nav-icon icon-orders"><i class="fas fa-box"></i></div>
                 <h3>Заказы</h3>
                 <p>История покупок</p>
@@ -441,7 +726,7 @@ function showMainInterface() {
             <div class="nav-item" onclick="showProfile()">
                 <div class="nav-icon icon-profile"><i class="fas fa-user"></i></div>
                 <h3>Профиль</h3>
-                <p>${username || 'Ваш профиль'}</p>
+                <p>${escapeHtml(username || 'Ваш профиль')}</p>
             </div>
         </div>
 
@@ -451,90 +736,183 @@ function showMainInterface() {
             <div class="products-grid" id="popular-products"></div>
         </div>
 
-        <!-- Cart Footer -->
+        <!-- cart footer -->
         <div class="cart-footer fade-in" style="animation-delay:0.4s">
             <div class="cart-content">
                 <div class="cart-total" id="cart-total">Корзина пуста</div>
-                <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>
-                    Оформить заказ
-                </button>
+                <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>Оформить заказ</button>
             </div>
         </div>
-
-        <!-- Модальные окна -->
-        <div id="cart-modal" class="modal"></div>
-        <div id="product-modal" class="modal"></div>
-        <div id="order-modal" class="modal"></div>
-        <div id="profile-modal" class="modal"></div>
-        <div id="catalog-modal" class="modal"></div>
     `;
     
     loadPopularProducts();
     updateCartUI();
 }
 
-// ------------ Популярные товары ------------
+/* ===========================
+   POPULAR LIST
+   =========================== */
 function loadPopularProducts() {
-    // Определяем популярность
     const counts = {};
-    teaCatalog.forEach(t => counts[String(t.id)] = popularity[String(t.id)] || 0);
+    teaCatalog.forEach(t => {
+        counts[String(t.id)] = popularity[String(t.id)] || 0;
+    });
     
-    // Сортируем по популярности
-    const sorted = [...teaCatalog].sort((a,b) => {
+    const sorted = [...teaCatalog].sort((a, b) => {
         const pa = counts[String(a.id)] || 0;
         const pb = counts[String(b.id)] || 0;
         if (pa !== pb) return pb - pa;
         return a.id - b.id;
     });
     
-    // Берем 4 самых популярных
-    const popular = sorted.slice(0,4);
+    const popular = sorted.slice(0, 4);
     const container = document.getElementById('popular-products');
     if (!container) return;
     
     container.innerHTML = popular.map(t => `
-        <div class="product-card" onclick="showProduct(${t.id})">
+        <div class="product-card" onclick="showProductDetail(${t.id})">
             <div class="product-image ${getTeaTypeClass(t.type)}">
-                ${t.tag ? `<div class="product-tag">${t.tag}</div>` : ''}
+                ${t.tag ? `<div class="product-tag">${escapeHtml(t.tag)}</div>` : ''}
             </div>
             <div class="product-info">
-                <h3 class="product-name">${t.name}</h3>
-                <div class="product-subtitle">${t.subtitle}</div>
+                <h3 class="product-name">${escapeHtml(t.name)}</h3>
+                <div class="product-subtitle">${escapeHtml(t.subtitle)}</div>
                 <div class="product-price">${formatPrice(t.price)}</div>
-                <button class="product-button" onclick="event.stopPropagation(); addToCart(${t.id});">+ В корзину</button>
+                <button class="product-button" onclick="event.stopPropagation(); addToCart(${t.id});">
+                    + В корзину
+                </button>
             </div>
         </div>
     `).join('');
 }
 
-// ------------ Каталог ------------
-function showCatalog() {
-    const modal = document.getElementById('catalog-modal');
-    if (!modal) return;
+/* ===========================
+   MODALS
+   =========================== */
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+        modal.classList.remove('bottom-sheet');
+        modal.onclick = null;
+    });
+}
+
+function closeModalById(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('bottom-sheet');
+        modal.onclick = null;
+    }
+}
+
+function createModal(options = {}) {
+    const modalId = options.id || 'modal-' + Date.now();
+    let modal = document.getElementById(modalId);
     
-    let html = `
-        <div class="modal-content" style="max-height:85vh; overflow:auto;">
-            <div class="modal-header">
-                <h3><i class="fas fa-list"></i> Каталог</h3>
-                <button class="modal-close" onclick="closeModalById('catalog-modal')">×</button>
-            </div>
-            <div class="modal-body" style="padding:10px;">
+    if (modal) {
+        modal.remove();
+    }
+    
+    modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'modal';
+    modal.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.45);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
     `;
     
-    teaCatalog.forEach(t => {
+    if (options.bottomSheet) {
+        modal.style.alignItems = 'flex-end';
+    }
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = `
+        background: white;
+        border-radius: ${options.bottomSheet ? '16px 16px 0 0' : '14px'};
+        overflow: hidden;
+        width: ${options.bottomSheet ? '100%' : '92%'};
+        max-width: ${options.bottomSheet ? 'none' : '420px'};
+        max-height: ${options.bottomSheet ? '85vh' : '90vh'};
+        overflow-y: auto;
+        transform: ${options.bottomSheet ? 'translateY(100%)' : 'scale(0.95)'};
+        transition: transform 0.3s ease;
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    modal.onclick = (e) => {
+        if (e.target === modal && options.closeOnBackdrop !== false) {
+            closeModalById(modalId);
+        }
+    };
+    
+    return {
+        id: modalId,
+        element: modal,
+        content,
+        show: () => {
+            closeAllModals();
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                content.style.transform = options.bottomSheet ? 'translateY(0)' : 'scale(1)';
+            });
+        },
+        hide: () => closeModalById(modalId),
+        setContent: (html) => {
+            content.innerHTML = html;
+        }
+    };
+}
+
+/* ===========================
+   CATALOG (список всех товаров)
+   =========================== */
+function showFullCatalog() {
+    const modal = createModal({
+        id: 'catalog-modal',
+        bottomSheet: true
+    });
+    
+    let html = `
+        <div class="modal-header">
+            <h3><i class="fas fa-list"></i> Каталог</h3>
+            <button class="modal-close" onclick="closeAllModals()">×</button>
+        </div>
+        <div class="modal-body" style="padding: 10px;">
+    `;
+    
+    teaCatalog.forEach(product => {
         html += `
-            <div class="catalog-item" onclick="showProduct(${t.id})" 
-                 style="padding:12px;border-radius:10px;display:flex;gap:12px;align-items:center;margin-bottom:10px;background:#fff;cursor:pointer;">
-                <div style="width:64px;height:64px;border-radius:10px;display:flex;align-items:center;justify-content:center;" 
-                     class="tea-icon ${getTeaTypeClass(t.type)}"><i class="fas fa-leaf"></i></div>
-                <div style="flex:1;">
-                    <div style="font-weight:700;">${t.name}</div>
-                    <div style="color:#666;font-size:14px;">${t.subtitle}</div>
+            <div class="catalog-item" onclick="showProductDetail(${product.id})" 
+                 style="padding: 12px; border-radius: 10px; display: flex; gap: 12px; align-items: center; 
+                        margin-bottom: 10px; background: #fff; cursor: pointer; transition: background 0.2s;">
+                <div style="width: 64px; height: 64px; border-radius: 10px; display: flex; 
+                            align-items: center; justify-content: center;" 
+                     class="tea-icon ${getTeaTypeClass(product.type)}">
+                    <i class="fas fa-leaf"></i>
                 </div>
-                <div style="text-align:right;">
-                    <div style="color:#4CAF50;font-weight:700;margin-bottom:8px;">${formatPrice(t.price)}</div>
-                    <button onclick="event.stopPropagation(); addToCart(${t.id});" 
-                            style="padding:6px 10px;border-radius:10px;background:#4CAF50;color:white;border:none;cursor:pointer;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 700;">${escapeHtml(product.name)}</div>
+                    <div style="color: #666; font-size: 14px;">${escapeHtml(product.subtitle)}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #4CAF50; font-weight: 700; margin-bottom: 8px;">
+                        ${formatPrice(product.price)}
+                    </div>
+                    <button onclick="event.stopPropagation(); addToCart(${product.id});" 
+                            style="padding: 6px 10px; border-radius: 10px; background: #4CAF50; 
+                                   color: white; border: none; cursor: pointer;">
                         + Добавить
                     </button>
                 </div>
@@ -542,64 +920,80 @@ function showCatalog() {
         `;
     });
     
-    html += `</div></div>`;
-    modal.innerHTML = html;
-    showModal('catalog-modal', true);
+    html += `</div>`;
+    modal.setContent(html);
+    modal.show();
 }
 
-// ------------ Детали товара ------------
-function showProduct(productId) {
+/* ===========================
+   PRODUCT CARD (детали товара)
+   =========================== */
+function showProductDetail(productId) {
     const product = teaCatalog.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        createToast('Товар не найден', { type: 'error' });
+        return;
+    }
     
-    const modal = document.getElementById('product-modal');
-    if (!modal) return;
+    const modal = createModal({
+        id: 'product-detail-modal',
+        bottomSheet: true
+    });
     
     const html = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-leaf"></i> ${product.name}</h3>
-                <button class="modal-close" onclick="closeModalById('product-modal')">×</button>
+                <h3><i class="fas fa-leaf"></i> ${escapeHtml(product.name)}</h3>
+                <button class="modal-close" onclick="closeAllModals()">×</button>
             </div>
             <div class="modal-body">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <div style="font-weight:700;">${product.subtitle}</div>
-                    <div style="background:#4CAF50;color:#fff;padding:6px 10px;border-radius:12px;font-weight:700;">
-                        ${product.type}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-weight: 700;">${escapeHtml(product.subtitle)}</div>
+                    <div style="background: #4CAF50; color: #fff; padding: 6px 10px; border-radius: 12px; font-weight: 700;">
+                        ${escapeHtml(product.type)}
                     </div>
                 </div>
-                ${product.tag ? `<div style="background:#FF9800;color:white;padding:6px 8px;border-radius:8px;display:inline-block;margin-bottom:12px;">${product.tag}</div>` : ''}
+                ${product.tag ? `
+                    <div style="background: #FF9800; color: white; padding: 6px 8px; border-radius: 8px; 
+                                display: inline-block; margin-bottom: 12px;">
+                        ${escapeHtml(product.tag)}
+                    </div>
+                ` : ''}
                 
-                <div style="background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:12px;">
-                    <h4 style="margin:0 0 8px 0;color:#333;">Описание:</h4>
-                    <p style="margin:0;color:#666;line-height:1.5;">${product.description}</p>
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">Описание:</h4>
+                    <p style="margin: 0; color: #666; line-height: 1.5;">${escapeHtml(product.description)}</p>
                 </div>
                 
-                <div style="margin-bottom:12px;">
-                    <h4 style="margin:0 0 8px 0;color:#333;">🍶 Способ заваривания:</h4>
-                    <ul style="margin:0;color:#666;padding-left:20px;line-height:1.6;">
-                        ${product.brewing.map(b => `<li>${b}</li>`).join('')}
+                <div style="margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">🍶 Способ заваривания:</h4>
+                    <ul style="margin: 0; color: #666; padding-left: 20px; line-height: 1.6;">
+                        ${product.brewing.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
                     </ul>
                 </div>
                 
-                <div style="margin-bottom:12px;">
-                    <h4 style="margin:0 0 8px 0;color:#333;">🌿 Полезные свойства:</h4>
-                    <ul style="margin:0;color:#666;padding-left:20px;line-height:1.6;">
-                        ${product.benefits.map(b => `<li>${b}</li>`).join('')}
+                <div style="margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">🌿 Полезные свойства:</h4>
+                    <ul style="margin: 0; color: #666; padding-left: 20px; line-height: 1.6;">
+                        ${product.benefits.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
                     </ul>
                 </div>
                 
-                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #eee;">
-                    <div style="font-size:20px;font-weight:700;color:#4CAF50;">
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding-top: 10px; border-top: 1px solid #eee;">
+                    <div style="font-size: 20px; font-weight: 700; color: #4CAF50;">
                         ${formatPrice(product.price)}
                     </div>
-                    <div style="display:flex;gap:8px;">
+                    <div style="display: flex; gap: 8px;">
                         <button onclick="addToCart(${product.id})" 
-                                style="padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#4CAF50,#2E7D32);color:white;border:none;cursor:pointer;">
+                                style="padding: 10px 14px; border-radius: 10px; 
+                                       background: linear-gradient(135deg, #4CAF50, #2E7D32); 
+                                       color: white; border: none; cursor: pointer;">
                             Добавить в корзину
                         </button>
-                        <button onclick="showCatalog()" 
-                                style="padding:10px 14px;border-radius:10px;background:#eee;border:none;cursor:pointer;">
+                        <button onclick="showFullCatalog()" 
+                                style="padding: 10px 14px; border-radius: 10px; 
+                                       background: #eee; border: none; cursor: pointer;">
                             Каталог
                         </button>
                     </div>
@@ -608,52 +1002,65 @@ function showProduct(productId) {
         </div>
     `;
     
-    modal.innerHTML = html;
-    showModal('product-modal', true);
+    modal.setContent(html);
+    modal.show();
 }
 
-// ------------ Корзина ------------
+/* ===========================
+   CART: открыть/обновить/удаление/очистка
+   =========================== */
 function showCartModal() {
-    const modal = document.getElementById('cart-modal');
-    if (!modal) return;
+    const modal = createModal({
+        id: 'cart-modal',
+        bottomSheet: true
+    });
     
-    const total = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const isCartEmpty = cart.length === 0;
     
     let html = `
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
-                <button class="modal-close" onclick="closeModalById('cart-modal')">×</button>
+                <button class="modal-close" onclick="closeAllModals()">×</button>
             </div>
             <div class="modal-body">
     `;
     
-    if (cart.length === 0) {
+    if (isCartEmpty) {
         html += `
-            <div style="text-align:center;padding:40px 10px;color:#888;">
-                <i class="fas fa-box-open" style="font-size:42px;color:#ddd;"></i>
-                <div style="margin-top:12px;">Корзина пуста</div>
+            <div style="text-align: center; padding: 40px 10px; color: #888;">
+                <i class="fas fa-box-open" style="font-size: 42px; color: #ddd;"></i>
+                <div style="margin-top: 12px;">Корзина пуста</div>
             </div>
         `;
     } else {
         html += `
-            <div style="max-height:40vh;overflow:auto;margin-bottom:12px;">
+            <div style="max-height: 40vh; overflow: auto; margin-bottom: 12px;">
         `;
         
         cart.forEach(item => {
             html += `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#f8f9fa;margin-bottom:10px;">
-                    <div style="flex:1;">
-                        <div style="font-weight:700;">${item.name}</div>
-                        <div style="color:#666;font-size:13px;">${item.type} • ${formatPrice(item.price)}/шт</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding: 12px; border-radius: 10px; background: #f8f9fa; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700;">${escapeHtml(item.name)}</div>
+                        <div style="color: #666; font-size: 13px;">
+                            ${escapeHtml(item.type)} • ${formatPrice(item.price)}/шт
+                        </div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <button onclick="updateQuantity(${item.id}, -1)" 
-                                style="width:32px;height:32px;border-radius:50%;border:none;background:#eee;cursor:pointer;">-</button>
-                        <div style="min-width:28px;text-align:center;font-weight:700;">${item.quantity}</div>
+                                style="width: 32px; height: 32px; border-radius: 50%; border: none; 
+                                       background: #eee; cursor: pointer;">-</button>
+                        <div style="min-width: 28px; text-align: center; font-weight: 700;">
+                            ${item.quantity}
+                        </div>
                         <button onclick="updateQuantity(${item.id}, 1)" 
-                                style="width:32px;height:32px;border-radius:50%;border:none;background:#4CAF50;color:white;cursor:pointer;">+</button>
-                        <div style="min-width:70px;text-align:right;font-weight:700;color:#4CAF50;margin-left:8px;">
+                                style="width: 32px; height: 32px; border-radius: 50%; border: none; 
+                                       background: #4CAF50; color: white; cursor: pointer;">+</button>
+                        <div style="min-width: 70px; text-align: right; font-weight: 700; 
+                                    color: #4CAF50; margin-left: 8px;">
                             ${formatPrice(item.price * item.quantity)}
                         </div>
                     </div>
@@ -665,21 +1072,26 @@ function showCartModal() {
     }
     
     html += `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:2px solid #e9f5ee;">
-                    <div style="font-weight:700;font-size:18px;">
-                        Итого: <span style="color:#4CAF50;">${formatPrice(total)}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding-top: 12px; border-top: 2px solid #e9f5ee;">
+                    <div style="font-weight: 700; font-size: 18px;">
+                        Итого: <span style="color: #4CAF50;">${formatPrice(totalPrice)}</span>
                     </div>
-                    <div style="display:flex;gap:10px;">
-                        ${cart.length > 0 ? `
+                    <div style="display: flex; gap: 10px;">
+                        ${!isCartEmpty ? `
                             <button onclick="clearCart()" 
-                                    style="padding:10px 12px;border-radius:10px;background:#f44336;color:white;border:none;cursor:pointer;">
+                                    style="padding: 10px 12px; border-radius: 10px; 
+                                           background: #f44336; color: white; border: none; 
+                                           cursor: pointer;">
                                 Очистить
                             </button>
                         ` : ''}
                         <button onclick="checkout()" 
-                                style="padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;cursor:pointer;"
-                                ${cart.length===0 ? 'disabled' : ''}>
-                            ${cart.length===0 ? 'Добавьте товары' : 'Оформить'}
+                                style="padding: 10px 14px; border-radius: 10px; 
+                                       background: linear-gradient(135deg, #667eea, #764ba2); 
+                                       color: white; border: none; cursor: pointer;"
+                                ${isCartEmpty ? 'disabled' : ''}>
+                            ${isCartEmpty ? 'Добавьте товары' : 'Оформить'}
                         </button>
                     </div>
                 </div>
@@ -687,86 +1099,104 @@ function showCartModal() {
         </div>
     `;
     
-    modal.innerHTML = html;
-    showModal('cart-modal', true);
-}
-
-// ------------ Работа с корзиной ------------
-async function addToCart(productId) {
-    const p = teaCatalog.find(t => t.id === productId);
-    if (!p) return;
-    
-    const ex = cart.find(i => i.id === productId);
-    if (ex) {
-        ex.quantity += 1;
-    } else {
-        cart.push({ 
-            id: p.id, 
-            name: p.name, 
-            price: p.price, 
-            type: p.type, 
-            quantity: 1 
-        });
-    }
-    
-    await saveCart();
-    showToast(`✅ ${p.name} добавлен в корзину`);
+    modal.setContent(html);
+    modal.show();
 }
 
 async function updateQuantity(productId, delta) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
     
-    const newQty = item.quantity + delta;
+    const newQuantity = item.quantity + delta;
     
-    if (newQty <= 0) {
-        const ok = await showConfirm(`Удалить "${item.name}" из корзины?`);
-        if (!ok) return;
+    if (newQuantity <= 0) {
+        const confirmed = await showConfirm(`Удалить "${item.name}" из корзины?`);
+        if (!confirmed) return;
         
         cart = cart.filter(i => i.id !== productId);
     } else {
-        item.quantity = newQty;
+        item.quantity = newQuantity;
     }
     
     await saveCart();
-    showToast('Корзина обновлена');
+    hapticFeedback('light');
+    createToast('Корзина обновлена');
     showCartModal();
+}
+
+async function addToCart(productId) {
+    const product = teaCatalog.find(t => t.id === productId);
+    if (!product) {
+        createToast('Товар не найден', { type: 'error' });
+        return false;
+    }
+    
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        const newItem = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            type: product.type,
+            quantity: 1
+        };
+        
+        if (!validateCartItem(newItem)) {
+            createToast('Ошибка добавления товара', { type: 'error' });
+            return false;
+        }
+        
+        cart.push(newItem);
+    }
+    
+    await saveCart();
+    hapticFeedback('light');
+    createToast(`✅ ${product.name} добавлен в корзину`);
+    return true;
 }
 
 async function clearCart() {
     if (cart.length === 0) {
-        showToast('Корзина уже пуста');
-        return;
+        createToast('Корзина уже пуста');
+        return false;
     }
     
-    const ok = await showConfirm('Очистить всю корзину? Это действие необратимо.');
-    if (!ok) return;
+    const confirmed = await showConfirm(
+        'Очистить всю корзину? Это действие необратимо.',
+        'Очистка корзины'
+    );
+    
+    if (!confirmed) return false;
     
     cart = [];
     await saveCart();
-    showToast('Корзина очищена');
+    hapticFeedback('heavy');
+    createToast('Корзина очищена');
+    return true;
 }
 
 function updateCartUI() {
-    const totalItems = cart.reduce((s,i) => s + (i.quantity || 0), 0);
-    const totalPrice = cart.reduce((s,i) => s + ((i.price || 0) * (i.quantity || 0)), 0);
+    const totalItems = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+    const totalPrice = cart.reduce((total, item) => total + (item.price * (item.quantity || 0)), 0);
     
-    // Обновляем бейдж
     const badge = document.querySelector('.cart-badge');
     if (badge) {
         badge.textContent = totalItems;
         badge.style.display = totalItems > 0 ? 'flex' : 'none';
+        hapticFeedback('light');
     }
     
-    // Обновляем счетчик в навигации
     const cartCount = document.querySelector('.cart-count');
     if (cartCount) {
         cartCount.textContent = totalItems;
     }
     
-    // Обновляем футер
     const cartTotal = document.getElementById('cart-total');
     const checkoutBtn = document.getElementById('checkout-btn');
+    
     if (cartTotal && checkoutBtn) {
         if (totalItems > 0) {
             cartTotal.innerHTML = `Итого: <span>${formatPrice(totalPrice)}</span>`;
@@ -780,212 +1210,153 @@ function updateCartUI() {
     }
 }
 
-// ------------ Заказы ------------
-function showOrders() {
-    const orders = loadOrders();
-    const modal = document.getElementById('order-modal');
-    if (!modal) return;
-    
-    let html = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-box"></i> История заказов</h3>
-                <button class="modal-close" onclick="closeModalById('order-modal')">×</button>
-            </div>
-            <div class="modal-body">
-    `;
-    
-    if (orders.length === 0) {
-        html += `
-            <div style="text-align:center;padding:40px;color:#888;">
-                <i class="fas fa-box-open" style="font-size:42px;color:#ddd;"></i>
-                <div style="margin-top:12px;">Заказов пока нет</div>
-            </div>
-        `;
-    } else {
-        html += `<div style="max-height:60vh;overflow:auto;">`;
-        
-        orders.slice().reverse().forEach(order => {
-            const itemCount = order.cart.reduce((sum, item) => sum + item.quantity, 0);
-            
-            html += `
-                <div style="background:#f8f9fa;padding:12px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <div style="font-weight:700;">Заказ #${order.id}</div>
-                        <div style="color:#666;font-size:13px;">${formatDate(order.timestamp)}</div>
-                        <div style="color:#888;font-size:13px;margin-top:4px;">Товаров: ${itemCount}</div>
-                    </div>
-                    <div style="text-align:right;display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-weight:700;color:#4CAF50;">${formatPrice(order.total)}</div>
-                        <div style="display:flex;gap:8px;">
-                            <button onclick="showOrderDetails(${order.id})" 
-                                    style="padding:6px 8px;border-radius:8px;border:none;background:#fff;cursor:pointer;font-size:12px;">
-                                Открыть
-                            </button>
-                            <button onclick="reorder(${order.id})" 
-                                    style="padding:6px 8px;border-radius:8px;border:none;background:#4CAF50;color:white;cursor:pointer;font-size:12px;">
-                                Повторить
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        html += `</div>`;
-    }
-    
-    html += `</div></div>`;
-    modal.innerHTML = html;
-    showModal('order-modal', true);
-}
-
-function showOrderDetails(orderId) {
-    const orders = loadOrders();
-    const order = orders.find(o => o.id === orderId);
-    if (!order) {
-        showToast('Заказ не найден', { type: 'error' });
+/* ===========================
+   CHECKOUT: сохранить заказ, скопировать текст, открыть чат
+   =========================== */
+async function checkout() {
+    if (!cart || cart.length === 0) {
+        createToast('Добавьте товары в корзину');
         return;
     }
     
-    const modal = document.getElementById('order-modal');
-    if (!modal) return;
+    const confirmed = await showConfirm('Подтвердить оформление заказа?');
+    if (!confirmed) return;
     
-    const itemCount = order.cart.reduce((sum, item) => sum + item.quantity, 0);
+    showLoader('Оформляем заказ...');
     
-    let html = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-receipt"></i> Заказ #${order.id}</h3>
-                <button class="modal-close" onclick="showOrders()">← Назад</button>
-            </div>
-            <div class="modal-body">
-                <div style="margin-bottom:12px;">
-                    <strong>Покупатель:</strong> ${order.user_name}
-                </div>
-                <div style="margin-bottom:12px;">
-                    <strong>Дата заказа:</strong> ${formatDate(order.timestamp)}
-                </div>
-                <div style="margin-bottom:12px;">
-                    <strong>Сумма:</strong> ${formatPrice(order.total)}
-                </div>
-                <div style="margin-bottom:12px;">
-                    <strong>Товары (${itemCount}):</strong>
-                    <div style="margin-top:8px;">
-    `;
-    
-    order.cart.forEach(item => {
-        html += `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f8f9fa;border-radius:8px;margin-bottom:6px;">
-                <div>
-                    <div style="font-weight:500;">${item.name}</div>
-                    <div style="color:#666;font-size:12px;">${item.type}</div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:700;">${item.quantity} × ${formatPrice(item.price)}</div>
-                    <div style="color:#4CAF50;font-size:12px;">${formatPrice(item.price * item.quantity)}</div>
-                </div>
-            </div>
-        `;
+    try {
+        const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const order = {
+            id: Date.now(),
+            user_id: userId,
+            user_name: userData.first_name || 'Гость',
+            user_username: userData.username || '',
+            cart: cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                type: item.type,
+                quantity: item.quantity
+            })),
+            total: total,
+            timestamp: new Date().toISOString(),
+            status: 'pending'
+        };
+        
+        await saveOrder(order);
+        
+        const lines = [];
+        lines.push(`Новый заказ #${order.id}`);
+        lines.push(`Покупатель: ${order.user_name} ${order.user_username ? `(@${order.user_username})` : ''}`);
+        lines.push(`ID пользователя: ${userId}`);
+        lines.push(`Дата: ${formatDate(order.timestamp)}`);
+        lines.push(`Сумма: ${formatPrice(order.total)}`);
+        lines.push(`Товары:`);
+        order.cart.forEach(item => {
+            lines.push(` - ${item.name} × ${item.quantity} (${formatPrice(item.price)})`);
+        });
+        lines.push('');
+        lines.push('Пожалуйста, укажите адрес и контакты для доставки и отправьте сообщение.');
+        lines.push('Адрес: ');
+        
+        const orderText = lines.join('\n');
+        
+        let copied = false;
+        try {
+            await navigator.clipboard.writeText(orderText);
+            copied = true;
+        } catch (e) {
+            log('Clipboard failed:', e);
+        }
+        
+        const managerUrl = 'https://t.me/ivan_likhov';
+        try {
+            if (tg && tg.openLink) {
+                tg.openLink(managerUrl);
+            } else {
+                window.open(managerUrl, '_blank');
+            }
+        } catch (e) {
+            window.open(managerUrl, '_blank');
+        }
+        
+        if (copied) {
+            createToast('Текст заказа скопирован в буфер. Перейдите в чат @ivan_likhov и вставьте его.');
+        } else {
+            showOrderCopyModal(orderText);
+        }
+        
+        cart = [];
+        await saveCart();
+        closeAllModals();
+        
+    } catch (e) {
+        error('Checkout error:', e);
+        createToast('Ошибка при оформлении заказа', { type: 'error' });
+    } finally {
+        hideLoader();
+    }
+}
+
+function showOrderCopyModal(text) {
+    const modal = createModal({
+        id: 'order-copy-modal'
     });
     
-    html += `
-                    </div>
-                </div>
-                
-                <div style="display:flex;gap:8px;margin-top:16px;">
-                    <button onclick="copyOrderToChat(${order.id})" 
-                            style="flex:1;padding:10px;border-radius:8px;background:#4CAF50;color:white;border:none;cursor:pointer;">
-                        Открыть в чате
+    modal.setContent(`
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane"></i> Текст заказа</h3>
+                <button class="modal-close" onclick="closeAllModals()">×</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="order-copy-textarea" 
+                          style="width: 100%; height: 220px; border-radius: 8px; 
+                                 padding: 10px; font-family: monospace; font-size: 12px;"
+                          readonly>${escapeHtml(text)}</textarea>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <button onclick="copyOrderText()" 
+                            style="flex: 1; padding: 10px; border-radius: 8px; 
+                                   background: #4CAF50; color: white; border: none; cursor: pointer;">
+                        Копировать
                     </button>
-                    <button onclick="reorder(${order.id})" 
-                            style="flex:1;padding:10px;border-radius:8px;background:#2196F3;color:white;border:none;cursor:pointer;">
-                        Повторить заказ
+                    <button onclick="openChat()" 
+                            style="flex: 1; padding: 10px; border-radius: 8px; 
+                                   background: #2196F3; color: white; border: none; cursor: pointer;">
+                        Открыть чат
                     </button>
                 </div>
             </div>
         </div>
-    `;
+    `);
     
-    modal.innerHTML = html;
-    showModal('order-modal');
+    modal.show();
 }
 
-async function reorder(orderId) {
-    const orders = loadOrders();
-    const order = orders.find(o => o.id === orderId);
-    if (!order) {
-        showToast('Заказ не найден', { type: 'error' });
-        return;
-    }
+async function copyOrderText() {
+    const textarea = document.getElementById('order-copy-textarea');
+    if (!textarea) return;
     
-    const confirmed = await showConfirm('Добавить все товары из этого заказа в корзину?', 'Повторить заказ');
-    if (!confirmed) return;
-    
-    // Очищаем корзину
-    cart = [];
-    
-    // Добавляем товары из заказа
-    for (const item of order.cart) {
-        for (let i = 0; i < item.quantity; i++) {
-            const ex = cart.find(c => c.id === item.id);
-            if (ex) {
-                ex.quantity += 1;
-            } else {
-                cart.push({
-                    id: item.id,
-                    name: item.name,
-                    price: item.price,
-                    type: item.type,
-                    quantity: 1
-                });
-            }
-        }
-    }
-    
-    await saveCart();
-    showToast('Товары из заказа добавлены в корзину');
-    showCartModal();
-}
-
-async function copyOrderToChat(orderId) {
-    const orders = loadOrders();
-    const order = orders.find(o => o.id === orderId);
-    if (!order) {
-        showToast('Заказ не найден', { type: 'error' });
-        return;
-    }
-    
-    // Формируем текст заказа
-    const lines = [];
-    lines.push(`Новый заказ #${order.id}`);
-    lines.push(`Покупатель: ${order.user_name}`);
-    lines.push(`Сумма: ${order.total}₽`);
-    lines.push(`Товары:`);
-    order.cart.forEach(it => lines.push(` - ${it.name} × ${it.quantity} (${it.price}₽)`));
-    lines.push('');
-    lines.push('Пожалуйста, укажите адрес и контакты для доставки и отправьте сообщение.');
-    lines.push('Адрес: ');
-    
-    const orderText = lines.join('\n');
-    
-    // Копируем в буфер
     try {
-        await navigator.clipboard.writeText(orderText);
-        showToast('Текст заказа скопирован в буфер');
-    } catch(e) {
-        // Fallback
-        const textarea = document.createElement('textarea');
-        textarea.value = orderText;
-        document.body.appendChild(textarea);
         textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast('Текст заказа скопирован');
+        const successful = document.execCommand('copy');
+        
+        if (successful) {
+            createToast('Текст скопирован в буфер');
+            hapticFeedback('light');
+        } else {
+            throw new Error('Copy command failed');
+        }
+    } catch (e) {
+        error('Failed to copy from textarea:', e);
+        createToast('Не удалось скопировать', { type: 'error' });
     }
-    
-    // Открываем чат менеджера
+}
+
+function openChat() {
     const managerUrl = 'https://t.me/ivan_likhov';
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    
     try {
         if (tg && tg.openLink) {
             tg.openLink(managerUrl);
@@ -993,94 +1364,394 @@ async function copyOrderToChat(orderId) {
             window.open(managerUrl, '_blank');
         }
         
-        showToast('Перейдите в чат @ivan_likhov и вставьте текст заказа');
-    } catch(e) {
+        createToast('Перейдите в чат @ivan_likhov и вставьте текст заказа');
+    } catch (e) {
+        error('Failed to open chat:', e);
         window.open(managerUrl, '_blank');
     }
 }
 
-// ------------ Профиль ------------
-function showProfile() {
-    const modal = document.getElementById('profile-modal');
-    if (!modal) return;
+/* ===========================
+   ORDERS: просмотр истории
+   =========================== */
+async function showOrdersHistory() {
+    showLoader('Загружаем заказы...');
     
+    try {
+        const orders = await loadOrders();
+        const sortedOrders = orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        const modal = createModal({
+            id: 'orders-history-modal',
+            bottomSheet: true
+        });
+        
+        let html = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-box"></i> История заказов</h3>
+                    <button class="modal-close" onclick="closeAllModals()">×</button>
+                </div>
+                <div class="modal-body">
+        `;
+        
+        if (sortedOrders.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <i class="fas fa-box-open" style="font-size: 42px; color: #ddd;"></i>
+                    <div style="margin-top: 12px;">Заказов пока нет</div>
+                </div>
+            `;
+        } else {
+            html += `
+                <div style="max-height: 60vh; overflow: auto;">
+            `;
+            
+            sortedOrders.forEach(order => {
+                const itemCount = order.cart.reduce((sum, item) => sum + item.quantity, 0);
+                
+                html += `
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; 
+                                margin-bottom: 10px; display: flex; justify-content: space-between; 
+                                align-items: center;">
+                        <div>
+                            <div style="font-weight: 700;">Заказ #${order.id}</div>
+                            <div style="color: #666; font-size: 13px;">
+                                ${formatDate(order.timestamp)}
+                            </div>
+                            <div style="color: #888; font-size: 13px; margin-top: 4px;">
+                                Товаров: ${itemCount}
+                            </div>
+                        </div>
+                        <div style="text-align: right; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="font-weight: 700; color: #4CAF50;">
+                                ${formatPrice(order.total)}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="showOrderDetails(${order.id})" 
+                                        style="padding: 6px 8px; border-radius: 8px; border: none; 
+                                               background: #fff; cursor: pointer; font-size: 12px;">
+                                    Открыть
+                                </button>
+                                <button onclick="reorder(${order.id})" 
+                                        style="padding: 6px 8px; border-radius: 8px; border: none; 
+                                               background: #4CAF50; color: white; cursor: pointer; 
+                                               font-size: 12px;">
+                                    Повторить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        modal.setContent(html);
+        modal.show();
+        
+    } catch (e) {
+        error('Failed to load orders:', e);
+        createToast('Ошибка загрузки заказов', { type: 'error' });
+    } finally {
+        hideLoader();
+    }
+}
+
+async function showOrderDetails(orderId) {
+    showLoader('Загружаем детали заказа...');
+    
+    try {
+        const orders = await loadOrders();
+        const order = orders.find(o => o.id === orderId);
+        
+        if (!order) {
+            createToast('Заказ не найден', { type: 'error' });
+            return;
+        }
+        
+        const itemCount = order.cart.reduce((sum, item) => sum + item.quantity, 0);
+        const modal = createModal({
+            id: 'order-details-modal'
+        });
+        
+        let html = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-receipt"></i> Заказ #${order.id}</h3>
+                    <button class="modal-close" onclick="showOrdersHistory()">← Назад</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 12px;">
+                        <strong>Покупатель:</strong> ${escapeHtml(order.user_name)} 
+                        ${order.user_username ? `(@${escapeHtml(order.user_username)})` : ''}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>Дата заказа:</strong> ${formatDate(order.timestamp)}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>Статус:</strong> 
+                        <span style="color: #4CAF50; font-weight: 700;">
+                            ${order.status === 'completed' ? '✅ Выполнен' : '⏳ Ожидает обработки'}
+                        </span>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>Сумма:</strong> ${formatPrice(order.total)}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>Товары (${itemCount}):</strong>
+                        <div style="margin-top: 8px;">
+        `;
+        
+        order.cart.forEach(item => {
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            padding: 8px; background: #f8f9fa; border-radius: 8px; margin-bottom: 6px;">
+                    <div>
+                        <div style="font-weight: 500;">${escapeHtml(item.name)}</div>
+                        <div style="color: #666; font-size: 12px;">${escapeHtml(item.type)}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700;">${item.quantity} × ${formatPrice(item.price)}</div>
+                        <div style="color: #4CAF50; font-size: 12px;">
+                            ${formatPrice(item.price * item.quantity)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button onclick="copyOrderToChat(${order.id})" 
+                                style="flex: 1; padding: 10px; border-radius: 8px; 
+                                       background: #4CAF50; color: white; border: none; cursor: pointer;">
+                            Открыть в чате
+                        </button>
+                        <button onclick="reorder(${order.id})" 
+                                style="flex: 1; padding: 10px; border-radius: 8px; 
+                                       background: #2196F3; color: white; border: none; cursor: pointer;">
+                            Повторить заказ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.setContent(html);
+        modal.show();
+        
+    } catch (e) {
+        error('Failed to load order details:', e);
+        createToast('Ошибка загрузки деталей заказа', { type: 'error' });
+    } finally {
+        hideLoader();
+    }
+}
+
+async function copyOrderToChat(orderId) {
+    const orders = await loadOrders();
+    const order = orders.find(o => o.id === orderId);
+    
+    if (!order) {
+        createToast('Заказ не найден', { type: 'error' });
+        return;
+    }
+    
+    const lines = [];
+    lines.push(`Заказ #${order.id} (повтор)`);
+    lines.push(`Покупатель: ${order.user_name} ${order.user_username ? `(@${order.user_username})` : ''}`);
+    lines.push(`ID пользователя: ${userId}`);
+    lines.push(`Дата: ${formatDate(order.timestamp)}`);
+    lines.push(`Сумма: ${formatPrice(order.total)}`);
+    lines.push(`Товары:`);
+    order.cart.forEach(item => {
+        lines.push(` - ${item.name} × ${item.quantity} (${formatPrice(item.price)})`);
+    });
+    lines.push('');
+    lines.push('Пожалуйста, укажите адрес и контакты для доставки и отправьте сообщение.');
+    lines.push('Адрес: ');
+    
+    const orderText = lines.join('\n');
+    
+    let copied = false;
+    try {
+        await navigator.clipboard.writeText(orderText);
+        copied = true;
+    } catch (e) {
+        log('Clipboard failed:', e);
+    }
+    
+    if (copied) {
+        createToast('Текст заказа скопирован');
+    } else {
+        showOrderCopyModal(orderText);
+        return;
+    }
+    
+    openChat();
+}
+
+async function reorder(orderId) {
+    const orders = await loadOrders();
+    const order = orders.find(o => o.id === orderId);
+    
+    if (!order) {
+        createToast('Заказ не найден', { type: 'error' });
+        return false;
+    }
+    
+    const confirmed = await showConfirm(
+        'Добавить все товары из этого заказа в корзину?',
+        'Повторить заказ'
+    );
+    
+    if (!confirmed) return false;
+    
+    showLoader('Добавляем товары...');
+    
+    try {
+        cart = [];
+        
+        for (const item of order.cart) {
+            const product = teaCatalog.find(p => p.id === item.id);
+            if (product) {
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    type: item.type,
+                    quantity: item.quantity
+                });
+            }
+        }
+        
+        await saveCart();
+        createToast('Товары из заказа добавлены в корзину');
+        showCartModal();
+        return true;
+        
+    } catch (e) {
+        error('Failed to reorder:', e);
+        createToast('Ошибка при добавлении товаров', { type: 'error' });
+        return false;
+    } finally {
+        hideLoader();
+    }
+}
+
+/* ===========================
+   PROFILE
+   =========================== */
+function showProfile() {
     const firstName = userData.first_name || 'Гость';
     const lastName = userData.last_name || '';
     const username = userData.username ? `@${userData.username}` : '';
     const fullName = `${firstName} ${lastName}`.trim();
     const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
     
+    const modal = createModal({
+        id: 'profile-modal'
+    });
+    
     const html = `
         <div class="modal-content">
             <div class="modal-header">
                 <h3><i class="fas fa-user"></i> Мой профиль</h3>
-                <button class="modal-close" onclick="closeModalById('profile-modal')">×</button>
+                <button class="modal-close" onclick="closeAllModals()">×</button>
             </div>
             <div class="modal-body">
-                <div style="text-align:center;margin-bottom:20px;">
-                    <div style="width:100px;height:100px;margin:0 auto 12px;border-radius:50%;overflow:hidden;border:3px solid #4CAF50;display:flex;align-items:center;justify-content:center;background:${hasPhoto ? 'transparent' : 'linear-gradient(135deg,#667eea,#764ba2)'};">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 12px; 
+                                border-radius: 50%; overflow: hidden; border: 3px solid #4CAF50; 
+                                display: flex; align-items: center; justify-content: center; 
+                                background: ${hasPhoto ? 'transparent' : 'linear-gradient(135deg, #667eea, #764ba2)'};">
                         ${hasPhoto ? 
                             `<img src="${escapeHtml(userData.photo_url)}" alt="${escapeHtml(fullName)}" 
-                                  style="width:100%;height:100%;object-fit:cover;"
-                                  onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\\'font-size:36px;color:white;\\'>${escapeHtml(firstName.charAt(0))}</div>'">` 
+                                  style="width: 100%; height: 100%; object-fit: cover;"
+                                  onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'font-size: 36px; color: white;\\'>${escapeHtml(firstName.charAt(0))}</div>'">` 
                             : 
-                            `<div style="font-size:36px;color:white;">${escapeHtml(firstName.charAt(0) || 'G')}</div>`
+                            `<div style="font-size: 36px; color: white;">${escapeHtml(firstName.charAt(0) || 'G')}</div>`
                         }
                     </div>
-                    <h3 style="margin:0 0 6px 0;">${escapeHtml(fullName)}</h3>
-                    ${username ? `<p style="color:#666;margin:6px 0;">${escapeHtml(username)}</p>` : ''}
+                    <h3 style="margin: 0 0 6px 0;">${escapeHtml(fullName)}</h3>
+                    ${username ? `<p style="color: #666; margin: 6px 0;">${escapeHtml(username)}</p>` : ''}
                     ${isTelegramUser ? 
-                        `<span style="background:#0088cc;color:white;padding:4px 8px;border-radius:12px;font-size:12px;margin-top:4px;">
+                        `<span style="background: #0088cc; color: white; padding: 4px 8px; 
+                                      border-radius: 12px; font-size: 12px; margin-top: 4px;">
                             Telegram пользователь
                         </span>` 
+                        : 
+                        `<span style="background: #666; color: white; padding: 4px 8px; 
+                                  border-radius: 12px; font-size: 12px; margin-top: 4px;">
+                            Гость
+                        </span>`
+                    }
+                    ${userData.id ? 
+                        `<p style="color: #999; font-size: 13px; margin-top: 6px;">
+                            ID: ${escapeHtml(String(userData.id))}
+                        </p>` 
                         : ''
                     }
                 </div>
 
-                <div style="background:#f8f9fa;padding:14px;border-radius:12px;margin-bottom:12px;">
-                    <h4 style="margin:0 0 8px 0;color:#333;">
+                <div style="background: #f8f9fa; padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">
                         <i class="fas fa-headset"></i> Контакты поддержки
                     </h4>
-                    <div style="margin-top:6px;">
-                        <div style="background:white;padding:10px;border-radius:8px;margin-bottom:8px;">
-                            <div style="font-weight:700;margin-bottom:4px;">Telegram менеджер:</div>
+                    <div style="margin-top: 6px;">
+                        <div style="background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                            <div style="font-weight: 700; margin-bottom: 4px;">Telegram менеджер:</div>
                             <a href="https://t.me/ivan_likhov" target="_blank" 
-                               style="color:#4CAF50;text-decoration:none;display:block;">
+                               style="color: #4CAF50; text-decoration: none; display: block;">
                                 @ivan_likhov
                             </a>
                         </div>
-                        <div style="background:white;padding:10px;border-radius:8px;">
-                            <div style="font-weight:700;margin-bottom:4px;">Телефон:</div>
+                        <div style="background: white; padding: 10px; border-radius: 8px;">
+                            <div style="font-weight: 700; margin-bottom: 4px;">Телефон:</div>
                             <a href="tel:+79038394670" 
-                               style="color:#4CAF50;text-decoration:none;display:block;">
+                               style="color: #4CAF50; text-decoration: none; display: block;">
                                 +7 (903) 839-46-70
                             </a>
                         </div>
                     </div>
                 </div>
 
-                <div style="background:#f8f9fa;padding:14px;border-radius:12px;margin-bottom:12px;">
-                    <h4 style="margin:0 0 8px 0;color:#333;">
+                <div style="background: #f8f9fa; padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">
                         <i class="fas fa-clock"></i> Часы работы
                     </h4>
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-weight:700;">Пн–Вс:</div>
-                            <div style="color:#666;font-size:13px;">09:00 - 21:00</div>
+                            <div style="font-weight: 700;">Пн–Вс:</div>
+                            <div style="color: #666; font-size: 13px;">09:00 - 21:00</div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="color:#4CAF50;font-weight:700;">Принимаем заказы 24/7</div>
+                        <div style="text-align: right;">
+                            <div style="color: #4CAF50; font-weight: 700;">Принимаем заказы 24/7</div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display:flex;gap:10px;margin-top:16px;">
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
                     <button onclick="openChannel()" 
-                            style="flex:1;padding:12px;border-radius:10px;background:linear-gradient(135deg,#4CAF50,#2E7D32);color:white;border:none;cursor:pointer;">
+                            style="flex: 1; padding: 12px; border-radius: 10px; 
+                                   background: linear-gradient(135deg, #4CAF50, #2E7D32); 
+                                   color: white; border: none; cursor: pointer;">
                         <i class="fab fa-telegram"></i> Наш канал
                     </button>
                     <button onclick="clearUserData()" 
-                            style="flex:1;padding:12px;border-radius:10px;background:#f8f9fa;color:#666;border:1px solid #ddd;cursor:pointer;">
+                            style="flex: 1; padding: 12px; border-radius: 10px; 
+                                   background: #f8f9fa; color: #666; border: 1px solid #ddd; 
+                                   cursor: pointer;">
                         <i class="fas fa-trash"></i> Очистить данные
                     </button>
                 </div>
@@ -1088,24 +1759,27 @@ function showProfile() {
         </div>
     `;
     
-    modal.innerHTML = html;
-    showModal('profile-modal');
+    modal.setContent(html);
+    modal.show();
 }
 
 function openChannel() {
     const url = 'https://t.me/teatea_bar';
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    
     try {
         if (tg && tg.openLink) {
             tg.openLink(url);
         } else {
             window.open(url, '_blank');
         }
-    } catch(e) {
+    } catch (e) {
+        error('Failed to open channel:', e);
         window.open(url, '_blank');
     }
 }
 
-async function clearUserData() {
+async function clearUserDataWrapper() {
     const confirmed = await showConfirm(
         'Очистить все данные (корзину, заказы, историю)? Это действие нельзя отменить.',
         'Очистка данных'
@@ -1114,222 +1788,138 @@ async function clearUserData() {
     if (!confirmed) return;
     
     try {
-        localStorage.removeItem('tutu_cart');
-        localStorage.removeItem('tutu_orders');
-        localStorage.removeItem('tutu_popularity');
+        showLoader('Очищаем данные...');
         
+        await clearUserData();
         cart = [];
         updateCartUI();
         
-        showToast('Данные очищены');
-        closeModalById('profile-modal');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
         
-    } catch(e) {
-        showToast('Ошибка при очистке данных', { type: 'error' });
+    } catch (e) {
+        error('Failed to clear data:', e);
+        createToast('Ошибка при очистке данных', { type: 'error' });
+    } finally {
+        hideLoader();
     }
 }
 
-// ------------ Оформление заказа ------------
-async function checkout() {
-    if (cart.length === 0) {
-        showToast('Добавьте товары в корзину', { type: 'error' });
-        return;
-    }
-    
-    const confirmed = await showConfirm('Подтвердить оформление заказа?', 'Оформление заказа');
-    if (!confirmed) return;
-    
-    const total = cart.reduce((s,i) => s + i.price * i.quantity, 0);
-    const order = {
-        id: Date.now(),
-        user_id: userId,
-        user_name: userData.first_name || 'Гость',
-        user_username: userData.username || '',
-        cart: [...cart],
-        total: total,
-        timestamp: new Date().toISOString(),
-        status: 'pending'
-    };
-    
-    // Сохраняем заказ
-    if (saveOrder(order)) {
-        // Формируем текст заказа для копирования
-        const lines = [];
-        lines.push(`Новый заказ #${order.id}`);
-        lines.push(`Покупатель: ${order.user_name} ${order.user_username ? `(${order.user_username})` : ''}`);
-        lines.push(`ID пользователя: ${userId}`);
-        lines.push(`Сумма: ${total}₽`);
-        lines.push(`Товары:`);
-        order.cart.forEach(it => lines.push(` - ${it.name} × ${it.quantity} (${it.price}₽)`));
-        lines.push('');
-        lines.push('Пожалуйста, укажите адрес и контакты для доставки и отправьте сообщение.');
-        lines.push('Адрес: ');
-        
-        const orderText = lines.join('\n');
-        
-        // Копируем в буфер
+/* ===========================
+   SYNC: check Cloud vs Local
+   =========================== */
+async function checkAndSyncData() {
+    if (!userId) userId = generateUserId();
+    if (userData && userData.id && tg && tg.CloudStorage) {
         try {
-            await navigator.clipboard.writeText(orderText);
-        } catch(e) {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = orderText;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-        }
-        
-        // Открываем чат менеджера
-        const managerUrl = 'https://t.me/ivan_likhov';
-        try {
-            if (tg && tg.openLink) {
-                tg.openLink(managerUrl);
-            } else {
-                window.open(managerUrl, '_blank');
+            const cloudCart = await new Promise(res => 
+                tg.CloudStorage.getItem('cart', (err, val) => 
+                    res(!err && val ? val : null)
+                )
+            );
+            if (cloudCart) {
+                const parsed = JSON.parse(cloudCart);
+                const local = localStorage.getItem(APP_KEYS.CART_KEY(userId));
+                if (!local || (Array.isArray(parsed) && parsed.length > JSON.parse(local).length)) {
+                    cart = parsed;
+                    await saveCart();
+                    updateCartUI();
+                    createToast('Корзина синхронизирована из облака');
+                }
             }
-            
-            showToast('Текст заказа скопирован. Перейдите в чат @ivan_likhov и вставьте его.');
         } catch(e) {
-            window.open(managerUrl, '_blank');
+            log('Sync error:', e);
         }
-        
-        // Очищаем корзину
-        cart = [];
-        await saveCart();
-        closeAllModals();
-        
-    } else {
-        showToast('Ошибка сохранения заказа', { type: 'error' });
     }
 }
 
-// ------------ Инициализация приложения ------------
+/* ===========================
+   ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+   =========================== */
+function initTelegram() {
+    if (!tg && window.Telegram && window.Telegram.WebApp) {
+        tg = window.Telegram.WebApp;
+    }
+    
+    if (tg) {
+        try {
+            if (tg.ready) tg.ready();
+            if (tg.expand) tg.expand();
+            if (tg.setHeaderColor) tg.setHeaderColor('#4CAF50');
+            if (tg.setBackgroundColor) tg.setBackgroundColor('#f0f4f7');
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+        } catch (e) {
+            log('Telegram init warnings:', e);
+        }
+    }
+    return tg;
+}
+
 async function initApp() {
     try {
-        console.log('[App] Инициализация приложения...');
+        log('initApp start');
         
-        // Настройка Telegram WebApp
-        if (tg) {
-            try {
-                if (tg.ready) tg.ready();
-                if (tg.expand) tg.expand();
-                if (tg.setHeaderColor) tg.setHeaderColor('#4CAF50');
-                if (tg.setBackgroundColor) tg.setBackgroundColor('#f5f7fa');
-                if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
-                console.log('[App] Telegram WebApp настроен');
-            } catch (e) {
-                console.warn('[App] Ошибка настройки Telegram:', e);
-            }
-        }
-        
-        // Загрузка данных пользователя
+        initTelegram();
         userData = await getUserData();
         userId = generateUserId();
         
-        // Загрузка данных
-        loadPopularity();
-        loadCart();
+        await loadPopularity();
+        await loadCart();
+        await loadOrders();
         
-        // Показ интерфейса
         showMainInterface();
         
-        // Скрываем загрузчик
-        setTimeout(() => {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 300);
-            }
-            
-            // Показываем приложение
-            const app = document.getElementById('app');
-            if (app) {
-                app.style.display = 'block';
-            }
-            
-            // Приветствие
-            showToast(`Добро пожаловать, ${userData.first_name}!`);
-            
-        }, 500);
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 420);
+        }
         
-    } catch (error) {
-        console.error('[App] Критическая ошибка инициализации:', error);
-        
-        // Показываем сообщение об ошибке
         const app = document.getElementById('app');
         if (app) {
-            app.innerHTML = `
-                <div style="padding: 40px 20px; text-align: center;">
-                    <h2 style="color: #f44336;">Ошибка загрузки</h2>
-                    <p style="color: #666; margin: 16px 0;">${error.message}</p>
-                    <button onclick="window.location.reload()" 
-                            style="padding: 10px 20px; background: #4CAF50; color: white; 
-                                   border: none; border-radius: 8px; cursor: pointer;">
-                        Обновить страницу
-                    </button>
-                </div>
-            `;
             app.style.display = 'block';
         }
         
-        // Скрываем загрузчик
-        const loader = document.getElementById('loader');
-        if (loader) {
-            loader.style.display = 'none';
-        }
+        setTimeout(checkAndSyncData, 1600);
+        log('initApp done');
+        
+    } catch(e) {
+        console.error('initApp error', e);
+        const ls = document.getElementById('loader-text');
+        if (ls) ls.textContent = 'Ошибка при инициализации';
+        const app = document.getElementById('app');
+        if (app) app.style.display = 'block';
     }
 }
 
-// ------------ Экспорт функций в window ------------
-window.showCatalog = showCatalog;
-window.showProduct = showProduct;
-window.showOrders = showOrders;
-window.showOrderDetails = showOrderDetails;
-window.showProfile = showProfile;
+/* ===========================
+   Вспомогательные экспорты
+   =========================== */
+window.showFullCatalog = showFullCatalog;
+window.showProductDetail = showProductDetail;
 window.showCartModal = showCartModal;
+window.showOrdersHistory = showOrdersHistory;
+window.showProfile = showProfile;
 window.addToCart = addToCart;
+window.checkout = checkout;
 window.updateQuantity = updateQuantity;
 window.clearCart = clearCart;
+window.copyOrderText = copyOrderText;
 window.reorder = reorder;
+window.showOrderDetails = showOrderDetails;
 window.copyOrderToChat = copyOrderToChat;
+window.openChat = openChat;
 window.openChannel = openChannel;
-window.clearUserData = clearUserData;
-window.checkout = checkout;
-window.closeModalById = closeModalById;
+window.clearUserData = clearUserDataWrapper;
+window.closeAllModals = closeAllModals;
 
-// ------------ Запуск приложения ------------
-document.addEventListener('DOMContentLoaded', () => {
-    // Запускаем приложение с небольшой задержкой
-    setTimeout(initApp, 100);
-});
-
-// Сохранение данных при закрытии
+/* ===========================
+   ЗАПУСК ПРИЛОЖЕНИЯ
+   =========================== */
+document.addEventListener('DOMContentLoaded', initApp);
 window.addEventListener('beforeunload', () => {
     try {
         saveCart();
-    } catch (e) {
-        console.warn('Ошибка сохранения при закрытии:', e);
-    }
+    } catch(e) {}
 });
-
-// Аварийное восстановление
-setTimeout(() => {
-    const app = document.getElementById('app');
-    const loader = document.getElementById('loader');
-    
-    if (app && app.style.display === 'none') {
-        console.warn('[App] Аварийное восстановление: показываем приложение');
-        app.style.display = 'block';
-    }
-    
-    if (loader && loader.style.display !== 'none') {
-        console.warn('[App] Аварийное восстановление: скрываем загрузчик');
-        loader.style.opacity = '0';
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 300);
-    }
-}, 5000);
