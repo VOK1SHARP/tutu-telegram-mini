@@ -80,8 +80,11 @@ if (app) {
             }
         }, 800);
         
-    } } catch (error) {
-    console.error('[App] Критическая ошибка инициализации:', error);
+    } } try {
+    // какой-то код
+} catch (error) {
+    console.error('Ошибка:', error);
+}
     
     // Показ сообщения об ошибке
     const app = document.getElementById('app');
