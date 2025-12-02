@@ -1702,14 +1702,4 @@ select:focus {
         transform: translate(var(--tx, 0), var(--ty, -100px)) scale(0.5);
     }
 }
-.header-with-pattern {
-    background-image: url('tu-tu-pattern.png');
-    /* Резервные варианты */
-    background-image: url('tu_tu_pattern.png'), 
-                     url('tea_tea_pattern.png'),
-                     url('tutu_pattern.png'),
-                     url('pattern.png');
-    
-    /* Если ни один файл не загрузится */
-    background-color: #4CAF50;
-}
+
