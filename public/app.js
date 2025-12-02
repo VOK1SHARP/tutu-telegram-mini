@@ -1598,6 +1598,8 @@ async function checkAndSyncData(){
 // =========================
 // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
 // =========================
+// В функции initApp() замените блок try-catch для Telegram инициализации:
+
 async function initApp(){
     try {
         log('initApp start');
@@ -1607,11 +1609,14 @@ async function initApp(){
             if (tg) { 
                 if (tg.ready) tg.ready(); 
                 if (tg.expand) tg.expand(); 
-                if (tg.setHeaderColor) tg.setHeaderColor('#4CAF50'); 
-                if (tg.setBackgroundColor) tg.setBackgroundColor('#f0f4f7'); 
-                if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+                // Убрали вызовы, которые вызывают предупреждения в версии 6.0
+                // if (tg.setHeaderColor) tg.setHeaderColor('#4CAF50'); 
+                // if (tg.setBackgroundColor) tg.setBackgroundColor('#f0f4f7'); 
+                // if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
             } 
-        } catch(e){ log('tg init warnings', e); }
+        } catch(e){ 
+            log('tg init warnings:', e); 
+        }
         
         userData = await getUserData();
         userId = generateUserId();
@@ -1635,7 +1640,18 @@ async function initApp(){
         const ls = document.getElementById('loader-text');
         if (ls) ls.textContent = 'Ошибка при инициализации — откройте консоль (F12).';
         const app = document.getElementById('app'); 
-        if (app) app.style.display = 'block';
+        if (app) {
+            app.style.display = 'block';
+            app.innerHTML = `
+                <div style="padding:20px;text-align:center;">
+                    <h3>Ошибка загрузки</h3>
+                    <p>Пожалуйста, обновите страницу или проверьте консоль (F12)</p>
+                    <button onclick="location.reload()" style="padding:10px 20px;background:#4CAF50;color:white;border:none;border-radius:8px;margin-top:10px;">
+                        Обновить
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
