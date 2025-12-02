@@ -126,7 +126,7 @@ async function initApp() {
     }
     
     // Загружаем тему
-    setupDarkTheme();
+    setupTheme();
     
     // Инициализация Telegram
     if (typeof window.Telegram !== 'undefined' && tg && tg.initDataUnsafe) {
@@ -180,8 +180,8 @@ function fixIOSViewport() {
     appHeight();
 }
 
-// Настройка темной темы
-function setupDarkTheme() {
+// Настройка темы
+function setupTheme() {
     const savedTheme = localStorage.getItem('tea_theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
@@ -190,11 +190,10 @@ function setupDarkTheme() {
     } else if (savedTheme === 'light') {
         document.body.classList.remove('dark-theme');
     } else {
-        // Авто режим
+        // Авто режим - используем системную тему
         if (prefersDark) {
             document.body.classList.add('dark-theme');
         }
-        document.body.classList.add('auto-dark-theme');
     }
     
     // Следим за изменениями темы системы (только в авто режиме)
@@ -217,10 +216,8 @@ function toggleTheme(theme) {
     
     if (theme === 'dark') {
         document.body.classList.add('dark-theme');
-        document.body.classList.remove('auto-dark-theme');
     } else if (theme === 'light') {
         document.body.classList.remove('dark-theme');
-        document.body.classList.remove('auto-dark-theme');
     } else {
         // Авто режим
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -229,7 +226,6 @@ function toggleTheme(theme) {
         } else {
             document.body.classList.remove('dark-theme');
         }
-        document.body.classList.add('auto-dark-theme');
     }
     
     // Обновляем тему в Telegram WebApp
