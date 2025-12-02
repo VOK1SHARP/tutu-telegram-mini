@@ -2,7 +2,7 @@
    УТИЛИТЫ
    =========================== */
 
-const Utils = (function() {
+window.Utils = (function() {
     // Глобальные переменные
     let tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
     let userData = null;
@@ -29,12 +29,14 @@ const Utils = (function() {
     }
     
     function escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
     
     function formatPrice(price) {
+        if (!price && price !== 0) return '0₽';
         return new Intl.NumberFormat('ru-RU', { 
             style: 'currency', 
             currency: 'RUB',
@@ -44,14 +46,18 @@ const Utils = (function() {
     }
     
     function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return dateString || '';
+        }
     }
     
     function getTeaTypeClass(type) {
@@ -157,7 +163,7 @@ const Utils = (function() {
                 if (tg.ready) tg.ready();
                 if (tg.expand) tg.expand();
                 if (tg.setHeaderColor) tg.setHeaderColor('#4CAF50');
-                if (tg.setBackgroundColor) tg.setBackgroundColor('#f0f4f7');
+                if (tg.setBackgroundColor) tg.setBackgroundColor('#f5f7fa');
                 if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
             } catch (e) {
                 log('Telegram init warnings:', e);
@@ -166,6 +172,7 @@ const Utils = (function() {
         return tg;
     }
     
+    // Экспорт
     return {
         sleep,
         log,
@@ -181,14 +188,14 @@ const Utils = (function() {
         generateUserId,
         initTelegram,
         
-        // Геттеры для глобальных переменных
-        get tg() { return tg; },
-        setUserData(data) { userData = data; },
-        getUserData() { return userData; },
-        setUserId(id) { userId = id; },
-        getUserId() { return userId; },
-        setIsTelegramUser(value) { isTelegramUser = value; },
-        getIsTelegramUser() { return isTelegramUser; },
-        getAppKeys() { return APP_KEYS; }
+        // Геттеры и сеттеры
+        getTg: () => tg,
+        setUserData: (data) => { userData = data; },
+        getUserData: () => userData,
+        setUserId: (id) => { userId = id; },
+        getUserId: () => userId,
+        setIsTelegramUser: (value) => { isTelegramUser = value; },
+        getIsTelegramUser: () => isTelegramUser,
+        getAppKeys: () => APP_KEYS
     };
 })();
