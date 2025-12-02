@@ -1113,19 +1113,24 @@ window.closeModal = closeModal;
 // ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 // ===========================
 
+// Инициализация приложения при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[App] DOM загружен');
+    
     // Скрываем стандартный загрузчик
     const loader = document.getElementById('loader');
     if (loader) {
+        console.log('[App] Загрузчик найден, скрываем...');
+        loader.style.opacity = '0';
         setTimeout(() => {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 300);
-        }, 500);
+            loader.style.display = 'none';
+        }, 300);
+    } else {
+        console.log('[App] Загрузчик НЕ найден');
     }
     
     // Запуск приложения с задержкой
+    console.log('[App] Запускаем initApp через 300ms');
     setTimeout(initApp, 300);
 });
 
