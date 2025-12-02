@@ -18,9 +18,11 @@
       "type": "image/png"
     }
   ],
-  "categories": ["food", "shopping"],
+  "categories": [ "food", "shopping" ],
   "orientation": "portrait",
   "scope": "/",
   "lang": "ru",
-  "permissions": ["storage"]
+  "permissions": [
+    "storage"
+  ]
 }
