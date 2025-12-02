@@ -11,7 +11,427 @@ let userId = null;
 let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
+// ========== ИСПРАВЛЕНИЯ ДЛЯ iOS ==========
 
+// Определение iOS устройства
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// Фикс для viewport на iOS
+function fixIOSViewport() {
+    if (isIOS) {
+        // Устанавливаем высоту для iOS
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+        
+        // Добавляем класс для iOS стилей
+        document.body.classList.add('ios-device');
+        
+        // Фикс для 100vh
+        const appHeight = () => {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        };
+        
+        window.addEventListener('resize', appHeight);
+        appHeight();
+    }
+}
+
+// Автоматическое определение темной темы
+function setupDarkTheme() {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Применяем тему при загрузке
+    if (prefersDark.matches) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.add('auto-dark-theme');
+    }
+    
+    // Следим за изменениями темы
+    prefersDark.addEventListener('change', (e) => {
+        if (e.matches) {
+            document.body.classList.add('dark-theme');
+            document.body.classList.add('auto-dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+            document.body.classList.remove('auto-dark-theme');
+        }
+    });
+    
+    // Добавляем переключатель темы в профиль
+    const savedTheme = localStorage.getItem('tea_theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('auto-dark-theme');
+    } else if (savedTheme === 'light') {
+        document.body.classList.remove('dark-theme');
+        document.body.classList.remove('auto-dark-theme');
+    }
+}
+
+// Переключение темы
+function toggleTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('auto-dark-theme');
+        localStorage.setItem('tea_theme', 'dark');
+    } else if (theme === 'light') {
+        document.body.classList.remove('dark-theme');
+        document.body.classList.remove('auto-dark-theme');
+        localStorage.setItem('tea_theme', 'light');
+    } else {
+        // Авто режим
+        document.body.classList.remove('dark-theme');
+        document.body.classList.add('auto-dark-theme');
+        localStorage.removeItem('tea_theme');
+    }
+}
+
+// Создание свайпаемых уведомлений
+function showNotification(message, type = 'green') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `tea-notification notification-${type} swipe-notification`;
+    
+    // Проверяем, есть ли эмодзи в начале сообщения
+    const hasEmoji = /^[^\w\s]/.test(message);
+    const displayMessage = hasEmoji ? message : `✅ ${message}`;
+    
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'green' ? 'check-circle' : type === 'red' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${displayMessage}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Добавляем свайп-функционал
+    let startX = 0;
+    let currentX = 0;
+    let isSwiping = false;
+    let swipeDistance = 0;
+    
+    notification.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        notification.classList.add('swiping');
+    }, { passive: true });
+    
+    notification.addEventListener('touchmove', (e) => {
+        if (!startX) return;
+        
+        currentX = e.touches[0].clientX;
+        swipeDistance = currentX - startX;
+        
+        // Разрешаем только свайп вправо (для удаления)
+        if (swipeDistance > 0) {
+            notification.style.transform = `translateX(${Math.min(swipeDistance, 100)}px)`;
+            notification.style.opacity = `${1 - Math.min(swipeDistance, 100) / 200}`;
+            isSwiping = true;
+        }
+    }, { passive: true });
+    
+    notification.addEventListener('touchend', () => {
+        notification.classList.remove('swiping');
+        
+        // Если свайпнули достаточно далеко - удаляем
+        if (swipeDistance > 60) {
+            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        } else {
+            // Возвращаем на место
+            notification.style.transition = 'transform 0.3s ease';
+            notification.style.transform = 'translateX(0)';
+            notification.style.opacity = '1';
+        }
+        
+        startX = 0;
+        currentX = 0;
+        isSwiping = false;
+        swipeDistance = 0;
+    }, { passive: true });
+    
+    // Автоудаление через 3 секунды
+    const autoRemove = setTimeout(() => {
+        if (notification.parentNode && !isSwiping) {
+            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 3000);
+    
+    // Отменяем автоудаление если начали свайп
+    notification.addEventListener('touchstart', () => {
+        clearTimeout(autoRemove);
+    }, { once: true });
+}
+
+// Обновленный заголовок с паттерном и логотипом
+function createPatternHeader() {
+    return `
+        <div class="header-with-pattern">
+            <div class="logo-centered">
+                <img src="tea_tea_logo.png" alt="ТИ•ТИ - Чайная лавка" 
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234CAF50%22>🍵</text></svg>';">
+            </div>
+        </div>
+    `;
+}
+
+// Обновленная функция инициализации
+async function initApp() {
+    console.log('Инициализация приложения...');
+    
+    // Применяем iOS фиксы
+    fixIOSViewport();
+    
+    // Настраиваем тему
+    setupDarkTheme();
+    
+    // Инициализация Telegram
+    if (typeof window.Telegram !== 'undefined' && tg && tg.ready) {
+        try {
+            tg.ready();
+            tg.expand();
+            
+            // Устанавливаем тему Telegram
+            if (document.body.classList.contains('dark-theme')) {
+                tg.setHeaderColor('#1E1E1E');
+                tg.setBackgroundColor('#121212');
+            } else {
+                tg.setHeaderColor('#4CAF50');
+                tg.setBackgroundColor('#FFF8F0');
+            }
+            
+            // Включаем тактильную обратную связь
+            if (tg.HapticFeedback) {
+                window.hapticFeedback = tg.HapticFeedback;
+            }
+        } catch (error) {
+            console.log('Telegram WebApp error:', error);
+        }
+    }
+    
+    // Загружаем данные пользователя
+    userData = await getUserData();
+    userId = generateUserId();
+    isTelegramUser = userData.id !== null;
+    
+    // Загружаем корзину и заказы
+    await loadCart();
+    await loadOrders();
+    
+    // Показываем главную страницу
+    showMainPage();
+}
+
+// Обновленная функция showMainPage (только заголовок):
+function showMainPage() {
+    const page = document.getElementById('main-page');
+    const firstName = userData.first_name || 'друг';
+    const fullName = `${firstName} ${userData.last_name || ''}`.trim();
+    const username = userData.username ? `@${userData.username}` : '';
+    const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
+    
+    page.innerHTML = `
+        <!-- Используем новый заголовок с паттерном -->
+        ${createPatternHeader()}
+        
+        <div class="main-content">
+            <!-- ... остальной контент без изменений ... -->
+        </div>
+        
+        <!-- Cart Footer -->
+        <div class="main-cart-footer">
+            <div class="cart-content">
+                <div class="cart-total" id="main-cart-total">Корзина пуста</div>
+                <button class="checkout-button" id="main-checkout-btn" onclick="startCheckout()" style="cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i> Оформить
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // ... остальной код без изменений
+}
+
+// Исправленная функция оформления заказа для iOS
+function startCheckout() {
+    if (cart.length === 0) {
+        showNotification('🛒 Добавьте товары в корзину!', 'gold');
+        return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // iOS фикс: создаем модальное окно с безопасным HTML
+    const modal = document.createElement('div');
+    modal.id = 'checkout-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(62, 39, 35, 0.95);
+        backdrop-filter: blur(15px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    `;
+    
+    // Простой безопасный HTML для iOS
+    modal.innerHTML = `
+        <div style="background: var(--tea-card); border-radius: var(--radius-lg); width: 100%; max-width: 450px; padding: 0; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, var(--tea-green), var(--tea-green-dark)); padding: 20px; color: white; text-align: center;">
+                <h3 style="margin: 0; font-size: 18px;">Подтверждение заказа</h3>
+            </div>
+            <div style="padding: 20px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; color: var(--tea-green); margin-bottom: 12px;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h4 style="margin-bottom: 8px; color: var(--tea-green);">Сумма заказа</h4>
+                    <div style="font-size: 32px; font-weight: 800; margin-bottom: 16px;">${total}₽</div>
+                    <p style="color: var(--tea-text-light); font-size: 14px;">${totalItems} товаров</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    ${cart.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                            <span>${item.name} × ${item.quantity}</span>
+                            <span style="font-weight: 600;">${item.price * item.quantity}₽</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="closeCheckoutModal()" 
+                            style="flex: 1; padding: 14px; background: var(--tea-bg); color: var(--tea-text); 
+                                   border: none; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                        Отмена
+                    </button>
+                    <button onclick="confirmCheckout()" id="confirm-checkout-btn"
+                            style="flex: 1; padding: 14px; background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); 
+                                   color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                        Подтвердить
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Исправленная функция подтверждения заказа
+async function confirmCheckout() {
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Отключаем кнопку
+    const confirmBtn = document.getElementById('confirm-checkout-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    
+    // Создаем заказ
+    const order = {
+        id: Date.now(),
+        user_id: userId,
+        user_name: userData.first_name || 'Гость',
+        user_username: userData.username || '',
+        cart: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity,
+            type: item.type
+        })),
+        total: total,
+        timestamp: new Date().toLocaleString('ru-RU')
+    };
+    
+    // Сохраняем заказ
+    await saveOrder(order);
+    
+    // Формируем КОРОТКОЕ сообщение для Telegram
+    const message = `Заказ #${order.id}\n` +
+                   `Сумма: ${order.total}₽\n` +
+                   `Товаров: ${totalItems}\n` +
+                   `Имя: ${order.user_name}\n` +
+                   `Дата: ${order.timestamp}\n\n` +
+                   `Состав:\n` +
+                   order.cart.map(item => 
+                       `${item.name} × ${item.quantity}`
+                   ).join('\n');
+    
+    // Кодируем сообщение
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Создаем URL для Telegram
+    const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
+    
+    // Закрываем модальное окно
+    closeCheckoutModal();
+    
+    // Очищаем корзину
+    cart = [];
+    await saveCart();
+    
+    // Показываем уведомление
+    showNotification(`🎉 Заказ #${order.id} оформлен! Открываем чат...`, 'green');
+    
+    // Открываем чат с менеджером с задержкой
+    setTimeout(() => {
+        // iOS фикс: используем window.location для надежности
+        if (isIOS) {
+            window.location.href = telegramUrl;
+        } else if (tg && tg.openLink) {
+            tg.openLink(telegramUrl);
+        } else {
+            window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+        }
+        
+        // Возвращаемся на главную
+        setTimeout(() => {
+            showMainPage();
+        }, 1000);
+    }, 1000);
+}
+
+// Обновленный профиль с переключателем темы
+function showProfilePage() {
+    // ... существующий код профиля ...
+    
+    // В разделе настроек замените селект на:
+    `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px 0; border-bottom: 1px solid rgba(142, 110, 99, 0.1);">
+        <span>Тема оформления</span>
+        <select onchange="toggleTheme(this.value)" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--tea-green); background: var(--tea-card); color: var(--tea-text);">
+            <option value="auto">Авто</option>
+            <option value="light">Светлая</option>
+            <option value="dark">Темная</option>
+        </select>
+    </div>
+    `
+}
 // Полный каталог чая
 const teaCatalog = [
     {
