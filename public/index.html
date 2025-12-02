@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#4CAF50" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#1E1E1E" media="(prefers-color-scheme: dark)">
     <title>ТИ•ТИ - Чайная лавка</title>
+    <meta name="description" content="Онлайн-заказ китайского чая в Telegram Mini App">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -91,9 +92,12 @@
             if (isIOS) {
                 const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
-                
-                // Фикс для fixed элементов
                 document.body.classList.add('ios-device');
+                
+                // Фикс для Telegram WebApp на iOS
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.viewportHeight = window.innerHeight;
+                }
             }
         }
         
@@ -109,6 +113,11 @@
                         loader.style.display = 'none';
                         const app = document.getElementById('app');
                         if (app) app.style.display = 'block';
+                        
+                        // Инициализация после загрузки
+                        if (typeof initApp === 'function') {
+                            initApp();
+                        }
                     }, 500);
                 }
             }, 500);
@@ -117,17 +126,31 @@
         window.addEventListener('resize', fixViewportHeight);
         
         // Определение темной темы системы
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        if (prefersDarkScheme.matches) {
-            document.body.classList.add('dark-theme');
-        }
-        prefersDarkScheme.addListener(e => {
-            if (e.matches) {
-                document.body.classList.add('dark-theme');
-            } else {
-                document.body.classList.remove('dark-theme');
-            }
-        });
+        const setupDarkTheme = () => {
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            const applyTheme = (isDark) => {
+                if (isDark) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+                
+                // Применяем тему для Telegram WebApp
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.setHeaderColor(isDark ? '#1E1E1E' : '#4CAF50');
+                    Telegram.WebApp.setBackgroundColor(isDark ? '#121212' : '#FFF8F0');
+                }
+            };
+            
+            applyTheme(prefersDarkScheme.matches);
+            
+            prefersDarkScheme.addEventListener('change', (e) => {
+                applyTheme(e.matches);
+            });
+        };
+        
+        setupDarkTheme();
     </script>
 </body>
 </html>
