@@ -1,23 +1,29 @@
 /* ===========================
-   КОРЗИНА ПОКУПОК
+   КОРЗИНА (упрощенный)
    =========================== */
 
-const Cart = (function() {
-    const { log, error, validateCartItem, hapticFeedback } = Utils;
-    const { Toast, Confirm, UI, createModal } = UI;
-    const { getProductById } = Catalog;
+window.Cart = (function() {
+    const Utils = window.Utils;
     
     let cart = [];
     
     // Загрузка корзины
     async function load() {
         try {
-            cart = await Storage.loadCart();
+            if (window.Storage) {
+                cart = await window.Storage.loadCart();
+            } else {
+                // Fallback
+                const userId = Utils.getUserId();
+                const key = `tutu_cart_${userId}`;
+                const saved = localStorage.getItem(key);
+                cart = saved ? JSON.parse(saved) : [];
+            }
             updateUI();
-            log('Cart loaded:', cart.length, 'items');
+            Utils.log('Cart loaded:', cart.length, 'items');
             return cart;
         } catch (e) {
-            error('Failed to load cart:', e);
+            Utils.error('Failed to load cart:', e);
             cart = [];
             return [];
         }
@@ -26,11 +32,18 @@ const Cart = (function() {
     // Сохранение корзины
     async function save() {
         try {
-            await Storage.saveCart(cart);
+            if (window.Storage) {
+                await window.Storage.saveCart(cart);
+            } else {
+                // Fallback
+                const userId = Utils.getUserId();
+                const key = `tutu_cart_${userId}`;
+                localStorage.setItem(key, JSON.stringify(cart));
+            }
             updateUI();
             return true;
         } catch (e) {
-            error('Failed to save cart:', e);
+            Utils.error('Failed to save cart:', e);
             return false;
         }
     }
@@ -48,9 +61,9 @@ const Cart = (function() {
     
     // Добавление товара в корзину
     async function addToCart(productId) {
-        const product = getProductById(productId);
+        const product = window.Catalog.getProductById(productId);
         if (!product) {
-            Toast.show('Товар не найден', { type: 'error' });
+            if (window.UI) window.UI.Toast.show('Товар не найден', { type: 'error' });
             return false;
         }
         
@@ -67,8 +80,8 @@ const Cart = (function() {
                 quantity: 1
             };
             
-            if (!validateCartItem(newItem)) {
-                Toast.show('Ошибка добавления товара', { type: 'error' });
+            if (!Utils.validateCartItem(newItem)) {
+                if (window.UI) window.UI.Toast.show('Ошибка добавления товара', { type: 'error' });
                 return false;
             }
             
@@ -76,8 +89,8 @@ const Cart = (function() {
         }
         
         await save();
-        hapticFeedback('light');
-        Toast.show(`✅ ${product.name} добавлен в корзину`);
+        Utils.hapticFeedback('light');
+        if (window.UI) window.UI.Toast.show(`✅ ${product.name} добавлен в корзину`);
         return true;
     }
     
@@ -90,8 +103,10 @@ const Cart = (function() {
         
         if (newQuantity <= 0) {
             // Удаление товара
-            const confirmed = await Confirm.show(`Удалить "${item.name}" из корзины?`);
-            if (!confirmed) return false;
+            if (window.UI) {
+                const confirmed = await window.UI.Confirm.show(`Удалить "${item.name}" из корзины?`);
+                if (!confirmed) return false;
+            }
             
             cart = cart.filter(i => i.id !== productId);
         } else {
@@ -99,44 +114,8 @@ const Cart = (function() {
         }
         
         await save();
-        hapticFeedback('light');
-        Toast.show('Корзина обновлена');
-        return true;
-    }
-    
-    // Удаление товара из корзины
-    async function removeItem(productId) {
-        const item = cart.find(i => i.id === productId);
-        if (!item) return false;
-        
-        const confirmed = await Confirm.show(`Удалить "${item.name}" из корзины?`);
-        if (!confirmed) return false;
-        
-        cart = cart.filter(i => i.id !== productId);
-        await save();
-        hapticFeedback('medium');
-        Toast.show('Товар удален из корзины');
-        return true;
-    }
-    
-    // Очистка всей корзины
-    async function clearAll() {
-        if (cart.length === 0) {
-            Toast.show('Корзина уже пуста');
-            return false;
-        }
-        
-        const confirmed = await Confirm.show(
-            'Очистить всю корзину? Это действие необратимо.',
-            'Очистка корзины'
-        );
-        
-        if (!confirmed) return false;
-        
-        cart = [];
-        await save();
-        hapticFeedback('heavy');
-        Toast.show('Корзина очищена');
+        Utils.hapticFeedback('light');
+        if (window.UI) window.UI.Toast.show('Корзина обновлена');
         return true;
     }
     
@@ -160,108 +139,54 @@ const Cart = (function() {
         const totalItems = getTotalItems();
         const totalPrice = getTotalPrice();
         
-        UI.updateCartBadge(totalItems);
-        UI.updateCartFooter(totalItems, totalPrice);
-    }
-    
-    // Показ модального окна корзины
-    function showCartModal() {
-        const modal = createModal({
-            id: 'cart-modal',
-            bottomSheet: true
-        });
-        
-        const totalPrice = getTotalPrice();
-        const isCartEmpty = isEmpty();
-        
-        let html = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
-                    <button class="modal-close" onclick="window.Cart.closeCartModal()">×</button>
-                </div>
-                <div class="modal-body">
-        `;
-        
-        if (isCartEmpty) {
-            html += `
-                <div style="text-align: center; padding: 40px 10px; color: #888;">
-                    <i class="fas fa-box-open" style="font-size: 42px; color: #ddd;"></i>
-                    <div style="margin-top: 12px;">Корзина пуста</div>
-                </div>
-            `;
-        } else {
-            html += `
-                <div style="max-height: 40vh; overflow: auto; margin-bottom: 12px;">
-            `;
-            
-            cart.forEach(item => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; 
-                                padding: 12px; border-radius: 10px; background: #f8f9fa; margin-bottom: 10px;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 700;">${Utils.escapeHtml(item.name)}</div>
-                            <div style="color: #666; font-size: 13px;">
-                                ${Utils.escapeHtml(item.type)} • ${Utils.formatPrice(item.price)}/шт
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button onclick="window.Cart.updateQuantity(${item.id}, -1)" 
-                                    style="width: 32px; height: 32px; border-radius: 50%; border: none; 
-                                           background: #eee; cursor: pointer;">-</button>
-                            <div style="min-width: 28px; text-align: center; font-weight: 700;">
-                                ${item.quantity}
-                            </div>
-                            <button onclick="window.Cart.updateQuantity(${item.id}, 1)" 
-                                    style="width: 32px; height: 32px; border-radius: 50%; border: none; 
-                                           background: #4CAF50; color: white; cursor: pointer;">+</button>
-                            <div style="min-width: 70px; text-align: right; font-weight: 700; 
-                                        color: #4CAF50; margin-left: 8px;">
-                                ${Utils.formatPrice(item.price * item.quantity)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `</div>`;
+        if (window.UI) {
+            window.UI.updateCartBadge(totalItems);
+            window.UI.updateCartFooter(totalItems, totalPrice);
         }
         
-        html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; 
-                                padding-top: 12px; border-top: 2px solid #e9f5ee;">
-                        <div style="font-weight: 700; font-size: 18px;">
-                            Итого: <span style="color: #4CAF50;">${Utils.formatPrice(totalPrice)}</span>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            ${!isCartEmpty ? `
-                                <button onclick="window.Cart.clearAll()" 
-                                        style="padding: 10px 12px; border-radius: 10px; 
-                                               background: #f44336; color: white; border: none; 
-                                               cursor: pointer;">
-                                    Очистить
-                                </button>
-                            ` : ''}
-                            <button onclick="window.checkout()" 
-                                    style="padding: 10px 14px; border-radius: 10px; 
-                                           background: linear-gradient(135deg, #667eea, #764ba2); 
-                                           color: white; border: none; cursor: pointer;"
-                                    ${isCartEmpty ? 'disabled' : ''}>
-                                ${isCartEmpty ? 'Добавьте товары' : 'Оформить'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        // Обновляем счетчик вручную, если UI не загружен
+        const badge = document.querySelector('.cart-badge');
+        if (badge) {
+            badge.textContent = totalItems;
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
+        }
         
-        modal.setContent(html);
-        modal.show();
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            cartCount.textContent = totalItems;
+        }
+        
+        const cartTotal = document.getElementById('cart-total');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (cartTotal && checkoutBtn) {
+            if (totalItems > 0) {
+                cartTotal.innerHTML = `Итого: <span>${Utils.formatPrice(totalPrice)}</span>`;
+                checkoutBtn.textContent = `Оформить (${totalItems})`;
+                checkoutBtn.disabled = false;
+            } else {
+                cartTotal.innerHTML = `Корзина пуста`;
+                checkoutBtn.textContent = `Добавьте товары`;
+                checkoutBtn.disabled = true;
+            }
+        }
     }
     
-    // Закрытие модального окна корзины
+    // Функция для открытия модального окна корзины
+    function showCartModal() {
+        console.log('Cart.showCartModal called - override this in app.js');
+    }
+    
     function closeCartModal() {
-        UI.closeModal('cart-modal');
+        const modal = document.getElementById('cart-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    // Функция для очистки всей корзины
+    async function clearAll() {
+        console.log('Cart.clearAll called - override this in app.js');
+        return false;
     }
     
     return {
@@ -271,13 +196,12 @@ const Cart = (function() {
         clear,
         addToCart,
         updateQuantity,
-        removeItem,
-        clearAll,
         getTotalItems,
         getTotalPrice,
         isEmpty,
         updateUI,
         showCartModal,
-        closeCartModal
+        closeCartModal,
+        clearAll
     };
 })();
