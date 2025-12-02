@@ -1,30 +1,162 @@
-// Telegram Web App инициализация
+// ===================================
+// ТИ•ТИ - ЧАЙНАЯ ЛАВКА
+// Полностью рабочий JavaScript код
+// ===================================
+
+// Глобальные переменные
 let tg = window.Telegram.WebApp;
 let cart = [];
 let userData = null;
 let userId = null;
 let isTelegramUser = false;
+let orders = [];
 
-// Инициализация приложения
+// Каталог чая
+const teaCatalog = [
+    {
+        id: 1,
+        name: 'ЛАО ЧА ТОУ',
+        subtitle: 'Старые чайные головы',
+        type: 'Пуэр',
+        price: 1200,
+        description: 'Насыщенный и бархатистый. Настой — густой, тёмно-коричневый с рубиновыми отблесками. Во вкусе преобладают тёплые ноты ореха, карамели, сухофруктов и лёгкой древесной горчинки.',
+        brewing: ['🌿 5 гр чая на 500 мл воды', '🌡 температура 95°C и выше', '⏳ время заваривания — 3-5 минут'],
+        benefits: [
+            '♥️ мощный природный антиоксидант, укрепляет сердце и сосуды',
+            '🦠 укрепляет иммунную систему',
+            '⚡️способствует улучшению работы нервной системы'
+        ],
+        tag: 'Хит',
+        icon: 'fas fa-mountain'
+    },
+    {
+        id: 2,
+        name: 'ХЭЙ ЦЗИНЬ',
+        subtitle: 'Черное золото',
+        type: 'Красный чай',
+        price: 950,
+        description: 'Аромат сладости пронизывает тело, становясь его основной нотой. Настой гладкий, сладкий, приятный, с едва заметной кислинкой.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 85-95°C', '⏳ второй на 20-30 секунд'],
+        benefits: [
+            '❄️ согревает в холодные дни',
+            '🏡 снимает усталость и дарит ощущение уюта',
+            '🦠 помогает при простудных заболеваниях'
+        ],
+        tag: 'Популярное',
+        icon: 'fas fa-crown'
+    },
+    {
+        id: 3,
+        name: 'ЖОУ ГУЙ НУН СЯН',
+        subtitle: 'Мясистая корица',
+        type: 'Улун',
+        price: 1100,
+        description: 'Чай для концентрации, погружения, имеет приятный ярко выраженный топленый вкус с ореховыми нотками.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 80-90°C', '⏳ второй на 30-40 секунд'],
+        benefits: [
+            '🦋 стимулирует обмен веществ',
+            '❤️ снижает уровень вредного холестерина',
+            '😴 успокаивающе воздействует на нервную систему'
+        ],
+        tag: 'Рекомендуем',
+        icon: 'fas fa-spice'
+    },
+    {
+        id: 4,
+        name: 'ДЯНЬ ХУН',
+        subtitle: 'Красный чай из Юньнани',
+        type: 'Красный чай',
+        price: 850,
+        description: 'Теплый, хлебно-медовый аромат. Вкус прямой и насыщенный, мягкая сладость, небольшая терпкость.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 85-95°C', '⏳ второй на 20-30 секунд'],
+        benefits: [
+            '❄️ согревает в холодные дни',
+            '🏡 снимает усталость',
+            '🦠 помогает при простудных заболеваниях'
+        ],
+        icon: 'fas fa-fire'
+    },
+    {
+        id: 5,
+        name: 'ГАБА МАО ЧА',
+        subtitle: 'Чай-сырец',
+        type: 'Габа',
+        price: 1400,
+        description: 'В аромате жареные семечки, кедровые орехи переходящие в свежий мёд. Во вкусе кешью, кедровые орешки.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 85°C', '⏳ второй на 20-30 секунд'],
+        benefits: [
+            '♥️ полезен для сердечно-сосудистой системы',
+            '🥣 улучшает работу пищеварительной системы',
+            '👳‍♂️снимает головные боли'
+        ],
+        tag: 'Новинка',
+        icon: 'fas fa-brain'
+    },
+    {
+        id: 6,
+        name: 'ГУ ШУ ХУН ЧА',
+        subtitle: 'Красный чай со старых деревьев',
+        type: 'Красный чай',
+        price: 1300,
+        description: 'Насыщенные медово-сливовые оттенки, небольшая маслянистость, абрикосовая легкая косточка.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 85-90°C', '⏳ второй на 20-30 секунд'],
+        benefits: [
+            '❄️ согревает в холодные дни',
+            '🏡 снимает усталость',
+            '🦠 помогает при простудных заболеваниях'
+        ],
+        icon: 'fas fa-tree'
+    },
+    {
+        id: 7,
+        name: 'ТЕ ГУАНЬ ИНЬ',
+        subtitle: 'Железная богиня милосердия',
+        type: 'Улун',
+        price: 1050,
+        description: 'Классический расслабляющий светлый улун с интересной и многогранной лугово-травной и цветочной вкусоароматикой.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 85°C', '⏳ второй на 20-25 секунд'],
+        benefits: [
+            '👨🏻‍🦳 содержит антиоксиданты',
+            '🦷 профилактика заболеваний зубов',
+            '❤️ положительно сказывается на здоровье сердца'
+        ],
+        tag: 'Классика',
+        icon: 'fas fa-yin-yang'
+    },
+    {
+        id: 8,
+        name: 'МО ЛИ ХУА ЧА',
+        subtitle: 'Жасмин',
+        type: 'Зеленый чай',
+        price: 900,
+        description: 'Свежий жасминовый аромат с нежными цветочными оттенками, вкус сбалансированный и приятный.',
+        brewing: ['🌿 5-8 гр на 150-200 мл воды', '🌡 температура 70°C', '⏳ второй на 20-40 секунд'],
+        benefits: [
+            '🧘🏻‍♀️ снимает стресс',
+            '🦋 способствует похудению',
+            '✨ выводит шлаки и токсины'
+        ],
+        icon: 'fas fa-flower'
+    }
+];
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
 async function initApp() {
-    // Инициализируем Telegram Web App
+    console.log('Инициализация приложения...');
+    
+    // Инициализация Telegram
     tg.ready();
     tg.expand();
-    
-    // Настраиваем цвета
     tg.setHeaderColor('#4CAF50');
-    tg.setBackgroundColor('#f0f4f7');
+    tg.setBackgroundColor('#FFF8F0');
     
-    // Получаем данные пользователя
+    // Загружаем данные пользователя
     userData = await getUserData();
-    
-    // Генерируем уникальный ID пользователя
     userId = generateUserId();
+    isTelegramUser = userData.id !== null;
     
-    // Загружаем корзину с синхронизацией
+    // Загружаем корзину и заказы
     await loadCart();
-    
-    // Загружаем историю заказов
     await loadOrders();
     
     // Показываем интерфейс
@@ -32,62 +164,33 @@ async function initApp() {
     
     // Скрываем загрузчик
     setTimeout(() => {
-        document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-        }, 500);
-    }, 1000);
+        document.getElementById('app').style.display = 'block';
+        showNotification('🍵 Добро пожаловать в чайную гармонию!', 'green');
+    }, 500);
 }
 
 // Получение данных пользователя
 async function getUserData() {
-    // Пробуем получить данные из Telegram WebApp
-    if (window.Telegram && window.Telegram.WebApp) {
-        try {
-            const initData = tg.initDataUnsafe;
-            console.log('Telegram initData:', initData);
-            
-            if (initData && initData.user) {
-                isTelegramUser = true;
-                const user = initData.user;
-                
-                // Формируем URL фото
-                let photoUrl = '';
-                if (user.photo_url) {
-                    photoUrl = user.photo_url;
-                }
-                
-                return {
-                    id: user.id,
-                    first_name: user.first_name || '',
-                    last_name: user.last_name || '',
-                    username: user.username || '',
-                    photo_url: photoUrl,
-                    is_bot: user.is_bot || false,
-                    language_code: user.language_code || 'ru'
-                };
-            }
-        } catch (error) {
-            console.error('Error getting Telegram user data:', error);
+    try {
+        const initData = tg.initDataUnsafe;
+        
+        if (initData && initData.user) {
+            const user = initData.user;
+            return {
+                id: user.id,
+                first_name: user.first_name || '',
+                last_name: user.last_name || '',
+                username: user.username || '',
+                photo_url: user.photo_url || '',
+                is_bot: user.is_bot || false,
+                language_code: user.language_code || 'ru'
+            };
         }
+    } catch (error) {
+        console.log('Telegram user data error:', error);
     }
     
-    // Если данные из Telegram не получены, пробуем получить из URL параметров
-    const urlParams = new URLSearchParams(window.location.search);
-    const tgUser = urlParams.get('tgUser');
-    
-    if (tgUser) {
-        try {
-            const parsedUser = JSON.parse(decodeURIComponent(tgUser));
-            isTelegramUser = true;
-            return parsedUser;
-        } catch (e) {
-            console.error('Error parsing tgUser param:', e);
-        }
-    }
-    
-    // Если Telegram данные недоступны, создаем гостевого пользователя
+    // Для гостей
     return {
         id: null,
         first_name: 'Гость',
@@ -99,13 +202,12 @@ async function getUserData() {
     };
 }
 
-// Генерация уникального ID пользователя
+// Генерация ID пользователя
 function generateUserId() {
-    if (isTelegramUser && userData.id) {
+    if (userData && userData.id) {
         return `tg_${userData.id}`;
     }
     
-    // Для гостей используем постоянный ID из localStorage
     let guestId = localStorage.getItem('tutu_guest_id');
     if (!guestId) {
         guestId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -114,275 +216,49 @@ function generateUserId() {
     return guestId;
 }
 
-// База данных продуктов
-const teaCatalog = [
-    {
-        id: 1,
-        name: 'ЛАО ЧА ТОУ',
-        subtitle: 'Старые чайные головы',
-        type: 'Пуэр',
-        price: 1200,
-        description: 'Насыщенный и бархатистый. Настой — густой, тёмно-коричневый с рубиновыми отблесками. Во вкусе преобладают тёплые ноты ореха, карамели, сухофруктов и лёгкой древесной горчинки. Послевкусие долгое, с приятными сладковатыми и пряными оттенками.',
-        brewing: [
-            '🌿 5 гр чая на 500 мл воды',
-            '🌡 температура 95°C и выше',
-            '⏳ время заваривания — 3-5 минут'
-        ],
-        benefits: [
-            '♥️ мощный природный антиоксидант, укрепляет сердце и сосуды, снимает воспаление',
-            '🦠 укрепляет иммунную систему и повышает сопротивляемость вирусам и простудным заболеваниям',
-            '⚡️способствует улучшению работы нервной системы, придает организму энергию, устраняет головную боль'
-        ],
-        tag: 'Хит'
-    },
-    {
-        id: 2,
-        name: 'ХЭЙ ЦЗИНЬ',
-        subtitle: 'Черное золото',
-        type: 'Красный чай',
-        price: 950,
-        description: 'Аромат сладости пронизывает тело, становясь его основной нотой, окруженной едва заметным пряно-древесным ореолом. Настой гладкий, сладкий, приятный, с едва заметной кислинкой. Послевкусие тонкое, карамельное, в нем различаются оттенки ванили.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 85-95°C',
-            '⏳ второй на 20-30 секунд'
-        ],
-        benefits: [
-            '❄️ согревает в холодные дни',
-            '🏡 снимает усталость и дарит ощущение уюта и гармонии',
-            '🦠 помогает при простудных заболеваниях, так как расширяет дыхательные пути',
-            '🧠 способствует улучшению памяти и работы мозга'
-        ],
-        tag: 'Популярное'
-    },
-    {
-        id: 3,
-        name: 'ЖОУ ГУЙ НУН СЯН',
-        subtitle: 'Мясистая корица',
-        type: 'Улун',
-        price: 1100,
-        description: 'Чай для концентрации, погружения, имеет приятный ярко выраженный топленый вкус с ореховыми нотками, приятный аромат, согревает и успокаивает. Отличный баланс вкуса и аромата. Табачные, медовые и фруктово-цитрусовые нотки.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 80-90°C',
-            '⏳ второй на 30-40 секунд'
-        ],
-        benefits: [
-            '🦋 стимулирует обмен веществ, что способствует снижению веса',
-            '❤️ снижает уровень вредного холестерина в крови',
-            '😴 успокаивающе воздействует на нервную систему',
-            '🧠 улучшает когнитивные функции и память'
-        ],
-        tag: 'Рекомендуем'
-    },
-    {
-        id: 4,
-        name: 'ДЯНЬ ХУН',
-        subtitle: 'Красный чай из Юньнани',
-        type: 'Красный чай',
-        price: 850,
-        description: 'Теплый, хлебно-медовый аромат. Вкус прямой и насыщенный, мягкая сладость, небольшая терпкость и приятная плотность в чашке. Легко бодрит и отлично подходит как повседневный, рабочий чай для любого времени суток.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 85-95°C',
-            '⏳ второй на 20-30 секунд'
-        ],
-        benefits: [
-            '❄️ согревает в холодные дни',
-            '🏡 снимает усталость и дарит ощущение уюта',
-            '🦠 помогает при простудных заболеваниях',
-            '🧠 способствует улучшению памяти'
-        ]
-    },
-    {
-        id: 5,
-        name: 'ГАБА МАО ЧА',
-        subtitle: 'Чай-сырец',
-        type: 'Габа',
-        price: 1400,
-        description: 'В аромате жареные семечки, кедровые орехи переходящие в свежий мёд. Во вкусе кешью, кедровые орешки, нота вишневой косточки с неяркой кислинкой.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 85°C',
-            '⏳ второй на 20-30 секунд'
-        ],
-        benefits: [
-            '♥️ полезен для сердечно-сосудистой системы',
-            '🥣 улучшает работу пищеварительной системы',
-            '👳‍♂️снимает головные боли',
-            '🦋адсорбирует токсины и жиры'
-        ],
-        tag: 'Новинка'
-    },
-    {
-        id: 6,
-        name: 'ГУ ШУ ХУН ЧА',
-        subtitle: 'Красный чай со старых деревьев',
-        type: 'Красный чай',
-        price: 1300,
-        description: 'Насыщенные медово-сливовые оттенки, небольшая маслянистость, абрикосовая легкая косточка на послевкусии, сладкий.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 85-90°C',
-            '⏳ второй на 20-30 секунд'
-        ],
-        benefits: [
-            '❄️ согревает в холодные дни',
-            '🏡 снимает усталость и дарит гармонию',
-            '🦠 помогает при простудных заболеваниях',
-            '🧠 способствует улучшению памяти'
-        ]
-    },
-    {
-        id: 7,
-        name: 'ТЕ ГУАНЬ ИНЬ',
-        subtitle: 'Железная богиня милосердия',
-        type: 'Улун',
-        price: 1050,
-        description: 'Классический расслабляющий светлый улун с интересной и многогранной лугово-травной и цветочной вкусоароматикой, а также яркой сиреневой кислинкой на послевкусии. Хорошо расслабляет, отлично подойдет для посиделок в компании.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 85°C',
-            '⏳ второй на 20-25 секунд'
-        ],
-        benefits: [
-            '👨🏻‍🦳 содержит антиоксиданты, предотвращающие старение',
-            '🦷 профилактика заболеваний зубов и костей',
-            '❤️ положительно сказывается на здоровье сердца',
-            '🧘🏻‍♀️избавляет от тревожного состояния'
-        ],
-        tag: 'Классика'
-    },
-    {
-        id: 8,
-        name: 'МО ЛИ ХУА ЧА',
-        subtitle: 'Жасмин',
-        type: 'Зеленый чай',
-        price: 900,
-        description: 'Свежий жасминовый аромат с нежными цветочными оттенками, вкус сбалансированный и приятный. Оставляет тёплое, запоминающее послевкусие. Для любителей жасмина отличный вариант для старта дня на постоянной основе.',
-        brewing: [
-            '🌿 5-8 гр на 150-200 мл воды',
-            '🌡 температура 70°C',
-            '⏳ второй на 20-40 секунд'
-        ],
-        benefits: [
-            '🧘🏻‍♀️ снимает стресс',
-            '🦋 способствует похудению',
-            '✨ выводит шлаки и токсины',
-            '⚡️ тонизирует и бодрит'
-        ]
-    }
-];
-
-// Загрузка корзины с улучшенной синхронизацией
+// ========== КОРЗИНА ==========
 async function loadCart() {
-    // Сначала пробуем загрузить из Telegram Cloud Storage (самый приоритетный)
-    if (tg.CloudStorage && isTelegramUser) {
-        try {
-            console.log('Trying to load cart from Telegram Cloud Storage...');
-            const cloudCart = await new Promise((resolve) => {
-                tg.CloudStorage.getItem('cart', (error, value) => {
-                    if (!error && value) {
-                        console.log('Cart loaded from Telegram Cloud Storage:', value);
-                        resolve(value);
-                    } else {
-                        console.log('No cart in Telegram Cloud Storage:', error);
-                        resolve(null);
-                    }
-                });
-            });
-            
-            if (cloudCart) {
-                try {
-                    const parsedCart = JSON.parse(cloudCart);
-                    cart = Array.isArray(parsedCart) ? parsedCart : [];
-                    console.log('Cart loaded from Telegram Cloud:', cart);
-                    return;
-                } catch (parseError) {
-                    console.error('Error parsing cloud cart:', parseError);
-                }
-            }
-        } catch (error) {
-            console.log('Telegram Cloud Storage error:', error);
-        }
-    }
+    const key = `tutu_cart_${userId}`;
+    const saved = localStorage.getItem(key);
     
-    // Затем пробуем загрузить из localStorage с ключом по userId
-    const localStorageKey = `tutu_cart_${userId}`;
-    console.log('Loading cart from localStorage key:', localStorageKey);
-    const savedCart = localStorage.getItem(localStorageKey);
-    
-    if (savedCart) {
+    if (saved) {
         try {
-            cart = JSON.parse(savedCart);
-            console.log('Cart loaded from localStorage:', cart);
+            cart = JSON.parse(saved);
+            if (!Array.isArray(cart)) cart = [];
         } catch (e) {
-            console.error('Error parsing localStorage cart:', e);
             cart = [];
         }
     } else {
-        console.log('No cart found in localStorage');
         cart = [];
     }
-}
-
-// Сохранение корзины с улучшенной синхронизацией
-async function saveCart() {
-    console.log('Saving cart:', cart);
-    
-    // Сохраняем в localStorage с ключом по userId
-    const localStorageKey = `tutu_cart_${userId}`;
-    localStorage.setItem(localStorageKey, JSON.stringify(cart));
-    console.log('Cart saved to localStorage with key:', localStorageKey);
-    
-    // Для Telegram пользователей пробуем сохранить в Cloud Storage
-    if (tg.CloudStorage && isTelegramUser) {
-        try {
-            await new Promise((resolve, reject) => {
-                tg.CloudStorage.setItem('cart', JSON.stringify(cart), (error) => {
-                    if (error) {
-                        console.error('Error saving to Telegram Cloud Storage:', error);
-                        reject(error);
-                    } else {
-                        console.log('Cart saved to Telegram Cloud Storage');
-                        resolve();
-                    }
-                });
-            });
-        } catch (error) {
-            console.log('Telegram Cloud Storage save failed:', error);
-        }
-    }
-    
-    // Также сохраняем в общий localStorage для резервного копирования
-    localStorage.setItem('tutu_cart_backup', JSON.stringify({
-        userId: userId,
-        cart: cart,
-        timestamp: new Date().toISOString()
-    }));
     
     updateCart();
 }
 
-// Обновление отображения корзины
+async function saveCart() {
+    const key = `tutu_cart_${userId}`;
+    localStorage.setItem(key, JSON.stringify(cart));
+    updateCart();
+}
+
 function updateCart() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    // Обновляем счетчик в заголовке
+    // Обновляем бейдж
     const cartBadge = document.querySelector('.cart-badge');
     if (cartBadge) {
         cartBadge.textContent = totalItems;
         cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
     }
     
-    // Обновляем счетчик в навигации
+    // Обновляем счетчик
     const cartCount = document.querySelector('.cart-count');
     if (cartCount) {
         cartCount.textContent = totalItems;
     }
     
-    // Обновляем футер корзины
+    // Обновляем футер
     const cartTotal = document.getElementById('cart-total');
     const checkoutBtn = document.getElementById('checkout-btn');
     
@@ -399,254 +275,194 @@ function updateCart() {
     }
 }
 
-// Загрузка истории заказов с синхронизацией
+// ========== ЗАКАЗЫ ==========
 async function loadOrders() {
-    // Сначала пробуем Telegram Cloud Storage
-    if (tg.CloudStorage && isTelegramUser) {
-        try {
-            const cloudOrders = await new Promise((resolve) => {
-                tg.CloudStorage.getItem('orders', (error, value) => {
-                    if (!error && value) resolve(value);
-                    else resolve(null);
-                });
-            });
-            
-            if (cloudOrders) {
-                try {
-                    return JSON.parse(cloudOrders);
-                } catch (e) {
-                    console.error('Error parsing cloud orders:', e);
-                }
-            }
-        } catch (error) {
-            console.log('Cloud storage orders error:', error);
-        }
-    }
+    const key = `tutu_orders_${userId}`;
+    const saved = localStorage.getItem(key);
     
-    // Затем localStorage
-    const localStorageKey = `tutu_orders_${userId}`;
-    const savedOrders = localStorage.getItem(localStorageKey);
-    
-    if (savedOrders) {
+    if (saved) {
         try {
-            return JSON.parse(savedOrders);
+            orders = JSON.parse(saved);
+            if (!Array.isArray(orders)) orders = [];
         } catch (e) {
-            console.error('Error parsing localStorage orders:', e);
+            orders = [];
         }
+    } else {
+        orders = [];
     }
     
-    return [];
+    return orders;
 }
 
-// Сохранение заказа с синхронизацией
 async function saveOrder(order) {
-    const orders = await loadOrders();
     orders.push(order);
-    
-    const localStorageKey = `tutu_orders_${userId}`;
-    localStorage.setItem(localStorageKey, JSON.stringify(orders));
-    
-    // Синхронизация с Telegram Cloud Storage
-    if (tg.CloudStorage && isTelegramUser) {
-        try {
-            await new Promise((resolve, reject) => {
-                tg.CloudStorage.setItem('orders', JSON.stringify(orders), (error) => {
-                    if (error) reject(error);
-                    else resolve();
-                });
-            });
-        } catch (error) {
-            console.log('Cloud storage orders save failed:', error);
-        }
-    }
+    const key = `tutu_orders_${userId}`;
+    localStorage.setItem(key, JSON.stringify(orders));
 }
 
-// Показать главный интерфейс
+// ========== ОСНОВНОЙ ИНТЕРФЕЙС ==========
 function showMainInterface() {
     const app = document.getElementById('app');
     
-    // Формируем данные для отображения
     const firstName = userData.first_name || 'Гость';
     const lastName = userData.last_name || '';
     const fullName = `${firstName} ${lastName}`.trim();
     const username = userData.username ? `@${userData.username}` : '';
-    
-    // Проверяем наличие фото
     const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
     
- // В функции showMainInterface() обновляем баннер:
-app.innerHTML = `
-    <!-- Header -->
-    <div class="header fade-in">
-        <div class="header-content">
-            <div class="logo" onclick="showFullCatalog()">
-                <div class="logo-icon">
-                    <i class="fas fa-leaf"></i>
+    app.innerHTML = `
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo" onclick="showFullCatalog()">
+                    <div class="logo-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>ТИ•ТИ</h1>
+                        <div class="subtitle">Чайная лавка</div>
+                    </div>
                 </div>
-                <div class="logo-text">
-                    <h1>ТИ•ТИ</h1>
-                    <div class="subtitle">Чайная лавка</div>
+                <div class="user-avatar" onclick="showProfile()">
+                    ${hasPhoto ? 
+                        `<img src="${userData.photo_url}" alt="${fullName}" 
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';">` : 
+                        `<i class="fas fa-user"></i>`
+                    }
+                    <span class="cart-badge" style="display: none;">0</span>
+                    ${isTelegramUser ? `<div class="tg-badge">TG</div>` : ''}
                 </div>
             </div>
-            <div class="user-avatar" onclick="showProfile()" title="${fullName}${username ? ` (${username})` : ''}">
-                ${hasPhoto ? 
-                    `<img src="${userData.photo_url}" alt="${fullName}" 
-                         onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';"
-                         style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : 
-                    `<i class="fas fa-user"></i>`
-                }
-                <span class="cart-badge" style="display: none;">0</span>
-                ${isTelegramUser ? `<div class="tg-badge" title="Telegram пользователь">TG</div>` : ''}
+        </div>
+        
+        <!-- Welcome Banner -->
+        <div class="welcome-banner fade-in">
+            <div class="banner-content">
+                <h2>${getWelcomeMessage()}</h2>
+                <p>${isTelegramUser ? 'Рады видеть вас снова!' : 'Аутентичный китайский чай с доставкой'}</p>
+                <div class="banner-actions">
+                    <button class="catalog-btn" onclick="showFullCatalog()">
+                        <i class="fas fa-search"></i> Искать чай
+                    </button>
+                    <button class="popular-btn" onclick="scrollToPopular()">
+                        <i class="fas fa-fire"></i> Популярное
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Баннер -->
-    <div class="welcome-banner fade-in" style="animation-delay: 0.1s">
-        <div class="banner-content">
-            <h2>🍵 ${getWelcomeMessage()}</h2>
-            <p>${isTelegramUser ? 'Рады видеть вас снова!' : 'Аутентичный китайский чай с доставкой'}</p>
-            <div class="banner-actions">
-                <button class="catalog-btn" onclick="showFullCatalog()">
-                    <i class="fas fa-search"></i> Искать чай
+        
+        <!-- Navigation -->
+        <div class="nav-grid">
+            <div class="nav-item" onclick="showFullCatalog()">
+                <div class="nav-icon icon-tea">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
+                <h3>Каталог</h3>
+                <p>${teaCatalog.length}+ сортов</p>
+            </div>
+            
+            <div class="nav-item" onclick="showOrders()">
+                <div class="nav-icon icon-orders">
+                    <i class="fas fa-box"></i>
+                </div>
+                <h3>Заказы</h3>
+                <p>История покупок</p>
+            </div>
+            
+            <div class="nav-item" onclick="showCartModal()">
+                <div class="nav-icon icon-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3>Корзина</h3>
+                <p>Товары: <span class="cart-count">0</span></p>
+            </div>
+            
+            <div class="nav-item" onclick="showProfile()">
+                <div class="nav-icon icon-profile">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3>Профиль</h3>
+                <p>${username || 'Ваш профиль'}</p>
+            </div>
+        </div>
+        
+        <!-- Popular Products -->
+        <div class="products-section">
+            <h2 class="section-title">
+                <i class="fas fa-fire"></i> Популярное
+            </h2>
+            <div class="products-grid" id="popular-products"></div>
+        </div>
+        
+        <!-- Cart Footer -->
+        <div class="cart-footer">
+            <div class="cart-content">
+                <div class="cart-total" id="cart-total">Корзина пуста</div>
+                <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>
+                    <i class="fas fa-paper-plane"></i> Оформить
                 </button>
-                <button class="popular-btn" onclick="scrollToPopular()">
-                    <i class="fas fa-fire"></i> Популярное
-                </button>
             </div>
         </div>
-    </div>
+    `;
     
-    <!-- Навигация -->
-    <div class="nav-grid fade-in" style="animation-delay: 0.2s">
-        <div class="nav-item" onclick="showFullCatalog()">
-            <div class="nav-icon icon-tea">
-                <i class="fas fa-mug-hot"></i>
-            </div>
-            <h3>Каталог</h3>
-            <p>${teaCatalog.length}+ сортов чая</p>
-        </div>
-        
-        <div class="nav-item" onclick="showOrders()">
-            <div class="nav-icon icon-orders">
-                <i class="fas fa-box"></i>
-            </div>
-            <h3>Заказы</h3>
-            <p>История покупок</p>
-        </div>
-        
-        <div class="nav-item" onclick="showCartModal()">
-            <div class="nav-icon icon-cart">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <h3>Корзина</h3>
-            <p>Товары: <span class="cart-count">0</span></p>
-        </div>
-        
-        <div class="nav-item" onclick="showProfile()">
-            <div class="nav-icon icon-profile">
-                <i class="fas fa-user"></i>
-            </div>
-            <h3>Профиль</h3>
-            <p>${username || 'Ваш профиль'}</p>
-        </div>
-    </div>
-    
-    <!-- Популярные товары -->
-    <div class="products-section fade-in" style="animation-delay: 0.3s">
-        <h2 class="section-title">
-            <i class="fas fa-fire"></i> Популярное
-        </h2>
-        <div class="products-grid" id="popular-products">
-            <!-- Товары загружаются динамически -->
-        </div>
-    </div>
-    
-    <!-- Футер корзины -->
-    <div class="cart-footer fade-in" style="animation-delay: 0.4s">
-        <div class="cart-content">
-            <div class="cart-total" id="cart-total">Корзина пуста</div>
-            <button class="checkout-button" id="checkout-btn" onclick="checkout()" disabled>
-                <i class="fas fa-paper-plane"></i> Оформить
-            </button>
-        </div>
-    </div>
-    
-    <!-- Модальные окна -->
-    <div id="cart-modal" class="modal"></div>
-    <div id="product-modal" class="modal"></div>
-    <div id="order-modal" class="modal"></div>
-    <div id="profile-modal" class="modal"></div>
-    <div id="catalog-modal" class="modal"></div>
-`;
-    
-    // Загружаем популярные товары
     loadPopularProducts();
     updateCart();
 }
 
-// Загрузка популярных товаров
+function getWelcomeMessage() {
+    const hour = new Date().getHours();
+    const firstName = userData.first_name || 'друг';
+    
+    if (hour >= 5 && hour < 12) return `☀️ Доброе утро, ${firstName}!`;
+    if (hour >= 12 && hour < 18) return `🌤 Добрый день, ${firstName}!`;
+    if (hour >= 18 && hour < 23) return `🌙 Добрый вечер, ${firstName}!`;
+    return `🌜 Доброй ночи, ${firstName}!`;
+}
+
+function scrollToPopular() {
+    const section = document.querySelector('.products-section');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+        section.classList.add('text-vibrate');
+        setTimeout(() => section.classList.remove('text-vibrate'), 1000);
+    }
+}
+
+// ========== ТОВАРЫ ==========
 function loadPopularProducts() {
     const popularTeas = teaCatalog.filter(tea => tea.tag).slice(0, 4);
-    
     const container = document.getElementById('popular-products');
+    
     container.innerHTML = popularTeas.map(tea => `
         <div class="product-card" onclick="showProduct(${tea.id})">
             <div class="product-image ${getTeaTypeClass(tea.type)}">
                 ${tea.tag ? `<div class="product-tag">${tea.tag}</div>` : ''}
+                <i class="${tea.icon || 'fas fa-leaf'}"></i>
             </div>
             <div class="product-info">
                 <h3 class="product-name">${tea.name}</h3>
                 <div class="product-subtitle">${tea.subtitle}</div>
                 <div class="product-price">${tea.price}₽</div>
                 <button class="product-button" onclick="event.stopPropagation(); addToCart(${tea.id})">
-                    + В корзину
+                    <i class="fas fa-cart-plus"></i> В корзину
                 </button>
             </div>
         </div>
     `).join('');
 }
 
-// Получение класса для типа чая
 function getTeaTypeClass(type) {
-    const classes = {
+    const map = {
         'Пуэр': 'puer',
         'Красный чай': 'red-tea',
         'Улун': 'oolong',
         'Габа': 'gaba',
         'Зеленый чай': 'green-tea'
     };
-    return classes[type] || '';
+    return map[type] || '';
 }
 
-// Добавление в корзину
-function addToCart(productId) {
-    const product = teaCatalog.find(p => p.id === productId);
-    if (!product) return;
-    
-    const existingItem = cart.find(item => item.id === productId);
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ 
-            ...product, 
-            quantity: 1,
-            // Сохраняем только нужные данные
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            type: product.type
-        });
-    }
-    
-    saveCart();
-    
-    // Анимация добавления
-    tg.HapticFeedback.impactOccurred('light');
-    tg.showAlert(`✅ ${product.name} добавлен в корзину!`);
-}
-
-// Показать полный каталог
+// ========== КАТАЛОГ ==========
 function showFullCatalog() {
     const modal = document.getElementById('catalog-modal');
     
@@ -656,48 +472,30 @@ function showFullCatalog() {
                 <h3><i class="fas fa-mug-hot"></i> Каталог чая</h3>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
-            <div class="modal-body" style="padding: 0;">
-                <div style="max-height: 60vh; overflow-y: auto;">
-                    ${teaCatalog.map(tea => `
-                        <div class="catalog-item" onclick="showProduct(${tea.id})" style="padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.3s;">
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="tea-icon ${getTeaTypeClass(tea.type)}" style="width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">
-                                    <i class="fas fa-leaf"></i>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; font-size: 16px;">${tea.name}</div>
-                                    <div style="font-size: 14px; color: #666; margin: 2px 0;">${tea.subtitle}</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                                        <div style="color: #4CAF50; font-weight: 700;">${tea.price}₽</div>
-                                        <button onclick="event.stopPropagation(); addToCart(${tea.id})" style="padding: 5px 15px; background: #4CAF50; color: white; border: none; border-radius: 15px; cursor: pointer; font-size: 14px;">
-                                            + Добавить
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="modal-body">
+                ${teaCatalog.map(tea => `
+                    <div class="catalog-item" onclick="showProduct(${tea.id})">
+                        <div class="tea-icon ${getTeaTypeClass(tea.type)}">
+                            <i class="${tea.icon || 'fas fa-leaf'}"></i>
                         </div>
-                    `).join('')}
-                </div>
+                        <div class="tea-info">
+                            <div class="tea-name">${tea.name}</div>
+                            <div class="tea-subtitle">${tea.subtitle}</div>
+                            <div class="tea-price">${tea.price}₽</div>
+                        </div>
+                        <button class="add-btn" onclick="event.stopPropagation(); addToCart(${tea.id})">
+                            + Добавить
+                        </button>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
     
-    // Добавляем стили для иконок чая
-    const style = document.createElement('style');
-    style.textContent = `
-        .tea-icon.puer { background: linear-gradient(135deg, #8D6E63, #5D4037); }
-        .tea-icon.red-tea { background: linear-gradient(135deg, #FF5252, #D32F2F); }
-        .tea-icon.oolong { background: linear-gradient(135deg, #FFB74D, #F57C00); }
-        .tea-icon.gaba { background: linear-gradient(135deg, #7B1FA2, #4A148C); }
-        .tea-icon.green-tea { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
-        .catalog-item:hover { background: #f8f9fa; }
-    `;
-    document.head.appendChild(style);
-    
     modal.style.display = 'flex';
 }
 
-// Показать детальную информацию о товаре
+// ========== ПРОДУКТ ==========
 function showProduct(productId) {
     const product = teaCatalog.find(p => p.id === productId);
     if (!product) return;
@@ -707,52 +505,375 @@ function showProduct(productId) {
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-leaf"></i> ${product.name}</h3>
+                <h3><i class="${product.icon || 'fas fa-leaf'}"></i> ${product.name}</h3>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
                 <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 18px; font-weight: 600;">${product.subtitle}</div>
-                        <div style="background: #4CAF50; color: white; padding: 5px 15px; border-radius: 15px; font-weight: 600;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-size: 16px; font-weight: 600; color: var(--tea-text);">${product.subtitle}</div>
+                        <div style="background: var(--tea-green); color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px;">
                             ${product.type}
                         </div>
                     </div>
-                    ${product.tag ? `<div style="background: #FF9800; color: white; padding: 5px 10px; border-radius: 10px; display: inline-block; margin-bottom: 15px; font-size: 14px;">${product.tag}</div>` : ''}
+                    ${product.tag ? `
+                        <div style="background: var(--tea-gold); color: white; padding: 4px 10px; border-radius: 10px; 
+                             display: inline-block; margin-bottom: 15px; font-size: 12px; font-weight: 600;">
+                            ${product.tag}
+                        </div>
+                    ` : ''}
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 10px; color: #333;">Описание:</h4>
-                    <p style="color: #666; line-height: 1.5;">${product.description}</p>
+                <div style="background: var(--tea-bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px; color: var(--tea-text); font-size: 15px;">Описание:</h4>
+                    <p style="color: var(--tea-text-light); line-height: 1.5; font-size: 14px;">${product.description}</p>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 10px; color: #333;">🍶 Способ заваривания:</h4>
-                    <ul style="color: #666; padding-left: 20px; line-height: 1.6;">
+                    <h4 style="margin-bottom: 10px; color: var(--tea-text); font-size: 15px;">🍶 Способ заваривания:</h4>
+                    <ul style="color: var(--tea-text-light); padding-left: 20px; line-height: 1.6; font-size: 14px;">
                         ${product.brewing.map(item => `<li>${item}</li>`).join('')}
                     </ul>
                 </div>
                 
                 <div style="margin-bottom: 25px;">
-                    <h4 style="margin-bottom: 10px; color: #333;">🌿 Полезные свойства:</h4>
-                    <ul style="color: #666; padding-left: 20px; line-height: 1.6;">
+                    <h4 style="margin-bottom: 10px; color: var(--tea-text); font-size: 15px;">🌿 Полезные свойства:</h4>
+                    <ul style="color: var(--tea-text-light); padding-left: 20px; line-height: 1.6; font-size: 14px;">
                         ${product.benefits.map(item => `<li>${item}</li>`).join('')}
                     </ul>
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #eee;">
-                    <div style="font-size: 24px; font-weight: 700; color: #4CAF50;">${product.price}₽</div>
-                    <button onclick="addToCart(${product.id}); closeModal();" style="padding: 12px 30px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid rgba(142, 110, 99, 0.1);">
+                    <div style="font-size: 24px; font-weight: 800; color: var(--tea-green);">${product.price}₽</div>
+                    <button onclick="addToCart(${product.id}); closeModal();" 
+                            style="padding: 12px 24px; background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); 
+                                   color: white; border: none; border-radius: var(--radius-round); font-weight: 600; 
+                                   cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px;">
                         <i class="fas fa-cart-plus"></i> Добавить в корзину
                     </button>
                 </div>
             </div>
         </div>
     `;
+    
     modal.style.display = 'flex';
 }
 
-// Показать заказы
+// ========== ДОБАВЛЕНИЕ В КОРЗИНУ ==========
+function addToCart(productId) {
+    const product = teaCatalog.find(p => p.id === productId);
+    if (!product) return;
+    
+    const existingItem = cart.find(item => item.id === productId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ 
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            type: product.type,
+            quantity: 1
+        });
+    }
+    
+    saveCart();
+    
+    // Эффекты
+    createHeartEffect();
+    showNotification(`✅ ${product.name} добавлен в корзину!`, 'green');
+    
+    // Тактильная обратная связь
+    if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+    }
+}
+
+// ========== КОРЗИНА ==========
+function showCartModal() {
+    if (cart.length === 0) {
+        showNotification('🛒 Корзина пуста', 'gold');
+        return;
+    }
+    
+    const modal = document.getElementById('cart-modal');
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 40vh; overflow-y: auto; margin-bottom: 20px;">
+                    ${cart.map(item => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; 
+                             padding: 12px; border-bottom: 1px solid rgba(142, 110, 99, 0.1); 
+                             background: var(--tea-bg); border-radius: var(--radius-md); margin-bottom: 8px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 4px; font-size: 15px;">${item.name}</div>
+                                <div style="font-size: 13px; color: var(--tea-text-light);">${item.type} • ${item.price}₽/шт</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 8px; background: white; 
+                                     padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(142, 110, 99, 0.1);">
+                                    <button onclick="updateQuantity(${item.id}, -1)" 
+                                            style="width: 28px; height: 28px; border-radius: 50%; border: none; 
+                                                   background: var(--tea-bg); cursor: pointer; display: flex; 
+                                                   align-items: center; justify-content: center; font-size: 18px; color: var(--tea-text);">
+                                        −
+                                    </button>
+                                    <span style="font-weight: 600; min-width: 24px; text-align: center;">${item.quantity}</span>
+                                    <button onclick="updateQuantity(${item.id}, 1)" 
+                                            style="width: 28px; height: 28px; border-radius: 50%; border: none; 
+                                                   background: var(--tea-green); color: white; cursor: pointer; 
+                                                   display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                        +
+                                    </button>
+                                </div>
+                                <div style="font-weight: 700; color: var(--tea-green); min-width: 60px; text-align: right; font-size: 16px;">
+                                    ${item.price * item.quantity}₽
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--tea-green);">
+                    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+                        <span>Итого:</span>
+                        <span>${total}₽</span>
+                    </div>
+                    <button onclick="startCheckout()" 
+                            style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light)); 
+                                   color: white; border: none; border-radius: var(--radius-round); font-weight: 600; 
+                                   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px;">
+                        <i class="fas fa-paper-plane"></i> Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function updateQuantity(productId, delta) {
+    const item = cart.find(item => item.id === productId);
+    if (!item) return;
+    
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+        cart = cart.filter(item => item.id !== productId);
+    }
+    
+    saveCart();
+    
+    if (cart.length === 0) {
+        closeModal();
+        showNotification('Корзина очищена', 'gold');
+    } else {
+        showCartModal();
+    }
+}
+
+// ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
+function startCheckout() {
+    const modal = document.getElementById('checkout-modal');
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> Подтверждение заказа</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; color: var(--tea-green); margin-bottom: 12px;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h4 style="margin-bottom: 8px; color: var(--tea-green);">Сумма заказа</h4>
+                    <div style="font-size: 32px; font-weight: 800; color: var(--tea-text); margin-bottom: 16px;">${total}₽</div>
+                </div>
+                
+                <div style="background: var(--tea-bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <h5 style="margin-bottom: 12px; color: var(--tea-text);">Состав заказа:</h5>
+                    ${cart.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                            <span>${item.name} × ${item.quantity}</span>
+                            <span style="font-weight: 600;">${item.price * item.quantity}₽</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="color: var(--tea-text-light); font-size: 14px; margin-bottom: 20px; text-align: center;">
+                    После подтверждения заказа наш менеджер свяжется с вами в Telegram для уточнения деталей доставки.
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="closeModal()" 
+                            style="flex: 1; padding: 14px; background: var(--tea-bg); color: var(--tea-text); 
+                                   border: none; border-radius: var(--radius-round); font-weight: 600; 
+                                   cursor: pointer; transition: all 0.3s var(--ease-smooth);">
+                        Отмена
+                    </button>
+                    <button onclick="confirmCheckout()" 
+                            style="flex: 1; padding: 14px; background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); 
+                                   color: white; border: none; border-radius: var(--radius-round); 
+                                   font-weight: 600; cursor: pointer; transition: all 0.3s var(--ease-smooth);">
+                        Подтвердить
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+async function confirmCheckout() {
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // Создаем заказ
+    const order = {
+        id: Date.now(),
+        user_id: userId,
+        user_name: userData.first_name || 'Гость',
+        user_username: userData.username || '',
+        cart: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity
+        })),
+        total: total,
+        timestamp: new Date().toLocaleString('ru-RU')
+    };
+    
+    // Сохраняем заказ
+    await saveOrder(order);
+    
+    // Формируем сообщение для Telegram
+    const message = `🎉 *Новый заказ #${order.id}*\n\n` +
+                   `👤 *Покупатель:* ${order.user_name}${order.user_username ? ` (@${order.user_username})` : ''}\n` +
+                   `💰 *Сумма:* ${order.total}₽\n` +
+                   `📅 *Дата:* ${order.timestamp}\n\n` +
+                   `🛒 *Состав заказа:*\n` +
+                   order.cart.map(item => `▫️ ${item.name} × ${item.quantity} = ${item.total}₽`).join('\n') + '\n\n' +
+                   `📱 *Источник:* ТИ•ТИ Чайная лавка\n` +
+                   `🆔 *ID заказа:* ${order.id}`;
+    
+    // Кодируем сообщение для URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Пытаемся отправить через Telegram WebApp
+    if (tg.sendData) {
+        try {
+            tg.sendData(JSON.stringify({
+                action: 'checkout',
+                order_id: order.id,
+                user_name: order.user_name,
+                cart: order.cart,
+                total: order.total
+            }));
+        } catch (error) {
+            console.log('WebApp sendData failed:', error);
+        }
+    }
+    
+    // Открываем чат с менеджером
+    const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
+    
+    if (tg.openLink) {
+        tg.openLink(telegramUrl);
+    } else {
+        window.open(telegramUrl, '_blank');
+    }
+    
+    // Очищаем корзину
+    cart = [];
+    await saveCart();
+    
+    // Показываем успех
+    closeModal();
+    createConfetti();
+    showNotification(`🎉 Заказ #${order.id} оформлен! Менеджер свяжется с вами.`, 'green');
+    
+    // Показываем кнопку для копирования заказа
+    setTimeout(() => {
+        showOrderSuccess(order);
+    }, 1000);
+}
+
+function showOrderSuccess(order) {
+    const modal = document.getElementById('checkout-modal');
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));">
+                <h3><i class="fas fa-check-circle"></i> Заказ оформлен!</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 64px; color: var(--tea-green); margin-bottom: 16px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 style="margin-bottom: 8px; color: var(--tea-green);">Заказ #${order.id}</h4>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--tea-text); margin-bottom: 16px;">${order.total}₽</div>
+                </div>
+                
+                <div style="background: var(--tea-bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <p style="margin-bottom: 12px; color: var(--tea-text-light); font-size: 14px;">
+                        Ваш заказ принят! Скоро с вами свяжется менеджер @ivan_likhov для уточнения деталей доставки.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 12px; flex-direction: column;">
+                    <button onclick="copyToClipboard('${order.id}', '${order.total}')" 
+                            style="width: 100%; padding: 14px; background: var(--tea-bg); color: var(--tea-text); 
+                                   border: 1px solid var(--tea-green); border-radius: var(--radius-round); 
+                                   font-weight: 600; cursor: pointer; display: flex; align-items: center; 
+                                   justify-content: center; gap: 8px; transition: all 0.3s var(--ease-smooth);">
+                        <i class="fas fa-copy"></i> Скопировать данные заказа
+                    </button>
+                    
+                    <button onclick="window.open('https://t.me/ivan_likhov', '_blank')" 
+                            style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0088cc, #00aced); 
+                                   color: white; border: none; border-radius: var(--radius-round); 
+                                   font-weight: 600; cursor: pointer; display: flex; align-items: center; 
+                                   justify-content: center; gap: 8px; transition: all 0.3s var(--ease-smooth);">
+                        <i class="fab fa-telegram"></i> Написать менеджеру
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function copyToClipboard(orderId, total) {
+    const text = `Заказ #${orderId}\nСумма: ${total}₽\nДата: ${new Date().toLocaleString('ru-RU')}`;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('📋 Данные заказа скопированы!', 'green');
+    }).catch(() => {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showNotification('📋 Данные заказа скопированы!', 'green');
+    });
+}
+
+// ========== ЗАКАЗЫ ==========
 async function showOrders() {
     const orders = await loadOrders();
     const modal = document.getElementById('order-modal');
@@ -769,21 +890,24 @@ async function showOrders() {
                         <div style="font-size: 48px; color: #ddd; margin-bottom: 20px;">
                             <i class="fas fa-box-open"></i>
                         </div>
-                        <h4 style="color: #666; margin-bottom: 10px;">Заказов пока нет</h4>
-                        <p style="color: #999;">Совершите первую покупку!</p>
+                        <h4 style="color: var(--tea-text-light); margin-bottom: 10px;">Заказов пока нет</h4>
+                        <p style="color: var(--tea-text-lighter); font-size: 14px;">Совершите первую покупку!</p>
                     </div>
                 ` : `
                     <div style="max-height: 50vh; overflow-y: auto;">
-                        ${orders.map((order, index) => `
-                            <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <div style="font-weight: 600;">Заказ #${orders.length - index}</div>
-                                    <div style="color: #4CAF50; font-weight: 700;">${order.total}₽</div>
+                        ${orders.slice().reverse().map(order => `
+                            <div style="background: var(--tea-bg); border-radius: var(--radius-md); 
+                                 padding: 16px; margin-bottom: 12px; cursor: pointer; 
+                                 transition: all 0.3s var(--ease-smooth);" 
+                                 onclick="showOrderDetails(${order.id})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 600; color: var(--tea-text);">Заказ #${order.id}</div>
+                                    <div style="color: var(--tea-green); font-weight: 700; font-size: 18px;">${order.total}₽</div>
                                 </div>
-                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
-                                    ${new Date(order.timestamp).toLocaleDateString('ru-RU')}
+                                <div style="font-size: 13px; color: var(--tea-text-light); margin-bottom: 8px;">
+                                    ${order.timestamp}
                                 </div>
-                                <div style="font-size: 14px; color: #888;">
+                                <div style="font-size: 14px; color: var(--tea-text-lighter);">
                                     Товаров: ${order.cart.reduce((sum, item) => sum + item.quantity, 0)}
                                 </div>
                             </div>
@@ -793,130 +917,71 @@ async function showOrders() {
             </div>
         </div>
     `;
+    
     modal.style.display = 'flex';
 }
 
-// Показать корзину
-function showCartModal() {
-    if (cart.length === 0) {
-        tg.showAlert('🛒 Корзина пуста');
-        return;
-    }
+function showOrderDetails(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
     
-    const modal = document.getElementById('cart-modal');
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const modal = document.getElementById('order-modal');
     
     modal.innerHTML = `
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-shopping-cart"></i> Корзина</h3>
+                <h3><i class="fas fa-receipt"></i> Заказ #${order.id}</h3>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                <div style="max-height: 40vh; overflow-y: auto; margin-bottom: 20px;">
-                    ${cart.map(item => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 5px;">${item.name}</div>
-                                <div style="font-size: 14px; color: #666;">${item.type} • ${item.price}₽/шт</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="display: flex; align-items: center; gap: 10px; background: white; padding: 5px 15px; border-radius: 20px;">
-                                    <button onclick="updateQuantity(${item.id}, -1)" style="width: 30px; height: 30px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
-                                    <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
-                                    <button onclick="updateQuantity(${item.id}, 1)" style="width: 30px; height: 30px; border-radius: 50%; border: none; background: #4CAF50; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
-                                </div>
-                                <div style="font-weight: 700; color: #4CAF50; min-width: 60px; text-align: right;">
-                                    ${item.price * item.quantity}₽
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--tea-text-light);">Дата:</span>
+                        <span style="font-weight: 600;">${order.timestamp}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--tea-text-light);">Покупатель:</span>
+                        <span style="font-weight: 600;">${order.user_name}</span>
+                    </div>
                 </div>
                 
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4CAF50;">
-                    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 15px;">
-                        <span>Итого:</span>
-                        <span>${total}₽</span>
+                <div style="background: var(--tea-bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 12px; color: var(--tea-text);">Состав заказа:</h4>
+                    ${order.cart.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                            <span>${item.name} × ${item.quantity}</span>
+                            <span style="font-weight: 600;">${item.total}₽</span>
+                        </div>
+                    `).join('')}
+                    
+                    <div style="border-top: 1px solid rgba(142, 110, 99, 0.2); margin-top: 12px; padding-top: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700;">
+                            <span>Итого:</span>
+                            <span>${order.total}₽</span>
+                        </div>
                     </div>
-                    <button onclick="checkout()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <i class="fas fa-paper-plane"></i> Оформить заказ
-                    </button>
                 </div>
+                
+                <button onclick="showOrders()" 
+                        style="width: 100%; padding: 12px; background: var(--tea-bg); color: var(--tea-text); 
+                               border: none; border-radius: var(--radius-round); font-weight: 600; 
+                               cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fas fa-arrow-left"></i> Назад к заказам
+                </button>
             </div>
         </div>
     `;
+    
     modal.style.display = 'flex';
 }
 
-// Обновить количество товара
-function updateQuantity(productId, delta) {
-    const item = cart.find(item => item.id === productId);
-    if (!item) return;
-    
-    item.quantity += delta;
-    if (item.quantity <= 0) {
-        cart = cart.filter(item => item.id !== productId);
-    }
-    
-    saveCart();
-    tg.HapticFeedback.impactOccurred('light');
-    
-    if (cart.length === 0) {
-        closeModal();
-    } else {
-        showCartModal();
-    }
-}
-
-// Оформление заказа
-async function checkout() {
-    if (cart.length === 0) {
-        tg.showAlert('Добавьте товары в корзину');
-        return;
-    }
-    
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const order = {
-        id: Date.now(),
-        user_id: userId,
-        user_name: userData.first_name || 'Гость',
-        cart: [...cart],
-        total: total,
-        timestamp: new Date().toISOString()
-    };
-    
-    // Сохраняем заказ
-    await saveOrder(order);
-    
-    // Отправляем данные в бота
-    tg.sendData(JSON.stringify({
-        action: 'checkout',
-        user_id: userData.id || userId,
-        user_name: userData.first_name || 'Гость',
-        user_username: userData.username || '',
-        cart: cart,
-        total: total,
-        order_id: order.id,
-        timestamp: order.timestamp
-    }));
-    
-    // Очищаем корзину
-    cart = [];
-    await saveCart();
-    
-    tg.showAlert(`✅ Заказ #${order.id} на ${total}₽ отправлен! С вами свяжется менеджер.`);
-    closeModal();
-}
-
-// Показать профиль
+// ========== ПРОФИЛЬ ==========
 function showProfile() {
     const modal = document.getElementById('profile-modal');
-    const userPhotoUrl = userData.photo_url || '';
     const firstName = userData.first_name || 'Гость';
-    const lastName = userData.last_name || '';
+    const fullName = `${firstName} ${userData.last_name || ''}`.trim();
     const username = userData.username ? `@${userData.username}` : '';
-    const fullName = `${firstName} ${lastName}`.trim();
+    const hasPhoto = userData.photo_url && userData.photo_url.trim() !== '';
     
     modal.innerHTML = `
         <div class="modal-content">
@@ -925,488 +990,168 @@ function showProfile() {
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div style="width: 100px; height: 100px; margin: 0 auto 15px; background: ${userPhotoUrl ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: ${userPhotoUrl ? 'inherit' : '42px'}; color: white; overflow: hidden; border: 3px solid #4CAF50;">
-                        ${userPhotoUrl ? 
-                            `<img src="${userPhotoUrl}" alt="${fullName}" style="width: 100%; height: 100%; object-fit: cover;">` : 
-                            `${firstName.charAt(0)}`
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 100px; height: 100px; margin: 0 auto 16px; 
+                         background: ${hasPhoto ? 'transparent' : 'linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light))'}; 
+                         border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+                         font-size: ${hasPhoto ? 'inherit' : '36px'}; color: white; overflow: hidden; 
+                         border: 3px solid var(--tea-green); box-shadow: 0 8px 20px rgba(0,0,0,0.15);">
+                        ${hasPhoto ? 
+                            `<img src="${userData.photo_url}" alt="${fullName}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">` : 
+                            `<i class="fas fa-user-circle"></i>`
                         }
                     </div>
-                    <h3 style="margin-bottom: 5px;">${fullName}</h3>
-                    ${username ? `<p style="color: #666; font-size: 16px;">${username}</p>` : ''}
-                    ${userData.id ? `<p style="color: #999; font-size: 14px; margin-top: 5px;">ID: ${userData.id}</p>` : ''}
+                    <h3 style="margin-bottom: 4px; color: var(--tea-text);">${fullName}</h3>
+                    ${username ? `<p style="color: var(--tea-purple); font-weight: 600; font-size: 14px;">${username}</p>` : ''}
+                    ${userData.id ? `<p style="color: var(--tea-text-lighter); font-size: 12px; margin-top: 4px;">ID: ${userData.id}</p>` : ''}
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px;">
-                    <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-info-circle"></i> Информация
-                    </h4>
-                    <div style="color: #666; line-height: 1.6;">
-                        <p style="margin-bottom: 10px;">📱 Вы используете ${tg.isExpanded ? 'развернутый' : 'компактный'} режим Telegram Web App</p>
-                        <p>🔄 Все ваши данные синхронизируются между устройствами</p>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+                    <div style="text-align: center; padding: 16px; background: var(--tea-bg); 
+                         border-radius: var(--radius-md); transition: all 0.3s var(--ease-smooth); cursor: pointer;"
+                         onclick="showCartModal()">
+                        <div style="font-size: 24px; margin-bottom: 8px; color: var(--tea-green);">🛒</div>
+                        <div style="font-weight: 700; font-size: 18px; color: var(--tea-text);">${cart.length}</div>
+                        <div style="font-size: 12px; color: var(--tea-text-light);">В корзине</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 16px; background: var(--tea-bg); 
+                         border-radius: var(--radius-md); transition: all 0.3s var(--ease-smooth); cursor: pointer;"
+                         onclick="showOrders()">
+                        <div style="font-size: 24px; margin-bottom: 8px; color: var(--tea-blue);">📦</div>
+                        <div style="font-weight: 700; font-size: 18px; color: var(--tea-text);">${orders.length}</div>
+                        <div style="font-size: 12px; color: var(--tea-text-light);">Заказов</div>
                     </div>
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px;">
-                    <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
+                <div style="background: var(--tea-bg); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 12px; color: var(--tea-text); display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-headset"></i> Контакты поддержки
                     </h4>
-                    <div style="color: #666; line-height: 1.6;">
-                        <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 10px;">
-                            <div style="font-weight: 600; margin-bottom: 5px;">Telegram:</div>
-                            <a href="https://t.me/ivan_likhov" target="_blank" style="color: #4CAF50; text-decoration: none;">@ivan_likhov</a>
+                    <div style="color: var(--tea-text-light); font-size: 14px; line-height: 1.6;">
+                        <p style="margin-bottom: 8px;">По всем вопросам обращайтесь:</p>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <i class="fab fa-telegram" style="color: var(--tea-blue);"></i>
+                            <a href="https://t.me/ivan_likhov" target="_blank" 
+                               style="color: var(--tea-blue); text-decoration: none; font-weight: 600;">
+                                @ivan_likhov
+                            </a>
                         </div>
-                        <div style="padding: 10px; background: white; border-radius: 10px;">
-                            <div style="font-weight: 600; margin-bottom: 5px;">Телефон:</div>
-                            <a href="tel:+79038394670" style="color: #4CAF50; text-decoration: none;">+7 (903) 839-46-70</a>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-phone" style="color: var(--tea-green);"></i>
+                            <a href="tel:+79038394670" style="color: var(--tea-green); text-decoration: none; font-weight: 600;">
+                                +7 (903) 839-46-70
+                            </a>
                         </div>
                     </div>
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px;">
-                    <h4 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-clock"></i> Часы работы
-                    </h4>
-                    <div style="color: #666;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>Понедельник - Воскресенье:</span>
-                            <span style="font-weight: 600;">09:00 - 21:00</span>
-                        </div>
-                        <p style="margin-top: 10px; font-size: 14px; color: #888;">Принимаем заказы 24/7</p>
-                    </div>
-                </div>
-                
-                <button onclick="openChannel()" style="width: 100%; padding: 15px; margin-top: 20px; background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <button onclick="window.open('https://t.me/teatea_bar', '_blank')" 
+                        style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0088cc, #00aced); 
+                               color: white; border: none; border-radius: var(--radius-round); font-weight: 600; 
+                               cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <i class="fab fa-telegram"></i> Наш телеграм-канал
                 </button>
             </div>
         </div>
     `;
+    
     modal.style.display = 'flex';
 }
 
-// Открыть канал
-function openChannel() {
-    tg.openLink('https://t.me/teatea_bar');
-}
-
-// Закрыть модальное окно
+// ========== УТИЛИТЫ ==========
 function closeModal() {
     document.querySelectorAll('.modal').forEach(modal => {
         modal.style.display = 'none';
     });
 }
 
-// Проверка и обновление синхронизации
-async function checkAndSyncData() {
-    if (isTelegramUser && tg.CloudStorage) {
-        try {
-            // Проверяем, есть ли более свежие данные в Cloud Storage
-            const cloudCart = await new Promise((resolve) => {
-                tg.CloudStorage.getItem('cart', (error, value) => {
-                    if (!error && value) resolve(value);
-                    else resolve(null);
-                });
-            });
-            
-            if (cloudCart) {
-                const parsedCloudCart = JSON.parse(cloudCart);
-                const localStorageKey = `tutu_cart_${userId}`;
-                const localCart = localStorage.getItem(localStorageKey);
-                
-                // Если данные в Cloud Storage новее или localCart пуст
-                if (!localCart || parsedCloudCart.length > JSON.parse(localCart).length) {
-                    cart = parsedCloudCart;
-                    await saveCart();
-                    updateCart();
-                    console.log('Cart synced from Cloud Storage');
-                }
-            }
-        } catch (error) {
-            console.log('Sync check error:', error);
-        }
-    }
-}
-
-// Вызываем проверку синхронизации при загрузке
-setTimeout(checkAndSyncData, 2000);
-
-// Обработчик для получения сообщений от родительского окна (если запущено в iframe)
-window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'telegram_user_data') {
-        userData = event.data.user;
-        isTelegramUser = true;
-        userId = generateUserId();
-        showMainInterface();
-    }
-});
-
-// Обработчики Telegram событий
-tg.onEvent('viewportChanged', (event) => {
-    console.log('Viewport changed:', event);
-});
-
-tg.onEvent('themeChanged', () => {
-    console.log('Theme changed');
-});
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', initApp);
-
-// Обработка закрытия приложения
-window.addEventListener('beforeunload', () => {
-    saveCart();
-});
-
-// Старая функция для обратной совместимости
-function showCatalog() {
-    showFullCatalog();
-}
-// ========== МАГИЧЕСКИЕ ЭФФЕКТЫ ==========
-
-// Эффект пара
-function createSteamEffect(element) {
-    const steam = document.createElement('div');
-    steam.className = 'steam';
-    steam.style.left = Math.random() * 80 + 10 + '%';
-    element.appendChild(steam);
-    
-    setTimeout(() => {
-        steam.remove();
-    }, 4000);
-}
-
-// Конфетти при покупке
-function createConfetti() {
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.cssText = `
-            left: ${Math.random() * 100}%;
-            width: ${Math.random() * 10 + 5}px;
-            height: ${Math.random() * 10 + 5}px;
-            background: hsl(${Math.random() * 360}, 100%, 60%);
-            border-radius: 50%;
-            animation: confettiFall ${Math.random() * 3 + 2}s linear forwards;
-            position: fixed;
-            z-index: 1001;
-        `;
-        document.body.appendChild(confetti);
-        
-        setTimeout(() => confetti.remove(), 5000);
-    }
-}
-
-// Кастомные уведомления
-function showTeaNotification(message, icon = 'fas fa-leaf', color = 'green') {
+// Уведомления
+function showNotification(message, type = 'green') {
+    const container = document.getElementById('notification-container');
     const notification = document.createElement('div');
-    notification.className = 'tea-notification';
+    notification.className = `tea-notification notification-${type}`;
     notification.innerHTML = `
-        <i class="${icon}"></i>
+        <i class="fas fa-${type === 'green' ? 'check-circle' : type === 'red' ? 'exclamation-circle' : 'info-circle'}"></i>
         <span>${message}</span>
     `;
     
-    // Цвета уведомлений
-    const colors = {
-        green: 'linear-gradient(135deg, var(--tea-green), var(--tea-green-light))',
-        gold: 'linear-gradient(135deg, var(--tea-gold), var(--tea-gold-light))',
-        red: 'linear-gradient(135deg, var(--tea-red), var(--tea-red-light))',
-        purple: 'linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light))'
-    };
+    container.appendChild(notification);
     
-    notification.style.background = colors[color] || colors.green;
-    
-    document.body.appendChild(notification);
-    
-    // Тактильная обратная связь
-    if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-    
-    // Автоматическое скрытие
+    // Автоудаление через 3 секунды
     setTimeout(() => {
-        notification.style.animation = 'notificationSlideIn 0.5s var(--ease-spring) reverse forwards';
-        setTimeout(() => notification.remove(), 500);
+        notification.style.animation = 'notificationSlideIn 0.4s var(--ease-spring) reverse forwards';
+        setTimeout(() => notification.remove(), 400);
     }, 3000);
 }
 
-// Эффект "сердечко" при добавлении в корзину
-function createHeartEffect(x, y) {
+// Эффекты
+function createHeartEffect() {
     const heart = document.createElement('div');
+    heart.className = 'heart-effect';
     heart.innerHTML = '❤️';
     heart.style.cssText = `
         position: fixed;
-        left: ${x}px;
-        top: ${y}px;
+        left: 50%;
+        top: 50%;
         font-size: 24px;
         pointer-events: none;
-        z-index: 1000;
-        animation: heartFloat 1.5s var(--ease-smooth) forwards;
+        z-index: 1001;
     `;
     
     document.body.appendChild(heart);
     
-    // Анимация
-    const keyframes = [
-        { transform: 'translateY(0) scale(1)', opacity: 1 },
-        { transform: 'translateY(-60px) scale(1.5)', opacity: 0.8 },
-        { transform: 'translateY(-100px) scale(0.5)', opacity: 0 }
-    ];
-    
-    heart.animate(keyframes, {
-        duration: 1500,
-        easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
-    });
-    
     setTimeout(() => heart.remove(), 1500);
 }
 
-// ========== УЛУЧШЕННОЕ ДОБАВЛЕНИЕ В КОРЗИНУ ==========
-
-function addToCart(productId) {
-    const product = teaCatalog.find(p => p.id === productId);
-    if (!product) return;
-    
-    const existingItem = cart.find(item => item.id === productId);
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ 
-            ...product, 
-            quantity: 1
-        });
+function createConfetti() {
+    for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.cssText = `
+            left: ${Math.random() * 100}%;
+            width: ${Math.random() * 8 + 4}px;
+            height: ${Math.random() * 8 + 4}px;
+            background: hsl(${Math.random() * 360}, 100%, 60%);
+            animation-delay: ${Math.random() * 0.5}s;
+        `;
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 2000);
     }
+}
+
+// ========== ЗАГРУЗКА ==========
+document.addEventListener('DOMContentLoaded', initApp);
+
+// Обработчики Telegram событий
+if (tg) {
+    tg.onEvent('viewportChanged', (event) => {
+        console.log('Viewport changed:', event);
+    });
     
+    tg.onEvent('themeChanged', () => {
+        console.log('Theme changed');
+    });
+}
+
+// Сохраняем корзину при закрытии
+window.addEventListener('beforeunload', () => {
     saveCart();
-    
-    // Спецэффекты
-    const button = event?.target || document.querySelector(`[onclick*="addToCart(${productId})"]`);
-    if (button) {
-        const rect = button.getBoundingClientRect();
-        createHeartEffect(rect.left + rect.width/2, rect.top + rect.height/2);
-    }
-    
-    // Эффект пара
-    createSteamEffect(document.querySelector('.cart-icon') || document.body);
-    
-    // Уведомление с разными иконками
-    const icons = ['🍵', '✨', '🌿', '💚', '🥰'];
-    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-    
-    showTeaNotification(
-        `${randomIcon} ${product.name} добавлен в корзину!`,
-        'fas fa-cart-plus',
-        'green'
-    );
-}
-
-// ========== АНИМИРОВАННОЕ ОФОРМЛЕНИЕ ЗАКАЗА ==========
-
-async function checkout() {
-    if (cart.length === 0) {
-        showTeaNotification('🛒 Добавьте что-нибудь в корзину!', 'fas fa-shopping-cart', 'gold');
-        return;
-    }
-    
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Эффект загрузки
-    showTeaNotification('🧘‍♂️ Создаем вашу чайную гармонию...', 'fas fa-spinner fa-spin', 'purple');
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Конфетти и эффекты
-    createConfetti();
-    
-    const order = {
-        id: Date.now(),
-        user_id: userId,
-        cart: [...cart],
-        total: total,
-        timestamp: new Date().toISOString()
-    };
-    
-    await saveOrder(order);
-    
-    // Очищаем корзину с анимацией
-    cart = [];
-    await saveCart();
-    
-    // Финальное уведомление
-    showTeaNotification(
-        `🎉 Заказ #${order.id} на ${total}₽ оформлен! Скоро свяжемся!`,
-        'fas fa-check-circle',
-        'gold'
-    );
-    
-    // Эффект "волшебной пыли"
-    setTimeout(createConfetti, 500);
-    
-    closeModal();
-}
-
-// ========== ОБНОВЛЕННЫЙ ПОКАЗ ПРОФИЛЯ ==========
-
-function showProfile() {
-    const modal = document.getElementById('profile-modal');
-    const userPhotoUrl = userData.photo_url || '';
-    const firstName = userData.first_name || 'Гость';
-    const fullName = `${firstName} ${userData.last_name || ''}`.trim();
-    
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-spa"></i> Моя чайная гармония</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div style="text-align: center; margin-bottom: 32px; position: relative;">
-                    <div style="width: 120px; height: 120px; margin: 0 auto 20px; 
-                         background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
-                         border-radius: 50%; display: flex; align-items: center; 
-                         justify-content: center; font-size: 48px; color: white;
-                         overflow: hidden; border: 4px solid white;
-                         box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-                         animation: gentleBob 6s infinite;">
-                        ${userPhotoUrl ? 
-                            `<img src="${userPhotoUrl}" alt="${fullName}" 
-                                 style="width: 100%; height: 100%; object-fit: cover;">` : 
-                            `<i class="fas fa-user-circle"></i>`
-                        }
-                    </div>
-                    <h3 style="margin-bottom: 8px; font-size: 24px;">${fullName}</h3>
-                    ${userData.username ? 
-                        `<p style="color: var(--tea-purple); font-weight: 600;">@${userData.username}</p>` : 
-                        ''
-                    }
-                    <div class="loading-bar">
-                        <div class="loading-bar-fill"></div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
-                    <div style="text-align: center; padding: 20px; background: var(--tea-bg); 
-                         border-radius: var(--radius-soft); transition: all 0.3s var(--ease-spring);
-                         cursor: pointer;" onclick="createConfetti()">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🍵</div>
-                        <div style="font-weight: 600;">${cart.length || 0}</div>
-                        <div style="font-size: 14px; color: var(--tea-text-light);">В корзине</div>
-                    </div>
-                    
-                    <div style="text-align: center; padding: 20px; background: var(--tea-bg); 
-                         border-radius: var(--radius-soft); transition: all 0.3s var(--ease-spring);
-                         cursor: pointer;" onclick="showOrders()">
-                        <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
-                        <div style="font-weight: 600;">3</div>
-                        <div style="font-size: 14px; color: var(--tea-text-light);">Заказов</div>
-                    </div>
-                </div>
-                
-                <button onclick="openChannel()" style="width: 100%; padding: 16px; margin-bottom: 12px;
-                    background: linear-gradient(135deg, #0088cc, #00aced); color: white;
-                    border: none; border-radius: var(--radius-round); font-weight: 600;
-                    cursor: pointer; display: flex; align-items: center; justify-content: center;
-                    gap: 10px; transition: all 0.3s var(--ease-spring);">
-                    <i class="fab fa-telegram"></i> Наш чайный канал
-                </button>
-                
-                <button onclick="showTeaNotification('🧘‍♀️ Вы в гармонии с миром чая!', 'fas fa-heart', 'red')" 
-                        style="width: 100%; padding: 16px;
-                        background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); 
-                        color: white; border: none; border-radius: var(--radius-round); 
-                        font-weight: 600; cursor: pointer; display: flex; align-items: center; 
-                        justify-content: center; gap: 10px; transition: all 0.3s var(--ease-spring);">
-                    <i class="fas fa-magic"></i> Волшебная кнопка
-                </button>
-            </div>
-        </div>
-    `;
-    
-    modal.style.display = 'flex';
-}
-
-// ========== АВТОМАТИЧЕСКИЕ ЭФФЕКТЫ ПРИ ЗАГРУЗКЕ ==========
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Задержка для плавной загрузки
-    setTimeout(() => {
-        initApp();
-        // Показываем приветственный эффект
-        setTimeout(() => {
-            if (isTelegramUser) {
-                showTeaNotification(
-                    `🌸 Добро пожаловать, ${userData.first_name}! Наслаждайтесь чаем!`,
-                    'fas fa-heart',
-                    'purple'
-                );
-            }
-        }, 1000);
-    }, 1500);
-    
-    // Добавляем эффект пара на логотип
-    setInterval(() => {
-        if (Math.random() > 0.7) {
-            createSteamEffect(document.querySelector('.logo-icon'));
-        }
-    }, 3000);
 });
 
-// ========== ИНИЦИАЛИЗАЦИЯ С АНИМАЦИЯМИ ==========
-
-async function initApp() {
-    tg.ready();
-    tg.expand();
-    
-    // Плавная настройка цветов
-    tg.setHeaderColor('#4CAF50');
-    tg.setBackgroundColor('#FFF8F0');
-    
-    // Загружаем данные с индикацией
-    const loaderStatus = document.getElementById('loader-status');
-    const steps = [
-        'Определяем ваш вкус чая...',
-        'Готовим чайные листья...',
-        'Нагреваем воду до идеальной температуры...',
-        'Наслаждаемся ароматом...',
-        'Почти готово!'
-    ];
-    
-    let step = 0;
-    const interval = setInterval(() => {
-        if (loaderStatus && step < steps.length) {
-            loaderStatus.textContent = steps[step];
-            step++;
-        } else {
-            clearInterval(interval);
-        }
-    }, 400);
-    
-    userData = await getUserData();
-    userId = generateUserId();
-    await loadCart();
-    await loadOrders();
-    
-    showMainInterface();
-    
-    // Плавное скрытие загрузчика
-    setTimeout(() => {
-        const loader = document.getElementById('loader');
-        loader.style.opacity = '0';
-        loader.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            loader.style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            // Финальный эффект
-            createConfetti();
-        }, 600);
-    }, 2000);
-}
-// Функция для отладки (можно вызывать из консоли)
-function debugUser() {
-    console.log('User Data:', userData);
-    console.log('User ID:', userId);
-    console.log('Is Telegram User:', isTelegramUser);
-    console.log('Cart:', cart);
-    console.log('Telegram WebApp:', tg);
-    console.log('Telegram initDataUnsafe:', tg.initDataUnsafe);
-}
+// Экспортируем функции для глобального использования
+window.addToCart = addToCart;
+window.showProduct = showProduct;
+window.showFullCatalog = showFullCatalog;
+window.showCartModal = showCartModal;
+window.showOrders = showOrders;
+window.showProfile = showProfile;
+window.closeModal = closeModal;
+window.updateQuantity = updateQuantity;
+window.startCheckout = startCheckout;
+window.confirmCheckout = confirmCheckout;
+window.copyToClipboard = copyToClipboard;
+window.scrollToPopular = scrollToPopular;
