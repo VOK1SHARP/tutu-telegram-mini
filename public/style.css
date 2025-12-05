@@ -1748,3 +1748,243 @@ select:focus {
         -webkit-overflow-scrolling: touch;
     }
 }
+/* ========== СТРАНИЦА ПРОДУКТА (ЭЛИТНЫЙ ВАРИАНТ) ========== */
+
+.product-card {
+    background: var(--tea-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin: var(--space-lg);
+    box-shadow: 0 8px 30px rgba(62, 39, 35, 0.1);
+    animation: cardAppear 0.6s var(--ease-out) both;
+}
+
+@keyframes cardAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.product-image-container {
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 40px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    33% {
+        transform: translateY(-10px) rotate(2deg);
+    }
+    66% {
+        transform: translateY(5px) rotate(-1deg);
+    }
+}
+
+.product-title h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--tea-text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.product-subtitle {
+    font-size: 16px;
+    color: var(--tea-text-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.product-tag {
+    background: var(--tea-gold);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.product-type {
+    background: var(--tea-green);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.product-price-main {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--tea-green);
+    text-align: center;
+    margin: var(--space-lg) 0;
+    padding: var(--space-md);
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), transparent);
+    border-radius: var(--radius-md);
+    animation: pricePulse 3s infinite alternate;
+}
+
+@keyframes pricePulse {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.02);
+    }
+}
+
+.product-description {
+    background: var(--tea-bg);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--tea-text);
+    border-left: 4px solid var(--tea-green);
+}
+
+.dark-theme .product-description {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Детали чая */
+.tea-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--tea-bg);
+    border-radius: var(--radius-md);
+    transition: all 0.3s var(--ease-smooth);
+    border: 1px solid rgba(142, 110, 99, 0.1);
+}
+
+.detail-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px var(--tea-shadow);
+    border-color: var(--tea-green);
+}
+
+.detail-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.detail-content h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--tea-text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-content h4::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tea-green), transparent);
+}
+
+.detail-content p {
+    font-size: 14px;
+    color: var(--tea-text-light);
+    line-height: 1.6;
+}
+
+/* Рекомендации по завариванию */
+.tea-recommendations {
+    background: linear-gradient(135deg, rgba(123, 31, 162, 0.1), rgba(186, 104, 200, 0.1));
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    border: 1px solid rgba(123, 31, 162, 0.2);
+}
+
+.tea-recommendations h3 {
+    font-size: 18px;
+    color: var(--tea-purple);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tea-recommendations p {
+    font-size: 14px;
+    color: var(--tea-text);
+    line-height: 1.8;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .product-card {
+        margin: var(--space-md);
+        padding: var(--space-md);
+    }
+    
+    .product-card-header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-md);
+    }
+    
+    .product-image-container {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+    
+    .tea-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-price-main {
+        font-size: 32px;
+    }
+}
