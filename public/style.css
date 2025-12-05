@@ -548,6 +548,10 @@ body {
 .oolong { background: linear-gradient(135deg, #F57C00, #FF9800); }
 .gaba { background: linear-gradient(135deg, #7B1FA2, #BA68C8); }
 .green-tea { background: linear-gradient(135deg, #2E7D32, #4CAF50); }
+/* Добавить к существующим цветам чая */
+.white-tea { 
+    background: linear-gradient(135deg, #757575, #9E9E9E); 
+}
 
 .catalog-product-info {
     flex: 1;
