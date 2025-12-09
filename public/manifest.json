@@ -8,6 +8,18 @@
   "theme_color": "#4CAF50",
   "icons": [
     {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234CAF50%22>🍵</text></svg>",
       "sizes": "any",
       "type": "image/svg+xml"
@@ -16,5 +28,21 @@
   "categories": ["food", "shopping"],
   "orientation": "portrait",
   "scope": "/",
-  "lang": "ru"
+  "lang": "ru",
+  "shortcuts": [
+    {
+      "name": "Каталог чая",
+      "short_name": "Каталог",
+      "description": "Перейти к выбору чая",
+      "url": "/?page=catalog",
+      "icons": [{ "src": "icon-catalog.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Мои заказы",
+      "short_name": "Заказы",
+      "description": "Посмотреть историю заказов",
+      "url": "/?page=orders",
+      "icons": [{ "src": "icon-orders.png", "sizes": "96x96" }]
+    }
+  ]
 }
