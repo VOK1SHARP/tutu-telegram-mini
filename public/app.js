@@ -786,14 +786,15 @@ function showMainPage() {
         </div>
     `;
     
-    showPage('main');
-   setTimeout(() => {
-    updateMainCartFooter();
-    setupCartFooterScroll();
-    // Убедитесь что страница прокручивается
-    document.body.style.overflow = 'auto';
-    document.documentElement.style.overflow = 'auto';
-}, 100);
+      showPage('main');
+    setTimeout(() => {
+        updateMainCartFooter();
+        setupCartFooterScroll();
+        // Убедитесь что страница прокручивается
+        document.body.style.overflow = 'auto';
+        document.documentElement.style.overflow = 'auto';
+    }, 100);
+} // ← ЭТУ СТРОКУ НУЖНО ДОБАВИТЬ! Это закрывающая скобка для функции showMainPage()
 
 function getWelcomeMessage() {
     const hour = new Date().getHours();
