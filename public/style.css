@@ -1162,33 +1162,28 @@ body {
     font-size: 14px;
 }
 
-/* ---------- ФУТЕР КОРЗИНЫ ---------- */
+/* ========== ФУТЕР КОРЗИНЫ С СКРОЛЛОМ ========== */
+.main-content {
+    padding-bottom: 80px; /* Место для футера */
+}
+
 .main-cart-footer {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(142, 110, 99, 0.1);
-    padding: var(--space-md) var(--space-lg);
+    padding: 12px 16px;
     z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s var(--ease-smooth), opacity 0.3s var(--ease-smooth);
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    padding-bottom: calc(var(--space-md) + var(--safe-bottom));
-    animation: footerSlideUp 0.5s var(--ease-smooth) both;
-}
-
-@keyframes footerSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    will-change: transform;
+    padding-bottom: calc(12px + var(--safe-bottom));
 }
 
 .dark-theme .main-cart-footer {
@@ -1196,6 +1191,20 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* При скролле вниз - скрываем футер */
+.main-cart-footer.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Для iOS устройств - фикс */
+.ios-device .main-cart-footer {
+    position: sticky;
+    bottom: 0;
+}
+
+/* Для Android устройств */
 .android-device .main-cart-footer {
     position: sticky;
     bottom: 0;
@@ -1205,34 +1214,33 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: var(--space-md);
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .cart-total {
-    flex: 1;
     font-size: 16px;
     font-weight: 600;
     color: var(--tea-text);
-    animation: fadeInLeft 0.5s var(--ease-smooth) 0.1s both;
+    flex: 1;
 }
 
 .checkout-button {
-    padding: 12px 24px;
     background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
     color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: var(--radius-round);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s var(--ease-smooth);
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.3s var(--ease-smooth);
+    min-height: 44px;
     min-width: 120px;
     justify-content: center;
     transform-origin: center;
-    animation: fadeInRight 0.5s var(--ease-smooth) 0.1s both;
-    min-height: 44px;
     touch-action: manipulation;
 }
 
@@ -1246,11 +1254,13 @@ body {
 }
 
 .checkout-button:disabled {
-    opacity: 0.5;
+    background: var(--tea-border);
     cursor: not-allowed;
+    opacity: 0.5;
     pointer-events: none;
 }
 
+/* Анимация пульсации при наличии товаров */
 .pulse-button {
     animation: pulse 2s infinite;
 }
