@@ -1948,6 +1948,26 @@ function registerServiceWorker() {
             });
     }
 }
+// Управление скроллом футера корзины
+function setupCartFooterScroll() {
+    const cartFooter = document.querySelector('.main-cart-footer');
+    if (!cartFooter) return;
+    
+    let lastScrollTop = 0;
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Скроллим вниз - скрываем
+            cartFooter.classList.add('hidden');
+        } else {
+            // Скроллим вверх - показываем
+            cartFooter.classList.remove('hidden');
+        }
+        lastScrollTop = scrollTop;
+    });
+}
 
 // ========== ЗАГРУЗКА ПРИЛОЖЕНИЯ ==========
 window.addEventListener('DOMContentLoaded', () => {
