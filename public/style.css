@@ -2365,3 +2365,31 @@ input[type="submit"] {
     70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
     100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
+/* Убедитесь что body и контейнеры могут скроллиться */
+body, html {
+    overflow: auto;
+    height: 100%;
+}
+
+/* Исправьте .page для правильного скролла */
+.page {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+}
+
+/* Улучшите анимацию для футера */
+.main-cart-footer {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.main-cart-footer.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Убедитесь что контент не перекрывается */
+.main-content {
+    padding-bottom: 80px;
+}
