@@ -816,10 +816,12 @@ function showMainPage() {
     
     showPage('main');
    setTimeout(() => {
-        updateMainCartFooter();
-        setupCartFooterScroll(); // Добавьте эту строку
-    }, 100);
-}
+    updateMainCartFooter();
+    setupCartFooterScroll();
+    // Убедитесь что страница прокручивается
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+}, 100);
 
 function getWelcomeMessage() {
     const hour = new Date().getHours();
@@ -1994,24 +1996,77 @@ function registerServiceWorker() {
     }
 }
 // Управление скроллом футера корзины
+// Управление скроллом футера корзины
 function setupCartFooterScroll() {
     const cartFooter = document.querySelector('.main-cart-footer');
     if (!cartFooter) return;
     
-    let lastScrollTop = 0;
+    // Удаляем старые обработчики если они есть
+    window.removeEventListener('scroll', handleCartFooterScroll);
+    window.removeEventListener('touchstart', handleTouchStart);
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
     
-    window.addEventListener('scroll', () => {
+    let lastScrollTop = 0;
+    let touchStartY = 0;
+    let isTouching = false;
+    
+    function handleCartFooterScroll() {
+        if (isTouching) return;
+        
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         if (scrollTop > lastScrollTop && scrollTop > 100) {
             // Скроллим вниз - скрываем
             cartFooter.classList.add('hidden');
-        } else {
-            // Скроллим вверх - показываем
+        } else if (scrollTop < lastScrollTop || scrollTop <= 50) {
+            // Скроллим вверх или вверху - показываем
             cartFooter.classList.remove('hidden');
         }
+        
         lastScrollTop = scrollTop;
-    });
+    }
+    
+    function handleTouchStart(e) {
+        touchStartY = e.touches[0].clientY;
+        isTouching = true;
+    }
+    
+    function handleTouchMove(e) {
+        if (!touchStartY) return;
+        
+        const touchY = e.touches[0].clientY;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Если скроллим вниз и проскроллили достаточно - скрываем
+        if (touchY < touchStartY - 20 && scrollTop > 100) {
+            cartFooter.classList.add('hidden');
+        } 
+        // Если скроллим вверх - показываем
+        else if (touchY > touchStartY + 20) {
+            cartFooter.classList.remove('hidden');
+        }
+    }
+    
+    function handleTouchEnd() {
+        touchStartY = 0;
+        isTouching = false;
+        // Через небольшой таймаут снова проверяем положение скролла
+        setTimeout(() => {
+            handleCartFooterScroll();
+        }, 100);
+    }
+    
+    // Добавляем обработчики
+    window.addEventListener('scroll', handleCartFooterScroll, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Инициализируем начальное состояние
+    setTimeout(() => {
+        handleCartFooterScroll();
+    }, 500);
 }
 
 // ========== ЗАГРУЗКА ПРИЛОЖЕНИЯ ==========
