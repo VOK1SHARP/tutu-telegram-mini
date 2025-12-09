@@ -415,22 +415,67 @@ function fixIOSViewport() {
         tg.viewportHeight = window.innerHeight;
     }
 }
+// Управление скроллом футера корзины
 function setupCartFooterScroll() {
     const cartFooter = document.querySelector('.main-cart-footer');
-    if (!cartFooter) return;
+    if (!cartFooter) {
+        console.log('Футер корзины не найден');
+        return;
+    }
     
-    window.addEventListener('scroll', () => {
+    let lastScrollTop = 0;
+    let ticking = false;
+    
+    const handleScroll = () => {
+        if (ticking) return;
+        
+        ticking = true;
+        requestAnimationFrame(() => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Если скроллим вниз и проскроллили больше 50px
+            if (scrollTop > lastScrollTop && scrollTop > 50) {
+                cartFooter.classList.add('hidden');
+            } 
+            // Если скроллим вверх или вверху страницы
+            else if (scrollTop < lastScrollTop || scrollTop <= 50) {
+                cartFooter.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+            ticking = false;
+        });
+    };
+    
+    // Добавляем обработчик скролла
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Также скрываем футер при начале скролла вниз на мобильных устройствах
+    let touchStartY = 0;
+    
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!touchStartY) return;
+        
+        const touchY = e.touches[0].clientY;
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Скроллим вниз - скрываем
+        // Проверяем, скроллим ли мы вниз
+        if (touchY < touchStartY && scrollTop > 50) {
             cartFooter.classList.add('hidden');
-        } else {
-            // Скроллим вверх - показываем
+        } else if (touchY > touchStartY || scrollTop <= 50) {
             cartFooter.classList.remove('hidden');
         }
-        lastScrollTop = scrollTop;
-    });
+    }, { passive: true });
+    
+    document.addEventListener('touchend', () => {
+        touchStartY = 0;
+    }, { passive: true });
+    
+    console.log('Скролл футера настроен');
 }
 // Инициализация Telegram WebApp
 function initTelegramWebApp() {
