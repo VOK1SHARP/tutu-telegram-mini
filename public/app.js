@@ -1884,8 +1884,12 @@ function trackEvent(event, data = {}) {
         ...data
     };
     
-    // Логируем в консоль для отладки
-    if (process.env.NODE_ENV === 'development') {
+    // Логируем в консоль для отладки (всегда в dev режиме)
+    const isDevMode = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1' ||
+                      window.location.protocol === 'file:';
+    
+    if (isDevMode) {
         console.log(`[Analytics] ${event}:`, eventData);
     }
     
