@@ -12,6 +12,7 @@ let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
 let isTransitioning = false;
+let lastScrollTop = 0;
 
 // Определение устройств
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -35,7 +36,7 @@ const teaCatalog = [
         name: 'БАНЬ ЧЖАН ХУН ПЯО',
         subtitle: 'Урожай 2022 года',
         type: 'Шу Пуэр',
-        price: 2800,
+        price: 500,  // Было 2800, теперь 500
         tag: 'Элитный',
         icon: 'fas fa-mountain-sun',
         category: 'puer',
@@ -55,7 +56,7 @@ const teaCatalog = [
         name: 'СТАРЫЕ ДЕРЕВЬЯ ИЗ БАНЬ ЧЖАН',
         subtitle: 'Урожай 2009 года',
         type: 'Шу Пуэр',
-        price: 4500,
+        price: 500,  // Было 4500, теперь 500
         tag: 'Коллекционный',
         icon: 'fas fa-tree',
         category: 'puer',
@@ -75,7 +76,7 @@ const teaCatalog = [
         name: 'НОУ МИ СЯН',
         subtitle: 'С ароматом клейкого риса',
         type: 'Шу Пуэр',
-        price: 2200,
+        price: 50,  // Было 2200, теперь 50
         tag: 'Эксклюзив',
         icon: 'fas fa-bowl-rice',
         category: 'puer',
@@ -94,7 +95,7 @@ const teaCatalog = [
         name: 'ТЕ ГУАНЬ ИНЬ',
         subtitle: 'Железная богиня милосердия',
         type: 'Улун',
-        price: 1900,
+        price: 420,  // Было 1900, теперь 420
         tag: 'Классика',
         icon: 'fas fa-yin-yang',
         category: 'oolong',
@@ -113,7 +114,7 @@ const teaCatalog = [
         name: 'ЖОУ ГУЙ НУН СЯН',
         subtitle: 'Мясистая корица с сильным ароматом',
         type: 'Улун',
-        price: 2500,
+        price: 440,  // Было 2500, теперь 440
         tag: 'Премиум',
         icon: 'fas fa-spice',
         category: 'oolong',
@@ -127,12 +128,32 @@ const teaCatalog = [
             weight: '100г'
         }
     },
+    // Добавим Габа чай (которого нет в текущем каталоге)
     {
         id: 6,
+        name: 'ГАБА МАО ЧА',
+        subtitle: 'Особый ферментированный чай',
+        type: 'ГАБА',
+        price: 300,
+        tag: 'Особый',
+        icon: 'fas fa-brain',
+        category: 'gaba',
+        image: 'gaba.jpg',
+        description: 'Особый вид чая с высоким содержанием GABA (гамма-аминомасляной кислоты).',
+        details: {
+            aroma: 'Пряный, с нотами сухофруктов',
+            taste: 'Насыщенный, сбалансированный, с долгим послевкусием',
+            effect: 'Успокаивает нервную систему, снижает стресс',
+            region: 'Китай',
+            weight: '100г'
+        }
+    },
+    {
+        id: 7,
         name: 'ХЭЙ ЦЗИНЬ',
         subtitle: 'Черное золото',
         type: 'Красный чай',
-        price: 2700,
+        price: 430,  // Было 2700, теперь 430
         tag: 'Премиальный',
         icon: 'fas fa-crown',
         category: 'red',
@@ -147,11 +168,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 7,
+        id: 8,
         name: 'СЯО ЧЖУН ЧЖЭНЬ ШАНЬ',
         subtitle: 'Подлинный горный мелколистный',
         type: 'Красный чай',
-        price: 2300,
+        price: 500,  // Было 2300, теперь 500
         tag: 'Классика',
         icon: 'fas fa-mountain',
         category: 'red',
@@ -166,11 +187,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 8,
+        id: 9,
         name: 'ГУ ШУ ХУН ЧА',
         subtitle: 'Красный чай со старых деревьев',
         type: 'Красный чай',
-        price: 3500,
+        price: 300,  // Было 3500, теперь 300
         tag: 'Элитный',
         icon: 'fas fa-tree',
         category: 'red',
@@ -185,11 +206,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 9,
+        id: 10,
         name: 'ДЯНЬ ХУН',
         subtitle: 'Красный чай из Дяньси',
         type: 'Красный чай',
-        price: 1800,
+        price: 300,  // Было 1800, теперь 300
         tag: 'Традиционный',
         icon: 'fas fa-fire',
         category: 'red',
@@ -204,11 +225,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 10,
+        id: 11,
         name: 'МАО ЦЗЯНЬ',
         subtitle: 'Пушистые кончики',
         type: 'Зеленый чай',
-        price: 2100,
+        price: 300,  // Было 2100, теперь 300
         tag: 'Топ-10 Китая',
         icon: 'fas fa-leaf',
         category: 'green',
@@ -223,11 +244,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 11,
+        id: 12,
         name: 'МО ЛИ ХУА ЧА',
         subtitle: 'Жасминовый цветочный чай',
         type: 'Зеленый чай',
-        price: 1600,
+        price: 350,  // Было 1600, теперь 350
         tag: 'Традиционный',
         icon: 'fas fa-flower',
         category: 'green',
@@ -242,11 +263,11 @@ const teaCatalog = [
         }
     },
     {
-        id: 12,
+        id: 13,
         name: 'ГУН МЭЙ',
         subtitle: 'Бровь, подношение',
         type: 'Белый чай',
-        price: 2400,
+        price: 450,  // Было 2400, теперь 450
         tag: 'Полезный',
         icon: 'fas fa-heart',
         category: 'white',
@@ -260,45 +281,7 @@ const teaCatalog = [
             weight: '100г'
         }
     },
-    {
-        id: 13,
-        name: 'БАЙ ХАО ИНЬ ЧЖЭНЬ',
-        subtitle: 'Белый пион серебряные иглы',
-        type: 'Белый чай',
-        price: 3200,
-        tag: 'Премиум',
-        icon: 'fas fa-cloud',
-        category: 'white',
-        image: 'white2.jpg',
-        description: 'Элитный белый чай из нераспустившихся почек, покрытых белым ворсом.',
-        details: {
-            aroma: 'Нежный, цветочный с медовыми нотами',
-            taste: 'Сладкий, шелковистый, с фруктовыми оттенками',
-            effect: 'Антиоксидант, омолаживающий эффект, успокаивает нервную систему',
-            region: 'Фуцзянь, Китай',
-            weight: '50г'
-        }
-    },
-    {
-        id: 14,
-        name: 'ПЯТИЗВЕЗДОЧНЫЙ ПАВЛИН',
-        subtitle: 'Из Булань 2018г',
-        type: 'Шу Пуэр',
-        price: 3800,
-        tag: 'Выдержанный',
-        icon: 'fas fa-feather-alt',
-        category: 'puer',
-        image: 'puer4.jpg',
-        description: 'Шу пуэр 2018 года — выдержанный чай с ароматом и вкусом, сформированным многолетней выдержкой.',
-        details: {
-            aroma: 'Бархатистые ноты карамели, печёного яблока и лёгкой пряности',
-            taste: 'Шоколадно-ореховые тона с нотами чернослива, персика и карамели',
-            effect: 'Мягко бодрит, повышает концентрацию, способствует ментальной релаксации',
-            region: 'Юньнань, Китай',
-            harvest: '2018 год',
-            weight: '357г (блин)'
-        }
-    }
+    // Уберем 14-й элемент (ПЯТИЗВЕЗДОЧНЫЙ ПАВЛИН), так как его нет в таблице
 ];
 
 // Категории с изображениями
@@ -323,6 +306,13 @@ const teaCategories = [
         icon: 'fas fa-yin-yang', 
         color: '#F57C00',
         image: 'category_oolong.jpg'
+    },
+      { 
+        id: 'gaba', 
+        name: 'Габа чай', 
+        icon: 'fas fa-brain', 
+        color: '#7B1FA2',  // Фиолетовый для Габы
+        image: ''
     },
     { 
         id: 'red', 
@@ -425,7 +415,23 @@ function fixIOSViewport() {
         tg.viewportHeight = window.innerHeight;
     }
 }
-
+function setupCartFooterScroll() {
+    const cartFooter = document.querySelector('.main-cart-footer');
+    if (!cartFooter) return;
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Скроллим вниз - скрываем
+            cartFooter.classList.add('hidden');
+        } else {
+            // Скроллим вверх - показываем
+            cartFooter.classList.remove('hidden');
+        }
+        lastScrollTop = scrollTop;
+    });
+}
 // Инициализация Telegram WebApp
 function initTelegramWebApp() {
     if (typeof window.Telegram !== 'undefined' && tg) {
@@ -764,7 +770,10 @@ function showMainPage() {
     `;
     
     showPage('main');
-    setTimeout(updateMainCartFooter, 100);
+   setTimeout(() => {
+        updateMainCartFooter();
+        setupCartFooterScroll(); // Добавьте эту строку
+    }, 100);
 }
 
 function getWelcomeMessage() {
