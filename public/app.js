@@ -658,10 +658,25 @@ function showMainPage() {
     page.innerHTML = `
         <!-- Шапка с паттерном и логотипом -->
         <div class="header-with-pattern">
-           <div class="logo-centered">
-    <img src="logo.png" alt="ТИ•ТИ - Чайная лавка" 
-         onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234CAF50%22>🍵</text></svg>';">
-</div>
+            <div class="logo-centered">
+                <div class="logo-svg" style="
+                    width: 80px;
+                    height: 80px;
+                    margin: 0 auto;
+                    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+                    border-radius: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 40px;
+                    color: white;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                ">
+                    🍵
+                </div>
+                <h2 style="margin-top: 10px; color: var(--tea-text);">ТИ•ТИ</h2>
+                <p style="color: var(--tea-text-light); margin-top: 5px;">Чайная лавка</p>
+            </div>
         </div>
         
         <div class="main-content">
@@ -687,24 +702,32 @@ function showMainPage() {
                     <i class="fas fa-filter"></i> Категории чая
                 </h2>
                 <div class="category-grid">
-    ${teaCategories.map((category, index) => `
-        <div class="category-item" onclick="showCatalogPage('${category.id}')" 
-             style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
-             aria-label="${category.name}">
-            <div class="category-image-container" 
-                 style="background: ${category.color} linear-gradient(135deg, ${category.color}, ${category.color}99);">
-                <div class="category-overlay">
-                    <i class="${category.icon}"></i>
+                    ${teaCategories.map((category, index) => {
+                        // Проверяем, есть ли изображение
+                        const hasImage = category.image && category.image !== '';
+                        const backgroundStyle = hasImage 
+                            ? `background-image: url('${category.image}'); background-size: cover;`
+                            : `background: ${category.color};`;
+                        
+                        return `
+                        <div class="category-item" onclick="showCatalogPage('${category.id}')" 
+                             style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
+                             aria-label="${category.name}">
+                            <div class="category-image-container" 
+                                 style="${backgroundStyle}">
+                                <div class="category-overlay">
+                                    <i class="${category.icon}"></i>
+                                </div>
+                            </div>
+                            <div class="category-name">${category.name}</div>
+                            <div class="category-count">
+                                ${category.id === 'all' ? teaCatalog.length : 
+                                  teaCatalog.filter(t => t.category === category.id).length} видов
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
                 </div>
-            </div>
-            <div class="category-name">${category.name}</div>
-            <div class="category-count">
-                ${category.id === 'all' ? teaCatalog.length : 
-                  teaCatalog.filter(t => t.category === category.id).length} видов
-            </div>
-        </div>
-    `).join('')}
-</div>
             </div>
             
             <!-- Quick Actions -->
