@@ -658,10 +658,10 @@ function showMainPage() {
     page.innerHTML = `
         <!-- Шапка с паттерном и логотипом -->
         <div class="header-with-pattern">
-            <div class="logo-centered">
-                <img src="logo.png" alt="ТИ•ТИ - Чайная лавка" 
-                     onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234CAF50%22>🍵</text></svg>';">
-            </div>
+           <div class="logo-centered">
+    <img src="logo.png" alt="ТИ•ТИ - Чайная лавка" 
+         onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234CAF50%22>🍵</text></svg>';">
+</div>
         </div>
         
         <div class="main-content">
@@ -687,23 +687,24 @@ function showMainPage() {
                     <i class="fas fa-filter"></i> Категории чая
                 </h2>
                 <div class="category-grid">
-                    ${teaCategories.map((category, index) => `
-                        <div class="category-item" onclick="showCatalogPage('${category.id}')" 
-                             style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
-                             aria-label="${category.name}">
-                            <div class="category-image-container" style="background-image: url('${category.image}');">
-                                <div class="category-overlay" style="background: ${category.color};">
-                                    <i class="${category.icon}"></i>
-                                </div>
-                            </div>
-                            <div class="category-name">${category.name}</div>
-                            <div class="category-count">
-                                ${category.id === 'all' ? teaCatalog.length : 
-                                  teaCatalog.filter(t => t.category === category.id).length} видов
-                            </div>
-                        </div>
-                    `).join('')}
+    ${teaCategories.map((category, index) => `
+        <div class="category-item" onclick="showCatalogPage('${category.id}')" 
+             style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
+             aria-label="${category.name}">
+            <div class="category-image-container" 
+                 style="background: ${category.color} linear-gradient(135deg, ${category.color}, ${category.color}99);">
+                <div class="category-overlay">
+                    <i class="${category.icon}"></i>
                 </div>
+            </div>
+            <div class="category-name">${category.name}</div>
+            <div class="category-count">
+                ${category.id === 'all' ? teaCatalog.length : 
+                  teaCatalog.filter(t => t.category === category.id).length} видов
+            </div>
+        </div>
+    `).join('')}
+</div>
             </div>
             
             <!-- Quick Actions -->
