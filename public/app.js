@@ -1994,4 +1994,3 @@ window.openTelegramLink = openTelegramLink;
 window.clearCart = clearCart;
 window.clearHistory = clearHistory;
 window.closeCheckoutModal = closeCheckoutModal;
-window.toggleTheme = toggleTheme;
