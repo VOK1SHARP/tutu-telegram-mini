@@ -1977,7 +1977,6 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(initApp, 100);
 });
 
-// Экспортируем функции в глобальную область видимости
 window.showMainPage = showMainPage;
 window.showCatalogPage = showCatalogPage;
 window.showProductPage = showProductPage;
