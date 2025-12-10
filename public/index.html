@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4CAF50" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#1E1E1E" media="(prefers-color-scheme: dark)">
-    <title>ТИ•ТИ - Чайная лавка</title>
+    <title>ТИ•ТИ ЧАЙ</title>
     <meta name="description" content="Онлайн-заказ китайского чая в Telegram Mini App">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -48,44 +48,13 @@
             min-height: -webkit-fill-available;
             min-height: 100vh;
         }
-        
-        /* Анимации для страниц */
-        .page-enter {
-            animation: pageEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        .page-exit {
-            animation: pageExit 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        @keyframes pageEnter {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes pageExit {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-        }
     </style>
 </head>
 <body class="min-height-ios">
     <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
-            <h2>ТИ•ТИ</h2>
+            <h2>ТИ•ТИ ЧАЙ</h2>
             <p>Загружаем чайную гармонию...</p>
         </div>
     </div>
@@ -125,7 +94,6 @@
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
                 document.body.classList.add('ios-device');
                 
-                // Фикс для Telegram WebApp на iOS
                 if (window.Telegram && Telegram.WebApp) {
                     Telegram.WebApp.viewportHeight = window.innerHeight;
                 }
@@ -145,7 +113,6 @@
                         const app = document.getElementById('app');
                         if (app) app.style.display = 'block';
                         
-                        // Инициализация после загрузки
                         if (typeof initApp === 'function') {
                             initApp();
                         }
@@ -156,13 +123,11 @@
         
         window.addEventListener('resize', fixViewportHeight);
         
-        // Инициализация темной темы (только системной, без дублирования)
         (function initSystemTheme() {
             const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
             
             const applySystemTheme = (isDark) => {
                 const savedTheme = localStorage.getItem('tea_theme');
-                // Применяем системную тему только если пользователь не выбрал ручную
                 if (!savedTheme || savedTheme === 'auto') {
                     if (isDark) {
                         document.body.classList.add('dark-theme');
@@ -180,22 +145,18 @@
         })();
     </script>
     <script>
-    // Определение устройства
     function detectDevice() {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isAndroid = /Android/.test(navigator.userAgent);
         
         if (isIOS) {
             document.body.classList.add('ios-device');
-            console.log('📱 iOS устройство обнаружено');
         }
         if (isAndroid) {
             document.body.classList.add('android-device');
-            console.log('📱 Android устройство обнаружено');
         }
     }
     
-    // Запускаем при загрузке
     window.addEventListener('load', detectDevice);
 </script>
 </body>
