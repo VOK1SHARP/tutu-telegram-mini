@@ -2393,3 +2393,148 @@ body, html {
 .main-content {
     padding-bottom: 80px;
 }
+/* ---------- СТИЛИ ДЛЯ ЭФФЕКТОВ И ЗАВАРИВАНИЯ ---------- */
+.product-effect {
+    background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.catalog-product-effect {
+    font-size: 12px;
+    color: var(--tea-purple);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.catalog-product-weight {
+    font-size: 12px;
+    color: var(--tea-text-light);
+}
+
+.cart-item-weight {
+    font-size: 12px;
+    color: var(--tea-text-light);
+}
+
+/* Стили для способов заваривания */
+.tea-brewing {
+    background: var(--tea-bg);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    border: 1px solid rgba(142, 110, 99, 0.1);
+}
+
+.tea-brewing h3 {
+    font-size: 18px;
+    color: var(--tea-text);
+    margin-bottom: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brewing-methods {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+}
+
+@media (min-width: 480px) {
+    .brewing-methods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.brewing-method {
+    background: var(--tea-card);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(142, 110, 99, 0.1);
+    transition: all 0.3s var(--ease-smooth);
+}
+
+.brewing-method:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px var(--tea-shadow);
+    border-color: var(--tea-green);
+}
+
+.brewing-method h4 {
+    font-size: 16px;
+    color: var(--tea-green);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brewing-details {
+    font-size: 14px;
+    color: var(--tea-text);
+}
+
+.brewing-details p {
+    margin-bottom: 8px;
+}
+
+.brewing-details ol {
+    padding-left: 20px;
+    margin-top: 8px;
+}
+
+.brewing-details li {
+    margin-bottom: 4px;
+    color: var(--tea-text-light);
+}
+
+/* Стили для категории Габа */
+.gaba {
+    background: linear-gradient(135deg, #7B1FA2, #BA68C8) !important;
+}
+
+/* Фикс для логотипа */
+.logo-centered h2 {
+    font-size: 24px !important;
+    letter-spacing: 2px !important;
+    margin-top: 10px !important;
+    color: var(--tea-text) !important;
+}
+
+/* Анимация для пульсации кнопок */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+.pulse-button {
+    animation: pulse 2s infinite;
+}
+
+/* Стили для эффекта добавления в корзину */
+.add-to-cart-effect {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1001;
+    animation: addToCartEffect 0.8s var(--ease-smooth) forwards;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+}
+
+@keyframes addToCartEffect {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--tx, 0), var(--ty, -100px), 0) scale(0.5);
+    }
+}
