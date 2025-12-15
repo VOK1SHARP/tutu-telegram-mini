@@ -164,9 +164,13 @@ function showCatalogPage(categoryId = 'all') {
                 <div class="catalog-product-item" onclick="showProductPage(${tea.id})" 
                      style="cursor: pointer; animation-delay: ${index * 0.05}s"
                      aria-label="${tea.name}">
-                    <div class="catalog-product-icon ${getTeaTypeClass(tea.type)}">
-                        <i class="${tea.icon}"></i>
-                    </div>
+                   <div class="catalog-product-image" 
+     style="background-image: url('${tea.image}'); background-size: cover; background-position: center; position: relative;">
+    <!-- Fallback иконка если изображение не загрузится -->
+    <div class="image-fallback ${getTeaTypeClass(tea.type)}" style="display: none;">
+        <i class="${tea.icon}"></i>
+    </div>
+</div>
                     <div class="catalog-product-info">
                         <div class="catalog-product-name">${tea.name}</div>
                         <div class="catalog-product-subtitle">${tea.subtitle}</div>
