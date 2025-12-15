@@ -62,7 +62,7 @@
     <!-- Основной контейнер -->
     <div id="app" style="display: none;">
         <!-- Главная страница -->
-        <div id="main-page" class="page active"></div>
+        <div id="main-page" class="page"></div>
         
         <!-- Страница каталога -->
         <div id="catalog-page" class="page"></div>
@@ -100,29 +100,20 @@
             }
         }
         
-        window.addEventListener('load', function() {
-            fixViewportHeight();
+        // Определение устройства
+        function detectDevice() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
             
-            setTimeout(() => {
-                const loader = document.querySelector('.quick-loader');
-                if (loader) {
-                    loader.style.transition = 'opacity 0.5s';
-                    loader.style.opacity = '0';
-                    setTimeout(() => {
-                        loader.style.display = 'none';
-                        const app = document.getElementById('app');
-                        if (app) app.style.display = 'block';
-                        
-                        if (typeof initApp === 'function') {
-                            initApp();
-                        }
-                    }, 500);
-                }
-            }, 500);
-        });
+            if (isIOS) {
+                document.body.classList.add('ios-device');
+            }
+            if (isAndroid) {
+                document.body.classList.add('android-device');
+            }
+        }
         
-        window.addEventListener('resize', fixViewportHeight);
-        
+        // Инициализация системной темы
         (function initSystemTheme() {
             const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
             
@@ -143,21 +134,30 @@
                 applySystemTheme(e.matches);
             });
         })();
-    </script>
-    <script>
-    function detectDevice() {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isAndroid = /Android/.test(navigator.userAgent);
         
-        if (isIOS) {
-            document.body.classList.add('ios-device');
-        }
-        if (isAndroid) {
-            document.body.classList.add('android-device');
-        }
-    }
-    
-    window.addEventListener('load', detectDevice);
-</script>
+        window.addEventListener('load', function() {
+            fixViewportHeight();
+            detectDevice();
+            
+            setTimeout(() => {
+                const loader = document.querySelector('.quick-loader');
+                if (loader) {
+                    loader.style.transition = 'opacity 0.5s';
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                        const app = document.getElementById('app');
+                        if (app) app.style.display = 'block';
+                        
+                        if (typeof initApp === 'function') {
+                            initApp();
+                        }
+                    }, 500);
+                }
+            }, 500);
+        });
+        
+        window.addEventListener('resize', fixViewportHeight);
+    </script>
 </body>
 </html>
