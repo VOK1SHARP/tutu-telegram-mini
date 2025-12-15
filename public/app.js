@@ -730,8 +730,7 @@ function showMainPage() {
                 </div>
             </div>
             
-            <!-- Featured Categories -->
-            // В функции showMainPage() обновите блок Featured Categories:
+            
             <!-- Featured Categories -->
             <div class="featured-categories">
                 <h2 class="section-title">
