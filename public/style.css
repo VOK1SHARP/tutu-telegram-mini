@@ -2633,3 +2633,42 @@ input[type="submit"] {
         #1E1E1E
     ) !important;
 }
+/* Стили для iOS инструкций */
+#ios-instructions .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#ios-instructions .modal-header {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+}
+
+#ios-instructions .modal-body {
+    padding: 20px;
+}
+
+#ios-instructions button {
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+#ios-instructions button:active {
+    transform: scale(0.98);
+}
+
+/* Для темной темы */
+.dark-theme #ios-instructions .modal-content {
+    background: var(--tea-card);
+    color: var(--tea-text);
+}
+
+.dark-theme #ios-instructions .modal-body div {
+    background: rgba(255, 255, 255, 0.1);
+}
