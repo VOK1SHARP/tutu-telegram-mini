@@ -2594,3 +2594,42 @@ input[type="submit"] {
 .catalog-product-image.green-tea { background-color: #2E7D32; }
 .catalog-product-image.white-tea { background-color: #757575; }
 .catalog-product-image.sets { background-color: #FF5722; }
+/* ===== ФИКСЫ ДЛЯ КОРЗИНЫ И ПУСТОГО ПРОСТРАНСТВА ===== */
+
+/* 2.1. Фикс для корзины на компьютере и Android */
+@media (min-width: 768px), (pointer: coarse) and (hover: none) {
+    .main-cart-footer {
+        position: sticky !important;
+        bottom: 0;
+        transform: none !important;
+        transition: none !important;
+    }
+    .main-cart-footer.hidden {
+        opacity: 0.8 !important;
+        transform: none !important;
+    }
+    /* Улучшаем скролл основного контента */
+    .main-content, .page-body {
+        padding-bottom: 0 !important;
+        margin-bottom: 90px; /* Место для фиксированной корзины */
+    }
+}
+
+/* 2.2. Фикс пустого пространства внизу на iOS (iPhone) */
+.ios-device .main-cart-footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 12px)) !important;
+    /* Добавляем фон под корзиной */
+    background: linear-gradient(
+        to top,
+        var(--tea-card) 80%,
+        transparent
+    ) !important;
+}
+/* Цвет фона под корзиной в темной теме */
+.dark-theme.ios-device .main-cart-footer {
+    background: linear-gradient(
+        to top,
+        var(--tea-card) 80%,
+        #1E1E1E
+    ) !important;
+}
