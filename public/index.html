@@ -13,44 +13,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
-    
-    <style>
-        /* iOS Specific Fixes */
-        :root {
-            --safe-area-top: env(safe-area-inset-top, 0px);
-            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-            --vh: 1vh;
-        }
-        
-        .quick-loader {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            text-align: center;
-        }
-        .quick-loader i {
-            font-size: 60px;
-            margin-bottom: 20px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Фикс для 100vh на iOS */
-        .min-height-ios {
-            min-height: -webkit-fill-available;
-            min-height: 100vh;
-        }
-    </style>
 </head>
-<body class="min-height-ios">
+<body>
     <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
@@ -60,7 +24,7 @@
     </div>
 
     <!-- Основной контейнер -->
-    <div id="app" style="display: none;">
+    <div id="app">
         <!-- Главная страница -->
         <div id="main-page" class="page"></div>
         
@@ -86,78 +50,50 @@
     <script src="app.js"></script>
     
     <script>
-        // Фикс для viewport на iOS
-        function fixViewportHeight() {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            if (isIOS) {
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-                document.body.classList.add('ios-device');
-                
-                if (window.Telegram && Telegram.WebApp) {
-                    Telegram.WebApp.viewportHeight = window.innerHeight;
-                }
-            }
-        }
-        
-        // Определение устройства
-        function detectDevice() {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isAndroid = /Android/.test(navigator.userAgent);
-            
-            if (isIOS) {
-                document.body.classList.add('ios-device');
-            }
-            if (isAndroid) {
-                document.body.classList.add('android-device');
-            }
-        }
-        
-        // Инициализация системной темы
-        (function initSystemTheme() {
-            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            
-            const applySystemTheme = (isDark) => {
-                const savedTheme = localStorage.getItem('tea_theme');
-                if (!savedTheme || savedTheme === 'auto') {
-                    if (isDark) {
-                        document.body.classList.add('dark-theme');
-                    } else {
-                        document.body.classList.remove('dark-theme');
-                    }
-                }
-            };
-            
-            applySystemTheme(prefersDarkScheme.matches);
-            
-            prefersDarkScheme.addEventListener('change', (e) => {
-                applySystemTheme(e.matches);
-            });
-        })();
-        
-        window.addEventListener('load', function() {
-            fixViewportHeight();
-            detectDevice();
-            
-            setTimeout(() => {
+        // Простой скрипт для загрузки приложения
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
                 const loader = document.querySelector('.quick-loader');
+                const app = document.getElementById('app');
+                
+                // Скрываем лоадер
                 if (loader) {
-                    loader.style.transition = 'opacity 0.5s';
+                    loader.style.transition = 'opacity 0.5s ease';
                     loader.style.opacity = '0';
-                    setTimeout(() => {
+                    
+                    setTimeout(function() {
                         loader.style.display = 'none';
-                        const app = document.getElementById('app');
-                        if (app) app.style.display = 'block';
                         
-                        if (typeof initApp === 'function') {
-                            initApp();
+                        // Показываем приложение
+                        if (app) {
+                            app.style.display = 'block';
+                            app.style.opacity = '0';
+                            
+                            setTimeout(function() {
+                                app.style.transition = 'opacity 0.5s ease';
+                                app.style.opacity = '1';
+                                
+                                // Запускаем приложение
+                                if (typeof initApp === 'function') {
+                                    initApp();
+                                } else {
+                                    // Если функция не загрузилась, показываем сообщение
+                                    document.getElementById('main-page').innerHTML = `
+                                        <div style="padding: 50px; text-align: center;">
+                                            <h2>Ошибка загрузки</h2>
+                                            <p>Пожалуйста, обновите страницу</p>
+                                            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 10px;">
+                                                Обновить
+                                            </button>
+                                        </div>
+                                    `;
+                                }
+                            }, 50);
                         }
                     }, 500);
                 }
-            }, 500);
+            }, 1000);
         });
-        
-        window.addEventListener('resize', fixViewportHeight);
     </script>
 </body>
 </html>
