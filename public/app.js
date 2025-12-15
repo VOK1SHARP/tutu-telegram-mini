@@ -753,14 +753,26 @@ function showMainPage() {
     const page = document.getElementById('main-page');
     
     page.innerHTML = `
-      <!-- Шапка только с логотипом -->
+<!-- Шапка только с логотипом -->
 <div class="header-with-logo">
     <div class="logo-container">
-        <div class="logo-fallback">
-            <div class="logo-svg">
-                🍵
+        <div class="logo-wrapper">
+            <!-- Пытаемся загрузить изображение -->
+            <div class="logo-image-container" 
+                 style="background-image: url('logo.png'); 
+                        width: 220px; height: 80px; 
+                        background-size: contain; 
+                        background-position: center; 
+                        background-repeat: no-repeat;"
+                 onerror="handleLogoImageError(this)">
             </div>
-            <h2 style="margin-top: 10px; color: var(--tea-text); font-weight: 700;">ТИ•ТИ ЧАЙ</h2>
+            <!-- Fallback который показывается по умолчанию -->
+            <div class="logo-fallback">
+                <div class="logo-svg">
+                    🍵
+                </div>
+                <h2 style="margin-top: 10px; color: var(--tea-text); font-weight: 700;">ТИ•ТИ ЧАЙ</h2>
+            </div>
         </div>
     </div>
 </div>
