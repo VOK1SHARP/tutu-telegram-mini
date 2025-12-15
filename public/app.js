@@ -2094,16 +2094,7 @@ function showNotification(message, type = 'green') {
     }, { once: true });
 }
 
-// Универсальная функция открытия ссылок
-function openTelegramLink(url) {
-    if (tg && tg.openLink) {
-        tg.openLink(url);
-    } else if (isIOS) {
-        window.location.href = url;
-    } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    }
-}
+
 
 // ========== СЕРВИС ВОРКЕР ==========
 function registerServiceWorker() {
