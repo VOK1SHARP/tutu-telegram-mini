@@ -22,17 +22,17 @@ function isIOSDevice() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 
-// Переопределяем функцию openTelegramLink для iOS
+// Улучшенная функция открытия ссылок для iOS
 function openTelegramLink(url) {
     console.log('Открываем ссылку на устройстве:', isIOSDevice() ? 'iOS' : 'Другое');
     
     // iOS фикс: проверяем длину URL
-    if (url.length > 2000 && isIOSDevice()) {
+    if (url.length > 1800 && isIOSDevice()) {
         console.warn('⚠️ Ссылка слишком длинная для iOS, укорачиваем...');
         // Альтернатива: отправляем только номер заказа
         const orderMatch = url.match(/заказ #(\w+)/i);
         if (orderMatch) {
-            const shortMessage = `Заказ ${orderMatch[1]} готов к обработке. Детали в приложении.`;
+            const shortMessage = `Заказ ${orderMatch[1]} готов к обработке`;
             url = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortMessage)}`;
         }
     }
@@ -52,7 +52,6 @@ function openTelegramLink(url) {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 }
-
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 function getWelcomeMessage() {
     const hour = new Date().getHours();
