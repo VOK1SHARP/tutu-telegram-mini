@@ -5,14 +5,8 @@ const urlsToCache = [
   '/index.html',
   '/style.css',
   '/app.js',
-  '/manifest.json',
-  'logo.png',
-  'category_all.jpg',
-  'category_puer.jpg',
-  'category_oolong.jpg',
-  'category_red.jpg',
-  'category_green.jpg',
-  'category_white.jpg'
+  '/manifest.json'
+  // Изображения можно добавить позже
 ];
 
 // Установка Service Worker
