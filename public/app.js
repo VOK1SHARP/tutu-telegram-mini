@@ -39,7 +39,19 @@ function getTeaTypeClass(type) {
     };
     return classes[type] || 'puer';
 }
-
+// ДОБАВЬТЕ эту новую функцию для получения цвета:
+function getTeaTypeColor(type) {
+    const colors = {
+        'Шу Пуэр': 'linear-gradient(135deg, #5D4037, #8D6E63)',
+        'Улун': 'linear-gradient(135deg, #F57C00, #FF9800)',
+        'ГАБА': 'linear-gradient(135deg, #7B1FA2, #BA68C8)',
+        'Красный чай': 'linear-gradient(135deg, #D32F2F, #F44336)',
+        'Зеленый чай': 'linear-gradient(135deg, #2E7D32, #4CAF50)',
+        'Белый чай': 'linear-gradient(135deg, #757575, #9E9E9E)',
+        'Набор': 'linear-gradient(135deg, #FF5722, #FF9800)'
+    };
+    return colors[type] || 'linear-gradient(135deg, #5D4037, #8D6E63)';
+}
 function setupTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const savedTheme = localStorage.getItem('tea_theme') || 'auto';
@@ -164,10 +176,12 @@ function showCatalogPage(categoryId = 'all') {
                 <div class="catalog-product-item" onclick="showProductPage(${tea.id})" 
                      style="cursor: pointer; animation-delay: ${index * 0.05}s"
                      aria-label="${tea.name}">
-                   <div class="catalog-product-image" 
-     style="background-image: url('${tea.image}'); background-size: cover; background-position: center; position: relative;">
-    <!-- Fallback иконка если изображение не загрузится -->
-    <div class="image-fallback ${getTeaTypeClass(tea.type)}" style="display: none;">
+                   <div class="catalog-product-icon-container">
+    <div class="catalog-product-image ${getTeaTypeClass(tea.type)}" 
+         style="background-image: url('${tea.image}');"
+         onerror="handleImageError(this)">
+    </div>
+    <div class="catalog-product-fallback ${getTeaTypeClass(tea.type)}" style="display: none;">
         <i class="${tea.icon}"></i>
     </div>
 </div>
@@ -706,16 +720,17 @@ function showMainPage() {
     
     page.innerHTML = `
         <!-- Шапка только с логотипом -->
-        <div class="header-with-logo">
-            <div class="logo-container">
-                <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" onerror="handleLogoError(this)">
-                <div class="logo-fallback" style="display: none;">
-                    <div class="logo-svg">
-                        🍵
-                    </div>
-                </div>
+<div class="header-with-logo">
+    <div class="logo-container">
+        <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" 
+             onerror="handleLogoError(this)">
+        <div class="logo-fallback" style="display: none;">
+            <div class="logo-svg">
+                🍵
             </div>
         </div>
+    </div>
+</div>
         
         <div class="main-content">
             <!-- Welcome Banner -->
@@ -937,8 +952,15 @@ function showProductPage(productId) {
             <!-- Карточка продукта -->
             <div class="product-card">
                 <div class="product-card-header">
-                    <div class="product-image-container ${getTeaTypeClass(product.type)}">
-                        <i class="${product.icon}"></i>
+                    <div class="product-image-container">
+    <div class="product-image ${getTeaTypeClass(product.type)}" 
+         style="background-image: url('${product.image}');"
+         onerror="handleProductImageError(this)">
+    </div>
+    <div class="product-image-fallback ${getTeaTypeClass(product.type)}" style="display: none;">
+        <i class="${product.icon}"></i>
+    </div>
+</div>
                     </div>
                     <div class="product-title">
                         <h2>${product.name}</h2>
