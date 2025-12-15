@@ -107,11 +107,6 @@ body.dark-theme {
     filter: invert(1);
 }
 
-.dark-theme .cart-item,
-.dark-theme .catalog-filters {
-    background: rgba(255, 255, 255, 0.05);
-}
-
 /* ---------- Сброс и базовые стили ---------- */
 * {
     margin: 0;
@@ -137,6 +132,10 @@ body {
     min-height: -webkit-fill-available;
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Фиксы для безопасных зон */
+body {
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
     padding-left: var(--safe-left);
@@ -434,6 +433,17 @@ body {
     animation: fadeInUp 0.5s var(--ease-smooth) both;
 }
 
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .category-item:hover {
     transform: translateY(-4px) scale(1.02);
     box-shadow: 0 8px 20px var(--tea-shadow);
@@ -634,11 +644,11 @@ body {
 .white-tea { 
     background: linear-gradient(135deg, #757575, #9E9E9E); 
 }
-.gaba {
-    background: linear-gradient(135deg, #7B1FA2, #BA68C8);
+.gaba { 
+    background: linear-gradient(135deg, #7B1FA2, #BA68C8); 
 }
-.sets {
-    background: linear-gradient(135deg, #FF5722, #FF8A65);
+.sets { 
+    background: linear-gradient(135deg, #FF5722, #FF9800); 
 }
 
 .catalog-product-info {
@@ -667,11 +677,6 @@ body {
     margin-bottom: 4px;
 }
 
-.catalog-product-weight {
-    font-size: 12px;
-    color: var(--tea-text-light);
-}
-
 .catalog-product-price {
     color: var(--tea-green);
     font-weight: 700;
@@ -687,16 +692,6 @@ body {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-}
-
-.product-tag-mini {
-    background: var(--tea-gold);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
 }
 
 .catalog-add-btn {
@@ -811,7 +806,7 @@ body {
 }
 
 .product-effect {
-    background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light));
+    background: var(--tea-purple);
     color: white;
     padding: 4px 12px;
     border-radius: 15px;
@@ -819,6 +814,7 @@ body {
     font-weight: 600;
     display: inline-block;
     margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(123, 31, 162, 0.3);
 }
 
 .product-type {
@@ -867,12 +863,14 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* Полное описание */
 .full-description {
     white-space: pre-line;
     line-height: 1.8;
     font-size: 15px;
 }
 
+/* Способы заваривания */
 .tea-brewing {
     background: var(--tea-bg);
     padding: var(--space-lg);
@@ -944,6 +942,7 @@ body {
     color: var(--tea-text-light);
 }
 
+/* Детали чая */
 .tea-details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1186,17 +1185,6 @@ body {
     animation: fadeInUp 0.5s var(--ease-smooth) 0.7s both;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .section-title {
     font-size: 18px;
     margin-bottom: var(--space-lg);
@@ -1257,7 +1245,11 @@ body {
     font-size: 14px;
 }
 
-/* ---------- ФУТЕР КОРЗИНЫ С СКРОЛЛОМ ---------- */
+/* ========== ФУТЕР КОРЗИНЫ С СКРОЛЛОМ ========== */
+.main-content {
+    padding-bottom: 80px;
+}
+
 .main-cart-footer {
     position: fixed;
     bottom: 0;
@@ -1282,17 +1274,20 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* При скролле вниз - скрываем футер */
 .main-cart-footer.hidden {
     transform: translateY(100%);
     opacity: 0;
     pointer-events: none;
 }
 
+/* Для iOS устройств - фикс */
 .ios-device .main-cart-footer {
     position: sticky;
     bottom: 0;
 }
 
+/* Для Android устройств */
 .android-device .main-cart-footer {
     position: sticky;
     bottom: 0;
@@ -1348,6 +1343,7 @@ body {
     pointer-events: none;
 }
 
+/* Анимация пульсации при наличии товаров */
 .pulse-button {
     animation: pulse 2s infinite;
 }
@@ -1366,33 +1362,6 @@ body {
 
 .android-device .cart-container {
     padding-bottom: calc(120px + var(--safe-bottom));
-}
-
-.cart-empty {
-    text-align: center;
-    padding: 60px var(--space-lg);
-    animation: fadeInUp 0.8s var(--ease-smooth) both;
-}
-
-.cart-empty i {
-    font-size: 64px;
-    color: var(--tea-text-lighter);
-    margin-bottom: var(--space-md);
-    animation: float 3s ease-in-out infinite;
-}
-
-.cart-empty h3 {
-    color: var(--tea-text);
-    margin-bottom: var(--space-sm);
-}
-
-.cart-empty p {
-    color: var(--tea-text-light);
-    font-size: 14px;
-}
-
-.cart-items-list {
-    margin-bottom: 20px;
 }
 
 .cart-item {
@@ -1506,6 +1475,29 @@ body {
     font-size: 16px;
 }
 
+.cart-empty {
+    text-align: center;
+    padding: 60px var(--space-lg);
+    animation: fadeInUp 0.8s var(--ease-smooth) both;
+}
+
+.cart-empty i {
+    font-size: 64px;
+    color: var(--tea-text-lighter);
+    margin-bottom: var(--space-md);
+    animation: float 3s ease-in-out infinite;
+}
+
+.cart-empty h3 {
+    color: var(--tea-text);
+    margin-bottom: var(--space-sm);
+}
+
+.cart-empty p {
+    color: var(--tea-text-light);
+    font-size: 14px;
+}
+
 .cart-summary {
     margin-top: 30px;
     padding-top: 20px;
@@ -1548,8 +1540,6 @@ body {
 .profile-name {
     margin-bottom: 4px;
     color: var(--tea-text);
-    font-size: 20px;
-    font-weight: 700;
 }
 
 .profile-username {
@@ -2145,6 +2135,52 @@ body {
 
 .action-btn:active {
     transform: translateY(0) scale(0.98);
+}
+
+/* ---------- СВИЧ ---------- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--tea-green);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
 }
 
 /* ---------- SELECT ---------- */
