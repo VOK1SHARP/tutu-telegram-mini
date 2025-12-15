@@ -698,7 +698,8 @@ async function initApp() {
 
 // ========== ОБНОВЛЕННАЯ ГЛАВНАЯ СТРАНИЦА С ЛОГОТИПОМ ==========
 function showMainPage() {
-    const page = document.getElementById('main-page');
+    // В функции showMainPage() замените backgroundStyle на:
+const backgroundStyle = `background: ${category.color};`;
     
     page.innerHTML = `
         <!-- Шапка только с логотипом -->
