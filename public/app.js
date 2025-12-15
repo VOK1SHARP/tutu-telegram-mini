@@ -17,6 +17,41 @@ let isTransitioning = false;
 // Определение платформы
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isAndroid = /Android/.test(navigator.userAgent);
+// ========== ФИКСЫ ДЛЯ iOS ==========
+function isIOSDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+// Переопределяем функцию openTelegramLink для iOS
+function openTelegramLink(url) {
+    console.log('Открываем ссылку на устройстве:', isIOSDevice() ? 'iOS' : 'Другое');
+    
+    // iOS фикс: проверяем длину URL
+    if (url.length > 2000 && isIOSDevice()) {
+        console.warn('⚠️ Ссылка слишком длинная для iOS, укорачиваем...');
+        // Альтернатива: отправляем только номер заказа
+        const orderMatch = url.match(/заказ #(\w+)/i);
+        if (orderMatch) {
+            const shortMessage = `Заказ ${orderMatch[1]} готов к обработке. Детали в приложении.`;
+            url = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortMessage)}`;
+        }
+    }
+    
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
+        try {
+            Telegram.WebApp.openLink(url);
+        } catch (error) {
+            console.error('Telegram WebApp.openLink failed:', error);
+            // Fallback для iOS
+            window.location.href = url;
+        }
+    } else if (isIOSDevice()) {
+        // iOS специальный метод
+        window.location.href = url;
+    } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+}
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 function getWelcomeMessage() {
