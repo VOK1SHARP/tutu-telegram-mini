@@ -753,16 +753,14 @@ function showMainPage() {
     const page = document.getElementById('main-page');
     
     page.innerHTML = `
-        <!-- Шапка только с логотипом -->
+      <!-- Шапка только с логотипом -->
 <div class="header-with-logo">
     <div class="logo-container">
-        <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" 
-     onerror="handleLogoError(this)"
-     onload="console.log('Логотип загружен успешно')">
-        <div class="logo-fallback" style="display: none;">
+        <div class="logo-fallback">
             <div class="logo-svg">
                 🍵
             </div>
+            <h2 style="margin-top: 10px; color: var(--tea-text); font-weight: 700;">ТИ•ТИ ЧАЙ</h2>
         </div>
     </div>
 </div>
