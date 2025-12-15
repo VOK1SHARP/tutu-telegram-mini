@@ -753,7 +753,6 @@ function showMainPage() {
     const page = document.getElementById('main-page');
     
     page.innerHTML = `
-// В showMainPage() замените блок логотипа на:
 <!-- Шапка только с логотипом -->
 <div class="header-with-logo">
     <div class="logo-container">
