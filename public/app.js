@@ -1475,26 +1475,37 @@ async function confirmCheckout() {
     try {
         const orderId = 'ORD' + Date.now().toString().slice(-8);
         
-        // Форматируем список товаров
+        // 1. Форматируем список товаров БЕЗ переносов строк для iOS
         const itemsList = cart.map(item => 
             `• ${item.name} (${item.weight || '50г'}) × ${item.quantity} = ${item.price * item.quantity}₽`
-        ).join('%0A');
+        ).join(' | '); // Используем разделитель вместо %0A
         
-        // Получаем данные пользователя
+        // 2. Безопасное формирование текста (убираем * для iOS)
         const userName = userData.first_name || 'Гость';
-        const userUsername = userData.username ? ` (@${userData.username})` : '';
+        const userUsername = userData.username ? `(@${userData.username})` : '';
         const timestamp = new Date().toLocaleString('ru-RU');
         
-        // Формируем полное сообщение с правильным форматированием
-        const message = 
-            `🛒 *Новый заказ #${orderId}*%0A%0A` +
-            `👤 *Клиент:* ${userName}${userUsername}%0A` +
-            `💰 *Сумма:* ${total}₽%0A` +
-            `📦 *Товаров:* ${totalItems}%0A` +
-            `📅 *Дата:* ${timestamp}%0A%0A` +
-            `*Состав заказа:*%0A` +
-            itemsList + '%0A%0A' +
-            `_ID: ${userId}_`;
+        // 3. Простой текст БЕЗ Markdown и переносов
+        const messageText = 
+            `Новый заказ #${orderId}\n\n` +
+            `Клиент: ${userName} ${userUsername}\n` +
+            `Сумма: ${total}₽\n` +
+            `Товаров: ${totalItems}\n` +
+            `Дата: ${timestamp}\n\n` +
+            `Состав заказа:\n` +
+            itemsList + '\n\n' +
+            `ID: ${userId}`;
+        
+        // 4. Правильное кодирование для iOS
+        const encodedMessage = encodeURIComponent(messageText);
+        
+        // 5. Формируем безопасный URL
+        const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
+        
+        // 6. Отладочный вывод в консоль
+        console.log('📱 iOS Debug - URL для Telegram:');
+        console.log('Длина ссылки:', telegramUrl.length);
+        console.log('Первые 200 символов:', telegramUrl.substring(0, 200));
         
         // Создаем заказ
         const order = {
@@ -1519,22 +1530,33 @@ async function confirmCheckout() {
         
         await saveOrder(order);
         
-        // Формируем URL для Telegram
-        const telegramUrl = `https://t.me/ivan_likhov?text=${message}`;
-        
         closeCheckoutModal();
         
         // Очищаем корзину
         cart = [];
         await saveCart();
         
-        showNotification(`🎉 Заказ #${orderId} оформлен! Открываю чат...`, 'green');
-        
+        showNotification(`🎉 Заказ #${orderId} оформлен!`, 'green');
         createConfetti();
         
-        // Задержка перед открытием чата
+        // 7. Открываем ссылку с задержкой
         setTimeout(() => {
-            openTelegramLink(telegramUrl);
+            console.log('Открываю ссылку на iOS...');
+            
+            // Проверяем, работает ли tg.openLink на iOS
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
+                try {
+                    Telegram.WebApp.openLink(telegramUrl);
+                } catch (error) {
+                    console.error('tg.openLink не сработал:', error);
+                    // Fallback для iOS
+                    window.location.href = telegramUrl;
+                }
+            } else {
+                // Если нет Telegram WebApp, открываем напрямую
+                window.location.href = telegramUrl;
+            }
+            
             setTimeout(() => showMainPage(), 1000);
         }, 1500);
         
