@@ -219,7 +219,7 @@ const teaCatalog = [
         category: 'puer',
         price: 500,
         icon: 'fas fa-mountain-sun',
-        image: 'puer1.jpg',
+        image: 'teas/puer1.jpg',
         description: 'Это полностью ферментированный чай, произведённый в провинции Юньнань, Китай. Он представляет собой классический шу пуэр, который за время хранения приобрёл глубокий и богатый характер.',
         effect: 'Энергия',
         details: {
@@ -244,7 +244,7 @@ const teaCatalog = [
         category: 'puer',
         price: 800,
         icon: 'fas fa-tree',
-        image: 'puer2.jpg',
+        image: 'teas/puer2.jpg',
         description: 'Это выдержанный чай, произведённый в провинции Юньнань, Китай. Он изготовлен из сырья, собранного со старых чайных деревьев, что придаёт ему уникальный характер и глубину.',
         effect: 'Энергия',
         details: {
@@ -270,7 +270,7 @@ const teaCatalog = [
         category: 'puer',
         price: 50,
         icon: 'fas fa-bowl-rice',
-        image: 'puer3.jpg',
+        image: 'teas/puer3.jpg',
         description: 'Это особый вид пуэра, в котором чайные листья ферментируются совместно с травой Ноу Ми Сян, что придаёт напитку узнаваемый аромат и вкус клейкого риса.',
         effect: 'Энергия',
         details: {
@@ -295,7 +295,7 @@ const teaCatalog = [
         category: 'puer',
         price: 500,
         icon: 'fas fa-feather',
-        image: 'puer4.jpg',
+        image: 'teas/puer4.jpg',
         description: 'Шу пуэр 2018 года — это выдержанный чай, произведённый в провинции Юньнань, Китай. Его аромат и вкус формируются благодаря многолетней выдержке, качественному сырью и особенностям региона происхождения.',
         effect: 'Энергия',
         details: {
@@ -321,7 +321,7 @@ const teaCatalog = [
         category: 'oolong',
         price: 420,
         icon: 'fas fa-yin-yang',
-        image: 'oolong1.jpg',
+        image: 'teas/oolong1.jpg',
         description: 'Полуферментированный улун, занимающий промежуточное положение между зелёными и красными чаями. В Китае его относят к «сине зелёным» (бирюзовым) чаям.',
         effect: 'Расслабляет',
         details: {
@@ -345,7 +345,7 @@ const teaCatalog = [
         category: 'oolong',
         price: 440,
         icon: 'fas fa-spice',
-        image: 'oolong2.jpg',
+        image: 'teas/oolong2.jpg',
         description: 'Это утёсный улун из провинции Фуцзянь, Китай. Название переводится как «мясистая корица с сильным ароматом» и точно отражает его главные особенности: насыщенный пряный профиль и глубину вкуса.',
         effect: 'Антистресс',
         details: {
@@ -370,7 +370,7 @@ const teaCatalog = [
         category: 'gaba',
         price: 300,
         icon: 'fas fa-brain',
-        image: 'gabo_mao.jpg',
+        image: 'teas/gabo_mao.jpg',
         description: 'Габа Мао Ча - это несортированный чай с повышенным содержанием гамма аминомасляной кислоты, прошедший особую ферментацию в бескислородной среде.',
         effect: 'От тревоги',
         details: {
@@ -395,7 +395,7 @@ const teaCatalog = [
         category: 'red',
         price: 430,
         icon: 'fas fa-crown',
-        image: 'red1.jpg',
+        image: 'teas/red1.jpg',
         description: 'Премиальный красный чай из северной части провинции Фуцзянь (Китай). Его вкусовой профиль отличается объёмностью, плотностью и многослойностью, с выраженной сладостью и характерными «кондитерскими» нотами.',
         effect: 'Гармония',
         details: {
@@ -419,7 +419,7 @@ const teaCatalog = [
         category: 'red',
         price: 500,
         icon: 'fas fa-mountain',
-        image: 'red2.jpg',
+        image: 'teas/red2.jpg',
         description: 'Один из самых известных китайских красных чаёв. Его родина - горный хребет Уишань в провинции Фуцзянь, где чайные кусты выращивают на высоте более тысячи метров над уровнем моря.',
         effect: 'Антистресс',
         details: {
@@ -443,7 +443,7 @@ const teaCatalog = [
         category: 'red',
         price: 300,
         icon: 'fas fa-tree',
-        image: 'red3.jpg',
+        image: 'teas/red3.jpg',
         description: 'Китайский красный чай, изготовленный из листьев древних чайных деревьев, возрастом от десятков до сотен лет. Производится в основном в провинциях Юньнань и Фуцзянь.',
         effect: 'От усталости',
         details: {
@@ -467,7 +467,7 @@ const teaCatalog = [
         category: 'red',
         price: 300,
         icon: 'fas fa-fire',
-        image: 'red4.jpg',
+        image: 'teas/red4.jpg',
         description: 'По китайской классификации относится к красным чаям, в европейской традиции - к чёрным. Название буквально означает «красный чай из Дяньси» (историческое название провинции Юньнань).',
         effect: 'Согревает',
         details: {
@@ -492,7 +492,7 @@ const teaCatalog = [
         category: 'green',
         price: 300,
         icon: 'fas fa-leaf',
-        image: 'green1.jpg',
+        image: 'teas/green1.jpg',
         description: 'Один из самых известных китайских зелёных чаёв, входит в «Десятку знаменитых чаёв Китая». Название отражает внешний вид: чайные почки и листья покрыты мелкими серебристо белыми ворсинками, а форма чаинок напоминает острые лезвия.',
         effect: 'Тонизирует',
         details: {
@@ -516,7 +516,7 @@ const teaCatalog = [
         category: 'green',
         price: 350,
         icon: 'fas fa-flower',
-        image: 'green2.jpg',
+        image: 'teas/green2.jpg',
         description: 'Это традиционный китайский чай с тысячелетней историей, эталон естественного ароматизирования. Чайные листья насыщаются ароматом свежих цветков жасмина без использования искусственных добавок.',
         effect: 'Вдохновляет',
         details: {
@@ -541,7 +541,7 @@ const teaCatalog = [
         category: 'white',
         price: 450,
         icon: 'fas fa-heart',
-        image: 'white1.jpg',
+        image: 'teas/white1.jpg',
         description: 'Белый чай с минимальной обработкой, поэтому в нём максимально сохраняются природные биологические активные вещества.',
         effect: 'Омолаживает',
         details: {
@@ -566,7 +566,7 @@ const teaCatalog = [
         category: 'sets',
         price: 1200,
         icon: 'fas fa-gift',
-        image: 'nabor.jpg',
+        image: 'categories/nabor.jpg',
         description: '8 уникальных сортов чая по 8 грамм для знакомства с разнообразием китайского чая.',
         effect: 'Познание',
         details: {
