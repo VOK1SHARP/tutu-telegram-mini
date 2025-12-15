@@ -1477,7 +1477,82 @@ function updateCartQuantity(productId, delta) {
         showCartPage();
     }
 }
+// ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
+function startCheckout() {
+    if (cart.length === 0) {
+        showNotification('🛒 Добавьте товары в корзину!', 'gold');
+        return;
+    }
+    
+    const total = getCartTotal();
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    showCheckoutModal(total, totalItems);
+}
 
+function showCheckoutModal(total, totalItems) {
+    const modal = document.createElement('div');
+    modal.id = 'checkout-modal';
+    modal.className = 'tea-modal';
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-labelledby', 'checkout-title');
+    
+    modal.innerHTML = `
+        <div class="modal-content" role="document">
+            <div class="modal-header">
+                <h3 id="checkout-title">Подтверждение заказа</h3>
+            </div>
+            <div class="modal-body">
+                <div class="order-summary">
+                    <div class="order-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h4>Сумма заказа</h4>
+                    <div class="order-total">${total}₽</div>
+                    <p class="order-items">${totalItems} товаров</p>
+                </div>
+                
+                <div class="order-details">
+                    ${cart.map(item => `
+                        <div class="order-item">
+                            <span>${item.name} × ${item.quantity}</span>
+                            <span class="order-item-price">${item.price * item.quantity}₽</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="order-info">
+                    <i class="fas fa-info-circle"></i>
+                    После подтверждения откроется чат с менеджером
+                </div>
+                
+                <div class="modal-actions">
+                    <button onclick="closeCheckoutModal()" class="modal-btn cancel" aria-label="Отмена">
+                        Отмена
+                    </button>
+                    <button onclick="confirmCheckout()" id="confirm-checkout-btn" class="modal-btn confirm" aria-label="Подтвердить заказ">
+                        Подтвердить
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCheckoutModal() {
+    const modal = document.getElementById('checkout-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+    document.body.style.overflow = '';
+}
 // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
 async function confirmCheckout() {
     const total = getCartTotal();
@@ -2177,6 +2252,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Экспорт функций в глобальную область видимости
+// Экспорт функций в глобальную область видимости
 window.showMainPage = showMainPage;
 window.showCatalogPage = showCatalogPage;
 window.showProductPage = showProductPage;
@@ -2186,12 +2262,12 @@ window.showProfilePage = showProfilePage;
 window.goBack = goBack;
 window.addToCart = addToCart;
 window.updateCartQuantity = updateCartQuantity;
-window.startCheckout = startCheckout;
+window.startCheckout = startCheckout; // Добавьте эту строку
 window.confirmCheckout = confirmCheckout;
 window.reorder = reorder;
 window.contactSupport = contactSupport;
 window.openTelegramLink = openTelegramLink;
 window.clearCart = clearCart;
 window.clearHistory = clearHistory;
-window.closeCheckoutModal = closeCheckoutModal;
+window.closeCheckoutModal = closeCheckoutModal; // И эту строку
 window.toggleTheme = toggleTheme;
