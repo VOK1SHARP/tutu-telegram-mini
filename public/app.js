@@ -596,57 +596,57 @@ const teaCategories = [
         id: 'all', 
         name: 'Все сорта', 
         icon: 'fas fa-mug-hot', 
-        color: 'var(--tea-green)',
-        image: 'all_tea_v3.jpg'
+        color: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+        image: 'categories/all_tea_v3.jpg'
     },
     { 
         id: 'puer', 
         name: 'Пуэр', 
         icon: 'fas fa-mountain', 
-        color: '#5D4037',
-        image: 'category_puer.jpg'
+        color: 'linear-gradient(135deg, #5D4037, #8D6E63)',
+        image: 'categories/category_puer.jpg'
     },
     { 
         id: 'oolong', 
         name: 'Улун', 
         icon: 'fas fa-yin-yang', 
-        color: '#F57C00',
-        image: 'category_oolong.jpg'
+        color: 'linear-gradient(135deg, #F57C00, #FF9800)',
+        image: 'categories/category_oolong.jpg'
     },
     { 
         id: 'gaba', 
         name: 'Габа', 
         icon: 'fas fa-brain', 
-        color: '#7B1FA2',
-        image: 'gabo_mao.jpg'
+        color: 'linear-gradient(135deg, #7B1FA2, #BA68C8)',
+        image: 'categories/gabo_mao.jpg'
     },
     { 
         id: 'red', 
         name: 'Красный чай', 
         icon: 'fas fa-fire', 
-        color: '#D32F2F',
-        image: 'category_red.jpg'
+        color: 'linear-gradient(135deg, #D32F2F, #F44336)',
+        image: 'categories/category_red.jpg'
     },
     { 
         id: 'green', 
         name: 'Зеленый чай', 
         icon: 'fas fa-leaf', 
-        color: '#2E7D32',
-        image: 'category_green.jpg'
+        color: 'linear-gradient(135deg, #2E7D32, #4CAF50)',
+        image: 'categories/category_green.jpg'
     },
     { 
         id: 'white', 
         name: 'Белый чай', 
         icon: 'fas fa-cloud', 
-        color: '#757575',
-        image: 'category_white.jpg'
+        color: 'linear-gradient(135deg, #757575, #9E9E9E)',
+        image: 'categories/category_white.jpg'
     },
     { 
         id: 'sets', 
         name: 'Наборы', 
         icon: 'fas fa-gift', 
-        color: '#FF5722',
-        image: 'nabor.jpg'
+        color: 'linear-gradient(135deg, #FF5722, #FF9800)',
+        image: 'categories/nabor.jpg'
     }
 ];
 
