@@ -731,6 +731,8 @@ function showMainPage() {
             </div>
             
             <!-- Featured Categories -->
+            // В функции showMainPage() обновите блок Featured Categories:
+            <!-- Featured Categories -->
             <div class="featured-categories">
                 <h2 class="section-title">
                     <i class="fas fa-filter"></i> Категории чая
@@ -742,12 +744,18 @@ function showMainPage() {
                             : teaCatalog.filter(t => t.category === cat.id).length;
                         const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} вида`;
                         
+                        // Проверяем есть ли изображение
+                        const hasImage = cat.image && cat.image !== '';
+                        const backgroundStyle = hasImage 
+                            ? `background-image: url('${cat.image}'); background-size: cover; background-position: center;`
+                            : `background: ${cat.color};`;
+                        
                         return `
                         <div class="category-item" onclick="showCatalogPage('${cat.id}')" 
                              style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
                              aria-label="${cat.name}">
                             <div class="category-image-container" 
-                                 style="background: ${cat.color};">
+                                 style="${backgroundStyle}">
                                 <div class="category-overlay">
                                     <i class="${cat.icon}"></i>
                                 </div>
