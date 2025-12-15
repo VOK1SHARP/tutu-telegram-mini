@@ -705,12 +705,10 @@ function showMainPage() {
         <div class="header-with-logo">
             <div class="logo-container">
                 <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" onerror="this.style.display='none'">
-                <div class="logo-fallback" style="${document.querySelector('.main-logo')?.complete ? 'display:none' : ''}">
+                <div class="logo-fallback" style="display: none;">
                     <div class="logo-svg">
                         🍵
                     </div>
-                    <h2>ТИ•ТИ ЧАЙ</h2>
-                    <p>Чайная лавка</p>
                 </div>
             </div>
         </div>
@@ -735,7 +733,7 @@ function showMainPage() {
             <!-- Featured Categories -->
             <div class="featured-categories">
                 <h2 class="section-title">
-                    <i class="fas fa-filter"></i> Категории
+                    <i class="fas fa-filter"></i> Категории чая
                 </h2>
                 <div class="category-grid">
                     ${teaCategories.map((category, index) => {
@@ -744,17 +742,12 @@ function showMainPage() {
                             : teaCatalog.filter(t => t.category === category.id).length;
                         const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} вида`;
                         
-                        const hasImage = category.image && category.image !== '';
-                        const backgroundStyle = hasImage 
-                            ? `background-image: url('${category.image}'); background-size: cover; background-position: center;`
-                            : `background: ${category.color};`;
-                        
                         return `
                         <div class="category-item" onclick="showCatalogPage('${category.id}')" 
                              style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
                              aria-label="${category.name}">
                             <div class="category-image-container" 
-                                 style="${backgroundStyle}">
+                                 style="background: ${category.color};">
                                 <div class="category-overlay">
                                     <i class="${category.icon}"></i>
                                 </div>
@@ -1388,10 +1381,33 @@ async function confirmCheckout() {
     
     try {
         const orderId = 'ORD' + Date.now().toString().slice(-8);
+        
+        // Форматируем список товаров
+        const itemsList = cart.map(item => 
+            `• ${item.name} (${item.weight || '50г'}) × ${item.quantity} = ${item.price * item.quantity}₽`
+        ).join('%0A');
+        
+        // Получаем данные пользователя
+        const userName = userData.first_name || 'Гость';
+        const userUsername = userData.username ? ` (@${userData.username})` : '';
+        const timestamp = new Date().toLocaleString('ru-RU');
+        
+        // Формируем полное сообщение с правильным форматированием
+        const message = 
+            `🛒 *Новый заказ #${orderId}*%0A%0A` +
+            `👤 *Клиент:* ${userName}${userUsername}%0A` +
+            `💰 *Сумма:* ${total}₽%0A` +
+            `📦 *Товаров:* ${totalItems}%0A` +
+            `📅 *Дата:* ${timestamp}%0A%0A` +
+            `*Состав заказа:*%0A` +
+            itemsList + '%0A%0A' +
+            `_ID: ${userId}_`;
+        
+        // Создаем заказ
         const order = {
             id: orderId,
             user_id: userId,
-            user_name: userData.first_name || 'Гость',
+            user_name: userName,
             user_username: userData.username || '',
             items: cart.map(item => ({
                 id: item.id,
@@ -1400,39 +1416,30 @@ async function confirmCheckout() {
                 price: item.price,
                 total: item.price * item.quantity,
                 type: item.type,
-                weight: item.weight
+                weight: item.weight || '50г'
             })),
             total: total,
             items_count: totalItems,
-            timestamp: new Date().toLocaleString('ru-RU'),
+            timestamp: timestamp,
             status: 'pending'
         };
         
         await saveOrder(order);
         
-        const message = `🛒 *Новый заказ #${orderId}*\n\n` +
-                       `👤 *Клиент:* ${order.user_name}${order.user_username ? ` (@${order.user_username})` : ''}\n` +
-                       `💰 *Сумма:* ${order.total}₽\n` +
-                       `📦 *Товаров:* ${totalItems}\n` +
-                       `📅 *Дата:* ${order.timestamp}\n\n` +
-                       `*Состав заказа:*\n` +
-                       order.items.map(item => 
-                           `• ${item.name} (${item.weight}) × ${item.quantity} = ${item.total}₽`
-                       ).join('\n') + '\n\n' +
-                       `_ID: ${userId}_`;
-        
-        const encodedMessage = encodeURIComponent(message);
-        const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
+        // Формируем URL для Telegram
+        const telegramUrl = `https://t.me/ivan_likhov?text=${message}`;
         
         closeCheckoutModal();
         
+        // Очищаем корзину
         cart = [];
         await saveCart();
         
-        showNotification(`🎉 Заказ #${orderId} оформлен!`, 'green');
+        showNotification(`🎉 Заказ #${orderId} оформлен! Открываю чат...`, 'green');
         
         createConfetti();
         
+        // Задержка перед открытием чата
         setTimeout(() => {
             openTelegramLink(telegramUrl);
             setTimeout(() => showMainPage(), 1000);
