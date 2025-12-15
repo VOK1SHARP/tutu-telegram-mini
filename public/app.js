@@ -1664,79 +1664,89 @@ function showIOSInstructions(orderId, orderMessage) {
     const borderColor = isDarkTheme ? '#444444' : '#e0e0e0';
     
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 420px; background: ${bgColor}; color: ${textColor};">
-            <div class="modal-header">
-                <h3 style="color: ${textColor};"><i class="fas fa-mobile-alt"></i> Инструкция для iOS</h3>
+    <div class="modal-content" style="max-width: 420px; background: ${bgColor}; color: ${textColor}; border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.2'});">
+        <div class="modal-header" style="padding: 20px 20px 10px; border-bottom: none;">
+            <h3 style="color: ${textColor}; text-align: center; margin: 0;">
+                <i class="fas fa-mobile-alt" style="margin-right: 8px;"></i> Инструкция для iOS
+            </h3>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 48px; color: #007AFF; margin-bottom: 12px;">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h4 style="color: ${textColor}; margin-bottom: 8px; font-size: 18px;">Заказ оформлен!</h4>
+                <p style="color: ${secondaryText}; font-size: 14px; line-height: 1.4;">Теперь нужно отправить его менеджеру</p>
             </div>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="font-size: 48px; color: #007AFF; margin-bottom: 10px;">
-                        <i class="fas fa-clipboard-check"></i>
+            
+            <!-- Менеджер - без контуров -->
+            <div style="margin-bottom: 24px; background: ${cardBg}; padding: 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.1'});">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0;">
+                        <i class="fas fa-user-headset" style="color: white; font-size: 20px;"></i>
                     </div>
-                    <h4 style="color: ${textColor}; margin-bottom: 5px;">Заказ оформлен!</h4>
-                    <p style="color: ${secondaryText}; font-size: 14px;">Теперь нужно отправить его менеджеру</p>
-                </div>
-                
-                <!-- Менеджер -->
-                <div style="margin-bottom: 20px; background: ${cardBg}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor};">
-                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                        <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                            <i class="fas fa-user" style="color: white; font-size: 16px;"></i>
-                        </div>
-                        <div>
-                            <div style="font-weight: 600; color: ${textColor};">Менеджер</div>
-                            <div style="color: ${secondaryText}; font-size: 14px;">@ivan_likhov</div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="window.open('https://t.me/ivan_likhov', '_blank')" 
-                           style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0088cc, #00a2ff); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <i class="fab fa-telegram" style="font-size: 18px;"></i>
-                        Перейти к менеджеру
-                    </button>
-                </div>
-                
-                <!-- Номер заказа и кнопка копирования -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="color: ${textColor}; font-weight: 600;">Номер заказа:</span>
-                        <span style="font-family: monospace; font-weight: 700; color: #4CAF50; font-size: 16px;">#${orderId}</span>
-                    </div>
-                    
-                    <button id="copy-order-btn" 
-                            style="width: 100%; padding: 14px; margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <i class="fas fa-copy"></i> Скопировать весь текст заказа
-                    </button>
-                </div>
-                
-                <!-- Текст заказа -->
-                <div style="background: ${isDarkTheme ? '#3a3a3a' : '#f8f9fa'}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor}; margin-bottom: 20px;">
-                    <div style="font-family: monospace; font-size: 13px; line-height: 1.5; color: ${textColor}; white-space: pre-wrap;">
-${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: ${textColor}; font-size: 16px; margin-bottom: 4px;">Менеджер поддержки</div>
+                        <div style="color: ${secondaryText}; font-size: 14px;">@ivan_likhov</div>
                     </div>
                 </div>
                 
-                <!-- Инструкция -->
-                <div style="background: ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}; padding: 12px; border-radius: 10px; border: 1px solid ${isDarkTheme ? '#5d4037' : '#ffd8a6'}; margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'};"></i>
-                        <span style="font-weight: 600; color: ${textColor};">Как отправить заказ:</span>
-                    </div>
-                    <ol style="margin: 0; padding-left: 20px; color: ${secondaryText}; font-size: 13px; line-height: 1.5;">
-                        <li>Нажмите "Перейти к менеджеру"</li>
-                        <li>Вставьте скопированный текст в чат</li>
-                        <li>Отправьте сообщение</li>
-                        <li>Менеджер свяжется с вами</li>
-                    </ol>
-                </div>
-                
-                <button onclick="closeIOSInstructions()" 
-                        style="width: 100%; padding: 14px; background: transparent; color: ${secondaryText}; border: 1px solid ${borderColor}; border-radius: 25px; cursor: pointer; font-weight: 600;">
-                    Закрыть и вернуться в магазин
+                <button onclick="window.open('https://t.me/ivan_likhov', '_blank')" 
+                       style="width: 100%; padding: 16px; background: linear-gradient(135deg, #0088cc, #00a2ff); color: white; border: none; border-radius: 28px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; transition: transform 0.2s, opacity 0.2s;"
+                       onmouseover="this.style.transform='scale(0.99)';"
+                       onmouseout="this.style.transform='scale(1)';">
+                    <i class="fab fa-telegram" style="font-size: 18px;"></i>
+                    Перейти к менеджеру
                 </button>
             </div>
+            
+            <!-- Номер заказа и кнопка копирования -->
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: ${cardBg}; padding: 14px; border-radius: 12px;">
+                    <span style="color: ${textColor}; font-weight: 600;">Номер заказа:</span>
+                    <span style="font-family: monospace; font-weight: 700; color: #4CAF50; font-size: 17px; letter-spacing: 1px;">#${orderId}</span>
+                </div>
+                
+                <button id="copy-order-btn" 
+                        style="width: 100%; padding: 16px; margin-bottom: 12px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 28px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; transition: transform 0.2s, opacity 0.2s;"
+                        onmouseover="this.style.transform='scale(0.99)';"
+                        onmouseout="this.style.transform='scale(1)';">
+                    <i class="fas fa-copy"></i> Скопировать весь текст заказа
+                </button>
+            </div>
+            
+            <!-- Текст заказа -->
+            <div style="background: ${isDarkTheme ? '#3a3a3a' : '#f8f9fa'}; padding: 16px; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.05'});">
+                <div style="font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 13px; line-height: 1.5; color: ${textColor}; white-space: pre-wrap;">
+${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                </div>
+            </div>
+            
+            <!-- Инструкция - без контуров -->
+            <div style="background: linear-gradient(135deg, ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}, ${isDarkTheme ? '#2a2a2a' : '#fff0e0'}); padding: 16px; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.05'});">
+                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+                    <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'}; font-size: 18px; margin-top: 2px; flex-shrink: 0;"></i>
+                    <div>
+                        <div style="font-weight: 600; color: ${textColor}; margin-bottom: 8px; font-size: 15px;">Как отправить заказ:</div>
+                        <ol style="margin: 0; padding-left: 20px; color: ${secondaryText}; font-size: 14px; line-height: 1.5;">
+                            <li>Нажмите "Перейти к менеджеру"</li>
+                            <li>Вставьте скопированный текст в чат</li>
+                            <li>Отправьте сообщение</li>
+                            <li>Менеджер свяжется с вами</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeIOSInstructions()" 
+                    style="width: 100%; padding: 16px; background: transparent; color: ${secondaryText}; border: 2px solid ${borderColor}; border-radius: 28px; cursor: pointer; font-weight: 600; font-size: 15px; transition: background 0.2s, color 0.2s;"
+                    onmouseover="this.style.background='rgba(128, 128, 128, 0.1)';"
+                    onmouseout="this.style.background='transparent';">
+                Закрыть и вернуться в магазин
+            </button>
         </div>
-    `;
+    </div>
+`;
     
     document.body.appendChild(modal);
     setTimeout(() => modal.classList.add('show'), 10);
