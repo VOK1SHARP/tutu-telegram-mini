@@ -13,7 +13,66 @@ let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
 let isTransitioning = false;
-
+// ========== КОНФЕТТИ-ЭФФЕКТ ==========
+function createConfetti() {
+    const colors = ['#4CAF50', '#FF5722', '#FF9800', '#2196F3', '#9C27B0', '#FF4081'];
+    const confettiCount = 100;
+    
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti-particle';
+        
+        // Случайные свойства
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size = Math.random() * 10 + 5;
+        const left = Math.random() * 100;
+        const animationDuration = Math.random() * 2 + 1;
+        
+        confetti.style.cssText = `
+            position: fixed;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+            top: -20px;
+            left: ${left}%;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: ${Math.random() + 0.5};
+            transform: rotate(${Math.random() * 360}deg);
+            animation: confetti-fall ${animationDuration}s ease-in forwards;
+        `;
+        
+        document.body.appendChild(confetti);
+        
+        // Удаляем элемент после анимации
+        setTimeout(() => {
+            confetti.remove();
+        }, animationDuration * 1000);
+    }
+    
+    // Добавляем стили для анимации, если их еще нет
+    if (!document.getElementById('confetti-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'confetti-styles';
+        styles.textContent = `
+            @keyframes confetti-fall {
+                0% {
+                    transform: translateY(0) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+            .confetti-particle {
+                will-change: transform, opacity;
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+}
 // Определение платформы
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isAndroid = /Android/.test(navigator.userAgent);
