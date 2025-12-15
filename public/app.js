@@ -1624,157 +1624,7 @@ ${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.q
         
         // 3. Для iOS показываем модальное окно с инструкциями
         if (isIOS) {
-            // Функция копирования текста (вложенная)
-            const copyOrderText = (text) => {
-                navigator.clipboard.writeText(text).then(() => {
-                    showNotification('✅ Весь текст заказа скопирован!', 'green');
-                }).catch(() => {
-                    // Fallback
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showNotification('✅ Скопировано!', 'green');
-                });
-            };
-            
-            // Функция закрытия (вложенная)
-            const closeIOSModal = () => {
-                const modal = document.getElementById('ios-order-modal');
-                if (modal) {
-                    modal.classList.remove('show');
-                    setTimeout(() => {
-                        modal.remove();
-                        showMainPage();
-                    }, 300);
-                }
-            };
-            
-            // Создаем модальное окно для iOS
-            const isDarkTheme = document.body.classList.contains('dark-theme');
-            const bgColor = isDarkTheme ? '#2d2d2d' : '#ffffff';
-            const textColor = isDarkTheme ? '#ffffff' : '#333333';
-            const secondaryText = isDarkTheme ? '#aaaaaa' : '#666666';
-            const cardBg = isDarkTheme ? '#3a3a3a' : '#f8f8f8';
-            const borderColor = isDarkTheme ? '#444444' : '#e0e0e0';
-            
-            const modal = document.createElement('div');
-            modal.id = 'ios-order-modal';
-            modal.className = 'tea-modal';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 420px; background: ${bgColor}; color: ${textColor};">
-                    <div class="modal-header">
-                        <h3 style="color: ${textColor};"><i class="fas fa-mobile-alt"></i> Инструкция для iOS</h3>
-                    </div>
-                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <div style="font-size: 48px; color: #007AFF; margin-bottom: 10px;">
-                                <i class="fas fa-clipboard-check"></i>
-                            </div>
-                            <h4 style="color: ${textColor}; margin-bottom: 5px;">Заказ оформлен!</h4>
-                            <p style="color: ${secondaryText}; font-size: 14px;">Теперь нужно отправить его менеджеру</p>
-                        </div>
-                        
-                        <!-- Менеджер -->
-                        <div style="margin-bottom: 20px; background: ${cardBg}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor};">
-                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                    <i class="fas fa-user" style="color: white; font-size: 16px;"></i>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: ${textColor};">Менеджер</div>
-                                    <div style="color: ${secondaryText}; font-size: 14px;">@ivan_likhov</div>
-                                </div>
-                            </div>
-                            
-                            <a href="https://t.me/ivan_likhov" 
-                               target="_blank" 
-                               rel="noopener"
-                               onclick="setTimeout(() => { const modal = document.getElementById('ios-order-modal'); if(modal) modal.remove(); }, 100)"
-                               style="text-decoration: none; display: block;">
-                                <button style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0088cc, #00a2ff); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                    <i class="fab fa-telegram" style="font-size: 18px;"></i>
-                                    Перейти к менеджеру
-                                </button>
-                            </a>
-                        </div>
-                        
-                        <!-- Номер заказа и кнопка копирования -->
-                        <div style="margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <span style="color: ${textColor}; font-weight: 600;">Номер заказа:</span>
-                                <span style="font-family: monospace; font-weight: 700; color: #4CAF50; font-size: 16px;">#${orderId}</span>
-                            </div>
-                            
-                            <button onclick="(() => {
-                                const text = \`${orderMessage.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`;
-                                navigator.clipboard.writeText(text).then(() => {
-                                    showNotification('✅ Весь текст заказа скопирован!', 'green');
-                                    this.innerHTML = '<i class=\"fas fa-check\"></i> Скопировано!';
-                                    this.style.background = 'linear-gradient(135deg, #2E7D32, #4CAF50)';
-                                    setTimeout(() => {
-                                        this.innerHTML = '<i class=\"fas fa-copy\"></i> Скопировать весь текст заказа';
-                                        this.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
-                                    }, 2000);
-                                }).catch(() => {
-                                    const textArea = document.createElement('textarea');
-                                    textArea.value = text;
-                                    document.body.appendChild(textArea);
-                                    textArea.select();
-                                    document.execCommand('copy');
-                                    document.body.removeChild(textArea);
-                                    showNotification('✅ Скопировано!', 'green');
-                                });
-                            })()" 
-                                    style="width: 100%; padding: 14px; margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                <i class="fas fa-copy"></i> Скопировать весь текст заказа
-                            </button>
-                        </div>
-                        
-                        <!-- Текст заказа -->
-                        <div style="background: ${isDarkTheme ? '#3a3a3a' : '#f8f9fa'}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor}; margin-bottom: 20px;">
-                            <div style="font-family: monospace; font-size: 13px; line-height: 1.5; color: ${textColor}; white-space: pre-wrap;">
-${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-                            </div>
-                        </div>
-                        
-                        <!-- Инструкция -->
-                        <div style="background: ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}; padding: 12px; border-radius: 10px; border: 1px solid ${isDarkTheme ? '#5d4037' : '#ffd8a6'}; margin-bottom: 20px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'};"></i>
-                                <span style="font-weight: 600; color: ${textColor};">Как отправить заказ:</span>
-                            </div>
-                            <ol style="margin: 0; padding-left: 20px; color: ${secondaryText}; font-size: 13px; line-height: 1.5;">
-                                <li>Нажмите "Перейти к менеджеру"</li>
-                                <li>Вставьте скопированный текст в чат</li>
-                                <li>Отправьте сообщение</li>
-                                <li>Менеджер свяжется с вами</li>
-                            </ol>
-                        </div>
-                        
-                        <!-- Кнопка закрытия -->
-                        <button onclick="(() => {
-                            const modal = document.getElementById('ios-order-modal');
-                            if (modal) {
-                                modal.classList.remove('show');
-                                setTimeout(() => {
-                                    modal.remove();
-                                    showMainPage();
-                                }, 300);
-                            }
-                        })()" 
-                                style="width: 100%; padding: 14px; background: transparent; color: ${secondaryText}; border: 1px solid ${borderColor}; border-radius: 25px; cursor: pointer; font-weight: 600;">
-                            Закрыть и вернуться в магазин
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            setTimeout(() => modal.classList.add('show'), 10);
-            
+            showIOSInstructions(orderId, orderMessage);
         } else {
             // Для Android/ПК - обычный метод
             setTimeout(() => {
@@ -1795,6 +1645,174 @@ ${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = 'Подтвердить';
         }
+    }
+}
+// Функция показа инструкций для iOS
+function showIOSInstructions(orderId, orderMessage) {
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    
+    const modal = document.createElement('div');
+    modal.id = 'ios-instructions';
+    modal.className = 'tea-modal';
+    modal.setAttribute('aria-modal', 'true');
+    
+    // Стили в зависимости от темы
+    const bgColor = isDarkTheme ? '#2d2d2d' : '#ffffff';
+    const textColor = isDarkTheme ? '#ffffff' : '#333333';
+    const secondaryText = isDarkTheme ? '#aaaaaa' : '#666666';
+    const cardBg = isDarkTheme ? '#3a3a3a' : '#f8f8f8';
+    const borderColor = isDarkTheme ? '#444444' : '#e0e0e0';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 420px; background: ${bgColor}; color: ${textColor};">
+            <div class="modal-header">
+                <h3 style="color: ${textColor};"><i class="fas fa-mobile-alt"></i> Инструкция для iOS</h3>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; color: #007AFF; margin-bottom: 10px;">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h4 style="color: ${textColor}; margin-bottom: 5px;">Заказ оформлен!</h4>
+                    <p style="color: ${secondaryText}; font-size: 14px;">Теперь нужно отправить его менеджеру</p>
+                </div>
+                
+                <!-- Менеджер -->
+                <div style="margin-bottom: 20px; background: ${cardBg}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor};">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                            <i class="fas fa-user" style="color: white; font-size: 16px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: ${textColor};">Менеджер</div>
+                            <div style="color: ${secondaryText}; font-size: 14px;">@ivan_likhov</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.open('https://t.me/ivan_likhov', '_blank')" 
+                           style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0088cc, #00a2ff); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <i class="fab fa-telegram" style="font-size: 18px;"></i>
+                        Перейти к менеджеру
+                    </button>
+                </div>
+                
+                <!-- Номер заказа и кнопка копирования -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: ${textColor}; font-weight: 600;">Номер заказа:</span>
+                        <span style="font-family: monospace; font-weight: 700; color: #4CAF50; font-size: 16px;">#${orderId}</span>
+                    </div>
+                    
+                    <button id="copy-order-btn" 
+                            style="width: 100%; padding: 14px; margin-bottom: 10px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <i class="fas fa-copy"></i> Скопировать весь текст заказа
+                    </button>
+                </div>
+                
+                <!-- Текст заказа -->
+                <div style="background: ${isDarkTheme ? '#3a3a3a' : '#f8f9fa'}; padding: 15px; border-radius: 12px; border: 1px solid ${borderColor}; margin-bottom: 20px;">
+                    <div style="font-family: monospace; font-size: 13px; line-height: 1.5; color: ${textColor}; white-space: pre-wrap;">
+${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                    </div>
+                </div>
+                
+                <!-- Инструкция -->
+                <div style="background: ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}; padding: 12px; border-radius: 10px; border: 1px solid ${isDarkTheme ? '#5d4037' : '#ffd8a6'}; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'};"></i>
+                        <span style="font-weight: 600; color: ${textColor};">Как отправить заказ:</span>
+                    </div>
+                    <ol style="margin: 0; padding-left: 20px; color: ${secondaryText}; font-size: 13px; line-height: 1.5;">
+                        <li>Нажмите "Перейти к менеджеру"</li>
+                        <li>Вставьте скопированный текст в чат</li>
+                        <li>Отправьте сообщение</li>
+                        <li>Менеджер свяжется с вами</li>
+                    </ol>
+                </div>
+                
+                <button onclick="closeIOSInstructions()" 
+                        style="width: 100%; padding: 14px; background: transparent; color: ${secondaryText}; border: 1px solid ${borderColor}; border-radius: 25px; cursor: pointer; font-weight: 600;">
+                    Закрыть и вернуться в магазин
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Добавляем обработчик для кнопки копирования
+    setTimeout(() => {
+        const copyBtn = document.getElementById('copy-order-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                copyOrderText(orderMessage);
+                
+                // Показываем анимацию копирования
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                this.style.background = 'linear-gradient(135deg, #2E7D32, #4CAF50)';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                }, 2000);
+            });
+        }
+    }, 100);
+}
+
+// Функция копирования текста
+function copyOrderText(text) {
+    // Используем современный API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification('✅ Весь текст заказа скопирован!', 'green');
+        }).catch(() => {
+            // Fallback
+            fallbackCopyText(text);
+        });
+    } else {
+        // Fallback для старых браузеров
+        fallbackCopyText(text);
+    }
+}
+
+// Fallback метод копирования
+function fallbackCopyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showNotification('✅ Текст скопирован!', 'green');
+        } else {
+            showNotification('❌ Не удалось скопировать', 'red');
+        }
+    } catch (err) {
+        console.error('Ошибка fallback копирования:', err);
+        showNotification('❌ Ошибка копирования', 'red');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Функция закрытия инструкций iOS
+function closeIOSInstructions() {
+    const modal = document.getElementById('ios-instructions');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            showMainPage();
+        }, 300);
     }
 }
 // ========== ЗАКАЗЫ ==========
@@ -2252,7 +2270,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Экспорт функций в глобальную область видимости
-// Экспорт функций в глобальную область видимости
 window.showMainPage = showMainPage;
 window.showCatalogPage = showCatalogPage;
 window.showProductPage = showProductPage;
@@ -2262,12 +2279,15 @@ window.showProfilePage = showProfilePage;
 window.goBack = goBack;
 window.addToCart = addToCart;
 window.updateCartQuantity = updateCartQuantity;
-window.startCheckout = startCheckout; // Добавьте эту строку
+window.startCheckout = startCheckout;
 window.confirmCheckout = confirmCheckout;
 window.reorder = reorder;
 window.contactSupport = contactSupport;
 window.openTelegramLink = openTelegramLink;
 window.clearCart = clearCart;
 window.clearHistory = clearHistory;
-window.closeCheckoutModal = closeCheckoutModal; // И эту строку
+window.closeCheckoutModal = closeCheckoutModal;
 window.toggleTheme = toggleTheme;
+window.copyOrderText = copyOrderText;
+window.showIOSInstructions = showIOSInstructions;
+window.closeIOSInstructions = closeIOSInstructions;
