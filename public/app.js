@@ -753,21 +753,24 @@ function showMainPage() {
     const page = document.getElementById('main-page');
     
     page.innerHTML = `
+// В showMainPage() замените блок логотипа на:
 <!-- Шапка только с логотипом -->
 <div class="header-with-logo">
     <div class="logo-container">
         <div class="logo-wrapper">
-            <!-- Пытаемся загрузить изображение -->
-            <div class="logo-image-container" 
+            <!-- Изображение логотипа (показывается по умолчанию) -->
+            <div class="logo-image" 
                  style="background-image: url('logo.png'); 
-                        width: 220px; height: 80px; 
+                        width: 220px; 
+                        height: 80px; 
                         background-size: contain; 
                         background-position: center; 
-                        background-repeat: no-repeat;"
-                 onerror="handleLogoImageError(this)">
+                        background-repeat: no-repeat;
+                        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));"
+                 onerror="handleLogoError(this)">
             </div>
-            <!-- Fallback который показывается по умолчанию -->
-            <div class="logo-fallback">
+            <!-- Fallback иконка (скрыта по умолчанию) -->
+            <div class="logo-fallback" style="display: none;">
                 <div class="logo-svg">
                     🍵
                 </div>
