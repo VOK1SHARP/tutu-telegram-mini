@@ -13,8 +13,44 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
+
+    <style>
+        /* iOS Specific Fixes */
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --vh: 1vh;
+        }
+
+        .quick-loader {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+        }
+        .quick-loader i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Фикс для 100vh на iOS */
+        .min-height-ios {
+            min-height: -webkit-fill-available;
+            min-height: 100vh;
+        }
+    </style>
 </head>
-<body>
+<body class="min-height-ios">
     <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
@@ -24,76 +60,78 @@
     </div>
 
     <!-- Основной контейнер -->
-    <div id="app">
+    <div id="app" style="display: none;">
         <!-- Главная страница -->
-        <div id="main-page" class="page"></div>
-        
+        <div id="main-page" class="page active"></div>
+
         <!-- Страница каталога -->
         <div id="catalog-page" class="page"></div>
-        
-        <!-- Страница товара -->
-        <div id="product-page" class="page"></div>
-        
-        <!-- Страница корзины -->
-        <div id="cart-page" class="page"></div>
-        
-        <!-- Страница заказов -->
-        <div id="orders-page" class="page"></div>
-        
-        <!-- Страница профиля -->
-        <div id="profile-page" class="page"></div>
-    </div>
+@@ -100,29 +100,20 @@
+            }
+        }
 
-    <!-- Уведомления -->
-    <div id="notification-container"></div>
+        window.addEventListener('load', function() {
+            fixViewportHeight();
 
-    <script src="app.js"></script>
-    
-    <script>
-        // Простой скрипт для загрузки приложения
-        window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
+
+
+            setTimeout(() => {
                 const loader = document.querySelector('.quick-loader');
-                const app = document.getElementById('app');
-                
-                // Скрываем лоадер
                 if (loader) {
-                    loader.style.transition = 'opacity 0.5s ease';
+                    loader.style.transition = 'opacity 0.5s';
                     loader.style.opacity = '0';
-                    
-                    setTimeout(function() {
+                    setTimeout(() => {
                         loader.style.display = 'none';
+                        const app = document.getElementById('app');
+                        if (app) app.style.display = 'block';
                         
-                        // Показываем приложение
-                        if (app) {
-                            app.style.display = 'block';
-                            app.style.opacity = '0';
-                            
-                            setTimeout(function() {
-                                app.style.transition = 'opacity 0.5s ease';
-                                app.style.opacity = '1';
-                                
-                                // Запускаем приложение
-                                if (typeof initApp === 'function') {
-                                    initApp();
-                                } else {
-                                    // Если функция не загрузилась, показываем сообщение
-                                    document.getElementById('main-page').innerHTML = `
-                                        <div style="padding: 50px; text-align: center;">
-                                            <h2>Ошибка загрузки</h2>
-                                            <p>Пожалуйста, обновите страницу</p>
-                                            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 10px;">
-                                                Обновить
-                                            </button>
-                                        </div>
-                                    `;
-                                }
-                            }, 50);
+                        if (typeof initApp === 'function') {
+                            initApp();
                         }
                     }, 500);
                 }
-            }, 1000);
+            }, 500);
         });
+        
+        window.addEventListener('resize', fixViewportHeight);
+
+
+        (function initSystemTheme() {
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+@@ -143,21 +134,30 @@
+                applySystemTheme(e.matches);
+            });
+        })();
     </script>
+    <script>
+    function detectDevice() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isAndroid = /Android/.test(navigator.userAgent);
+
+        if (isIOS) {
+            document.body.classList.add('ios-device');
+        }
+        if (isAndroid) {
+            document.body.classList.add('android-device');
+        }
+    }
+    
+    window.addEventListener('load', detectDevice);
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>
