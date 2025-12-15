@@ -1,7 +1,7 @@
 // ===========================================
 // ТИ•ТИ - ЧАЙНАЯ ГАРМОНИЯ
 // Telegram Mini App для заказа чая
-// ОБНОВЛЕННАЯ ВЕРСИЯ С ВСЕМИ ИЗМЕНЕНИЯМИ
+// ПОЛНОСТЬЮ РАБОЧИЙ КОД С ВСЕМИ ИСПРАВЛЕНИЯМИ
 // ===========================================
 
 // Глобальные переменные
@@ -13,10 +13,11 @@ let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
 let isTransitioning = false;
+let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+let isAndroid = /Android/.test(navigator.userAgent);
 
-// ========== ОБНОВЛЕННЫЙ КАТАЛОГ ЧАЯ С ВСЕМИ ИЗМЕНЕНИЯМИ ==========
+// ========== ОБНОВЛЕННЫЙ КАТАЛОГ ЧАЯ ==========
 const teaCatalog = [
-    // Пуэры
     {
         id: 1,
         name: 'БАНЬ ЧЖАН ХУН ПЯО',
@@ -48,7 +49,7 @@ const teaCatalog = [
         subtitle: 'Урожай 2009 года',
         type: 'Шу Пуэр',
         category: 'puer',
-        price: 800, // Изменено с 500 на 800
+        price: 800,
         icon: 'fas fa-tree',
         image: 'puer2.jpg',
         description: 'Это выдержанный чай, произведённый в провинции Юньнань, Китай. Он изготовлен из сырья, собранного со старых чайных деревьев, что придаёт ему уникальный характер и глубину.',
@@ -99,7 +100,7 @@ const teaCatalog = [
         subtitle: '2018г',
         type: 'Шу Пуэр',
         category: 'puer',
-        price: 500, // Изменено с 450 на 500
+        price: 500,
         icon: 'fas fa-feather',
         image: 'puer4.jpg',
         description: 'Шу пуэр 2018 года — это выдержанный чай, произведённый в провинции Юньнань, Китай. Его аромат и вкус формируются благодаря многолетней выдержке, качественному сырью и особенностям региона происхождения.',
@@ -118,7 +119,6 @@ const teaCatalog = [
 
 Эффект: мягко бодрит, не вызывая перевозбуждения, повышает концентрацию внимания и ясность мышления. Способствует ментальной релаксации без сонливости.`
     },
-    // Улуны
     {
         id: 5,
         name: 'ТЕ ГУАНЬ ИНЬ',
@@ -167,7 +167,6 @@ const teaCatalog = [
 
 Эффект: мягко бодрит, проясняет сознание, повышает концентрацию. Снимает напряжение, помогает обрести умиротворение после тяжёлого дня.`
     },
-    // Габа
     {
         id: 7,
         name: 'ГАБА МАО ЧА',
@@ -176,7 +175,7 @@ const teaCatalog = [
         category: 'gaba',
         price: 300,
         icon: 'fas fa-brain',
-        image: 'gabo_mao.jpg', // Изменено название изображения
+        image: 'gabo_mao.jpg',
         description: 'Габа Мао Ча - это несортированный чай с повышенным содержанием гамма аминомасляной кислоты, прошедший особую ферментацию в бескислородной среде.',
         effect: 'От тревоги',
         details: {
@@ -192,7 +191,6 @@ const teaCatalog = [
 
 Эффект: ГАМК - ключевой тормозной нейромедиатор центральной нервной системы, отвечающий за расслабление и снижение тревожности, улучшение сна, повышение концентрации.`
     },
-    // Красные чаи
     {
         id: 8,
         name: 'ХЭЙ ЦЗИНЬ',
@@ -289,7 +287,6 @@ const teaCatalog = [
 
 Эффект: согревающее действие, улучшает кровообращение, помогает при переохлаждении. Мягкое тонизирование, бодрит без перевозбуждения (баланс кофеина и L теанина).`
     },
-    // Зеленые чаи
     {
         id: 12,
         name: 'МАО ЦЗЯНЬ',
@@ -338,7 +335,6 @@ const teaCatalog = [
 
 Эффект: мягко бодрит за счёт натурального кофеина, повышает концентрацию внимания и работоспособность. Сочетает тонизирование и релаксацию - приводит организм в состояние баланса, подходит как для активизации утром, так и для расслабления вечером (не перед сном).`
     },
-    // Белый чай
     {
         id: 14,
         name: 'ГУН МЭЙ',
@@ -363,7 +359,6 @@ const teaCatalog = [
 
 Эффект: Витамин B2 и антиоксиданты поддерживают эластичность кожи, уменьшают проявления воспалений и раздражений, замедляют возрастные изменения. Гун Мэй укрепляет иммунитет, благодаря высокому содержанию витамина C и полифенолов. Помогает организму противостоять вирусам и бактериям в сезон простуд.`
     },
-    // Набор (новая категория)
     {
         id: 15,
         name: 'КОЛЛЕКЦИЯ КИТАЙСКОГО ЧАЯ',
@@ -396,14 +391,13 @@ const teaCatalog = [
     }
 ];
 
-// Обновленные категории с изображениями
 const teaCategories = [
     { 
         id: 'all', 
         name: 'Все сорта', 
         icon: 'fas fa-mug-hot', 
         color: 'var(--tea-green)',
-        image: 'all_tea.jpg' // Добавлено изображение
+        image: 'all_tea.jpg'
     },
     { 
         id: 'puer', 
@@ -424,7 +418,7 @@ const teaCategories = [
         name: 'Габа', 
         icon: 'fas fa-brain', 
         color: '#7B1FA2',
-        image: 'gabo_mao.jpg' // Изменено название изображения
+        image: 'gabo_mao.jpg'
     },
     { 
         id: 'red', 
@@ -452,57 +446,177 @@ const teaCategories = [
         name: 'Наборы', 
         icon: 'fas fa-gift', 
         color: '#FF5722',
-        image: 'nabor.jpg' // Новая категория
+        image: 'nabor.jpg'
     }
 ];
 
-// ========== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ==========
-async function initApp() {
-    console.log('🚀 Инициализация ТИ•ТИ Чайной лавки...');
+// ========== УТИЛИТЫ ==========
+function generateUserId() {
+    const savedId = localStorage.getItem('tea_user_id');
+    if (savedId) return savedId;
     
-    // Настройка темы
-    setupTheme();
-    
-    // Инициализация Telegram WebApp
-    initTelegramWebApp();
-    
-    // Загружаем данные пользователя
-    userData = await getUserData();
-    userId = generateUserId();
-    isTelegramUser = userData.id !== null;
-    
-    // Загружаем корзину и заказы
-    await loadCart();
-    await loadOrders();
-    
-    // Скрываем прелоадер и показываем приложение
-    setTimeout(() => {
-        const loader = document.querySelector('.quick-loader');
-        if (loader) {
-            loader.style.transition = 'opacity 0.5s ease';
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                const app = document.getElementById('app');
-                if (app) {
-                    app.style.display = 'block';
-                    app.style.opacity = '0';
-                    setTimeout(() => {
-                        app.style.transition = 'opacity 0.5s ease';
-                        app.style.opacity = '1';
-                    }, 50);
-                }
-            }, 500);
-        }
-        
-        // Показываем главную страницу с логотипом
-        showMainPage();
-        
-        console.log('✅ Приложение успешно загружено');
-    }, 1000);
+    const newId = 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('tea_user_id', newId);
+    return newId;
 }
 
-// ========== ОБНОВЛЕННАЯ ГЛАВНАЯ СТРАНИЦА С ЛОГОТИПОМ ==========
+async function getUserData() {
+    try {
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+            const data = window.Telegram.WebApp.initDataUnsafe;
+            return {
+                id: data.user?.id || null,
+                first_name: data.user?.first_name || 'Гость',
+                last_name: data.user?.last_name || '',
+                username: data.user?.username || '',
+                language_code: data.user?.language_code || 'ru',
+                photo_url: data.user?.photo_url || ''
+            };
+        }
+    } catch (error) {
+        console.error('Ошибка получения данных пользователя:', error);
+    }
+    
+    return {
+        id: null,
+        first_name: 'Гость',
+        last_name: '',
+        username: '',
+        language_code: 'ru',
+        photo_url: ''
+    };
+}
+
+function getWelcomeMessage() {
+    const hour = new Date().getHours();
+    const name = userData?.first_name || 'Друг';
+    
+    if (hour >= 5 && hour < 12) return `Доброе утро, ${name}!`;
+    if (hour >= 12 && hour < 18) return `Добрый день, ${name}!`;
+    if (hour >= 18 && hour < 23) return `Добрый вечер, ${name}!`;
+    return `Доброй ночи, ${name}!`;
+}
+
+function getTeaTypeClass(type) {
+    const types = {
+        'Шу Пуэр': 'puer',
+        'Улун': 'oolong',
+        'ГАБА': 'gaba',
+        'Красный чай': 'red-tea',
+        'Зеленый чай': 'green-tea',
+        'Белый чай': 'white-tea',
+        'Набор': 'sets'
+    };
+    return types[type] || 'puer';
+}
+
+// ========== НАСТРОЙКА ТЕЛЕГРАМ И ТЕМЫ ==========
+function setupTheme() {
+    if (!tg) return;
+    
+    try {
+        tg.expand();
+        tg.setHeaderColor('#4CAF50');
+        tg.setBackgroundColor('#FFF8F0');
+        
+        const theme = tg.colorScheme;
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+        
+        tg.onEvent('themeChanged', () => {
+            if (tg.colorScheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        });
+        
+    } catch (error) {
+        console.warn('Ошибка настройки темы:', error);
+    }
+}
+
+function initTelegramWebApp() {
+    if (!tg) {
+        console.warn('Telegram WebApp не найден');
+        return;
+    }
+    
+    try {
+        tg.ready();
+        console.log('Telegram WebApp инициализирован');
+    } catch (error) {
+        console.warn('Ошибка инициализации Telegram WebApp:', error);
+    }
+}
+
+function toggleTheme(theme) {
+    localStorage.setItem('tea_theme', theme);
+    
+    if (theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    } else if (theme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+}
+
+// ========== НАВИГАЦИЯ ==========
+function showPage(pageName) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    
+    const pages = document.querySelectorAll('.page');
+    const targetPage = document.getElementById(`${pageName}-page`);
+    
+    if (!targetPage) {
+        console.error('Страница не найдена:', pageName);
+        isTransitioning = false;
+        return;
+    }
+    
+    pages.forEach(page => {
+        if (page.classList.contains('active')) {
+            page.classList.remove('active');
+            page.classList.add('exiting');
+            setTimeout(() => {
+                page.classList.remove('exiting');
+            }, 300);
+        }
+    });
+    
+    currentPage = pageName;
+    targetPage.classList.add('active');
+    
+    setTimeout(() => {
+        isTransitioning = false;
+        window.scrollTo(0, 0);
+    }, 300);
+}
+
+function goBack() {
+    const backStack = {
+        'catalog': 'main',
+        'product': 'catalog',
+        'cart': 'main',
+        'orders': 'main',
+        'profile': 'main'
+    };
+    
+    const targetPage = backStack[currentPage] || 'main';
+    showPage(targetPage);
+}
+
+// ========== ГЛАВНАЯ СТРАНИЦА ==========
 function showMainPage() {
     const page = document.getElementById('main-page');
     
@@ -613,14 +727,88 @@ function showMainPage() {
     }, 100);
 }
 
-// ========== ОБНОВЛЕННАЯ СТРАНИЦА ТОВАРА С ПОЛНЫМ ОПИСАНИЕМ ==========
+// ========== КАТАЛОГ ==========
+function showCatalogPage(category = 'all') {
+    const page = document.getElementById('catalog-page');
+    
+    let filteredTeas = category === 'all' 
+        ? teaCatalog 
+        : teaCatalog.filter(tea => tea.category === category);
+    
+    const categoryName = teaCategories.find(c => c.id === category)?.name || 'Все сорта';
+    
+    page.innerHTML = `
+        <div class="page-header">
+            <div class="page-header-content">
+                <button class="back-button" onclick="goBack()" aria-label="Назад">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-title">
+                    <i class="fas fa-mug-hot"></i>
+                    <span>${categoryName}</span>
+                </div>
+                <div style="width: 40px;"></div>
+            </div>
+        </div>
+        
+        <div class="catalog-filters">
+            <div class="filter-buttons">
+                ${teaCategories.map(cat => `
+                    <button class="filter-btn ${category === cat.id ? 'active' : ''}" 
+                            onclick="showCatalogPage('${cat.id}')" 
+                            aria-label="${cat.name}">
+                        <i class="${cat.icon}"></i>
+                        ${cat.name}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="catalog-list">
+            ${filteredTeas.map((tea, index) => `
+                <div class="catalog-product-item" onclick="showProductPage(${tea.id})" 
+                     style="cursor: pointer; animation-delay: ${index * 0.05}s"
+                     aria-label="${tea.name} - ${tea.subtitle}">
+                    <div class="catalog-product-icon ${getTeaTypeClass(tea.type)}">
+                        <i class="${tea.icon}"></i>
+                    </div>
+                    <div class="catalog-product-info">
+                        <div class="catalog-product-name">${tea.name}</div>
+                        <div class="catalog-product-subtitle">${tea.subtitle}</div>
+                        <div class="catalog-product-effect">${tea.effect}</div>
+                        <div class="catalog-product-weight">${tea.details.weight}</div>
+                    </div>
+                    <div class="catalog-product-actions">
+                        <div class="product-tag-mini">${tea.type}</div>
+                        <div class="catalog-product-price">${tea.price}₽</div>
+                        <button class="catalog-add-btn" onclick="event.stopPropagation(); addToCart(${tea.id})" 
+                                aria-label="Добавить ${tea.name} в корзину">
+                            <i class="fas fa-cart-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+            
+            ${filteredTeas.length === 0 ? `
+                <div class="cart-empty">
+                    <i class="fas fa-search"></i>
+                    <h3>Товары не найдены</h3>
+                    <p>Попробуйте другую категорию</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    showPage('catalog');
+}
+
+// ========== СТРАНИЦА ТОВАРА ==========
 function showProductPage(productId) {
     const product = teaCatalog.find(p => p.id === productId);
     if (!product) return;
     
     const page = document.getElementById('product-page');
     
-    // Определяем способ заваривания в зависимости от типа чая
     const getBrewingMethod = (type) => {
         const methods = {
             'Шу Пуэр': {
@@ -716,7 +904,7 @@ function showProductPage(productId) {
     page.innerHTML = `
         <div class="page-header">
             <div class="page-header-content">
-                <button class="back-button" onclick="showCatalogPage()" aria-label="Назад к каталогу">
+                <button class="back-button" onclick="goBack()" aria-label="Назад к каталогу">
                     <i class="fas fa-arrow-left"></i>
                 </button>
                 <div class="page-title">
@@ -838,6 +1026,7 @@ function showProductPage(productId) {
     
     showPage('product');
 }
+
 // ========== КОРЗИНА ==========
 async function loadCart() {
     const key = `tea_cart_${userId}`;
@@ -970,7 +1159,6 @@ function createAddToCartEffect(clickEvent) {
     }, 800);
 }
 
-// Управление скроллом футера корзины
 function setupCartFooterScroll() {
     const cartFooter = document.querySelector('.main-cart-footer');
     if (!cartFooter) return;
@@ -1254,7 +1442,6 @@ async function confirmCheckout() {
     }
 }
 
-// Конфетти эффект
 function createConfetti() {
     const colors = ['#4CAF50', '#FFC107', '#F44336', '#2196F3', '#7B1FA2'];
     
@@ -1627,7 +1814,7 @@ function clearHistory() {
     }
 }
 
-// ========== УТИЛИТЫ И УВЕДОМЛЕНИЯ ==========
+// ========== УВЕДОМЛЕНИЯ ==========
 function showNotification(message, type = 'green') {
     const container = document.getElementById('notification-container');
     
@@ -1714,7 +1901,7 @@ function showNotification(message, type = 'green') {
     }, { once: true });
 }
 
-// Универсальная функция открытия ссылок
+// ========== УТИЛИТЫ ==========
 function openTelegramLink(url) {
     if (tg && tg.openLink) {
         tg.openLink(url);
@@ -1725,7 +1912,34 @@ function openTelegramLink(url) {
     }
 }
 
-// ========== СЕРВИС ВОРКЕР ==========
+// ========== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ==========
+async function initApp() {
+    console.log('🚀 Инициализация ТИ•ТИ Чайной лавки...');
+    
+    try {
+        // Настройка темы
+        setupTheme();
+        
+        // Инициализация Telegram WebApp
+        initTelegramWebApp();
+        
+        // Загружаем данные пользователя
+        userData = await getUserData();
+        userId = generateUserId();
+        isTelegramUser = userData.id !== null;
+        
+        // Загружаем корзину и заказы
+        await loadCart();
+        await loadOrders();
+        
+        console.log('✅ Приложение успешно загружено');
+        
+    } catch (error) {
+        console.error('Ошибка инициализации приложения:', error);
+    }
+}
+
+// ========== РЕГИСТРАЦИЯ SERVICE WORKER ==========
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
@@ -1738,7 +1952,7 @@ function registerServiceWorker() {
     }
 }
 
-// ========== ЗАГРУЗКА ПРИЛОЖЕНИЯ ==========
+// ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
 window.addEventListener('DOMContentLoaded', () => {
     registerServiceWorker();
     setTimeout(initApp, 100);
@@ -1763,3 +1977,4 @@ window.clearCart = clearCart;
 window.clearHistory = clearHistory;
 window.closeCheckoutModal = closeCheckoutModal;
 window.toggleTheme = toggleTheme;
+window.initApp = initApp;
