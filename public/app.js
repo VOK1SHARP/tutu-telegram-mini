@@ -1509,93 +1509,62 @@ async function confirmCheckout() {
     
     try {
         const orderId = 'ORD' + Date.now().toString().slice(-8);
+        const userName = userData.first_name || 'Гость';
+        const timestamp = new Date().toLocaleString('ru-RU');
         
-        // Создаем данные для отправки
-        const orderData = {
-            order_id: orderId,
+        // СОЗДАЕМ КОРОТКИЙ ТЕКСТ - iOS не любит длинные ссылки
+        const shortText = `Заказ ${orderId} от ${userName} на ${total}₽`;
+        const telegramUrl = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortText)}`;
+        
+        console.log('iOS URL длина:', telegramUrl.length);
+        
+        // 1. Сохраняем ПОЛНЫЕ данные заказа в localStorage
+        const order = {
+            id: orderId,
             user_id: userId,
-            user_name: userData.first_name || 'Гость',
-            username: userData.username || '',
+            user_name: userName,
+            user_username: userData.username || '',
             items: cart.map(item => ({
                 id: item.id,
                 name: item.name,
                 quantity: item.quantity,
                 price: item.price,
-                total: item.price * item.quantity
+                total: item.price * item.quantity,
+                weight: item.weight || '50г'
             })),
             total: total,
             items_count: totalItems,
-            timestamp: new Date().toLocaleString('ru-RU')
-        };
-        
-        console.log('📦 Данные заказа:', orderData);
-        
-        // 1. Сохраняем заказ локально
-        const order = {
-            id: orderId,
-            user_id: userId,
-            user_name: orderData.user_name,
-            user_username: orderData.username,
-            items: orderData.items,
-            total: total,
-            items_count: totalItems,
-            timestamp: orderData.timestamp,
-            status: 'pending'
+            timestamp: timestamp,
+            status: 'pending',
+            // Сохраняем полное сообщение для менеджера
+            full_message: `🛒 НОВЫЙ ЗАКАЗ #${orderId}\n\n👤 Клиент: ${userName} ${userData.username ? `(@${userData.username})` : ''}\n💰 Сумма: ${total}₽\n📦 Товаров: ${totalItems}\n📅 Дата: ${timestamp}\n\nСостав заказа:\n${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.quantity}₽`).join('\n')}`
         };
         
         await saveOrder(order);
         
-        // 2. Пытаемся отправить через Telegram WebApp
-        if (window.Telegram && Telegram.WebApp) {
-            try {
-                // Отправляем данные боту
-                Telegram.WebApp.sendData(JSON.stringify(orderData));
-                
-                showNotification(`✅ Заказ #${orderId} отправлен!`, 'green');
-                createConfetti();
-                
-                // Закрываем WebApp или остаемся
-                setTimeout(() => {
-                    closeCheckoutModal();
-                    cart = [];
-                    saveCart();
-                    showMainPage();
-                }, 2000);
-                
-                return; // Выходим, если сработало
-                
-            } catch (error) {
-                console.error('Telegram.sendData error:', error);
-                // Пробуем fallback
-            }
-        }
-        
-        // 3. Fallback: Создаем ОЧЕНЬ короткую ссылку
-        const shortMessage = `Заказ ${orderId} на ${total}₽ (${totalItems} шт)`;
-        const shortUrl = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortMessage)}`;
-        
-        console.log('Короткая ссылка (длина:', shortUrl.length, '):', shortUrl);
-        
         closeCheckoutModal();
+        
+        // 2. Очищаем корзину
         cart = [];
         await saveCart();
         
-        showNotification(`🎉 Заказ #${orderId} создан!`, 'green');
+        showNotification(`🎉 Заказ #${orderId} сохранен!`, 'green');
         createConfetti();
         
-        // 4. Открываем короткую ссылку с проверкой
-        setTimeout(() => {
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
-                Telegram.WebApp.openLink(shortUrl);
-            } else {
-                // Для iOS открываем в новом окне
-                const newWindow = window.open();
-                newWindow.opener = null;
-                newWindow.location = shortUrl;
-            }
-            
-            setTimeout(() => showMainPage(), 1000);
-        }, 1500);
+        // 3. iOS ТРЮК: Показываем инструкцию вместо автоматической отправки
+        if (isIOS) {
+            showIOSInstructions(order);
+        } else {
+            // Для Android/ПК - обычный метод
+            setTimeout(() => {
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
+                    Telegram.WebApp.openLink(telegramUrl);
+                } else {
+                    window.open(telegramUrl, '_blank');
+                }
+                setTimeout(() => showMainPage(), 1000);
+            }, 1500);
+        }
         
     } catch (error) {
         console.error('Ошибка:', error);
@@ -1605,6 +1574,92 @@ async function confirmCheckout() {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = 'Подтвердить';
         }
+    }
+}
+
+// НОВАЯ ФУНКЦИЯ: Показываем инструкцию для iOS
+function showIOSInstructions(order) {
+    const modal = document.createElement('div');
+    modal.id = 'ios-instructions';
+    modal.className = 'tea-modal';
+    modal.setAttribute('aria-modal', 'true');
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>📱 Инструкция для iOS</h3>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-mobile-alt" style="font-size: 48px; color: #007AFF;"></i>
+                </div>
+                
+                <p><strong>Шаг 1:</strong> Нажмите кнопку ниже, чтобы открыть Telegram</p>
+                
+                <p><strong>Шаг 2:</strong> Отправьте менеджеру этот номер заказа:</p>
+                
+                <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; font-family: monospace;">
+                    <h4 style="margin: 0; color: #4CAF50;">${order.id}</h4>
+                </div>
+                
+                <p><strong>ИЛИ скопируйте полный текст:</strong></p>
+                
+                <div style="background: #fff8f0; padding: 12px; border-radius: 8px; border: 1px solid #ffd8a6; font-size: 13px; max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                    ${order.full_message.replace(/\n/g, '<br>')}
+                </div>
+                
+                <button onclick="copyOrderText('${order.id}')" 
+                        style="width: 100%; padding: 12px; margin-bottom: 10px; background: #4CAF50; color: white; border: none; border-radius: 25px; cursor: pointer;">
+                    <i class="fas fa-copy"></i> Копировать номер заказа
+                </button>
+                
+                <a href="https://t.me/ivan_likhov" 
+                   target="_blank" 
+                   rel="noopener"
+                   onclick="closeIOSInstructions()"
+                   style="text-decoration: none; display: block;">
+                    <button style="width: 100%; padding: 12px; background: #0088cc; color: white; border: none; border-radius: 25px; cursor: pointer;">
+                        <i class="fab fa-telegram"></i> Открыть Telegram
+                    </button>
+                </a>
+                
+                <button onclick="closeIOSInstructions()" 
+                        style="width: 100%; padding: 10px; margin-top: 10px; background: transparent; color: #666; border: 1px solid #ddd; border-radius: 25px; cursor: pointer;">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+// Функция копирования
+function copyOrderText(orderId) {
+    const textToCopy = `Заказ ${orderId}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        showNotification('✅ Номер заказа скопирован!', 'green');
+    }).catch(() => {
+        // Fallback для старых iOS
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('✅ Скопировано!', 'green');
+    });
+}
+
+function closeIOSInstructions() {
+    const modal = document.getElementById('ios-instructions');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            showMainPage();
+        }, 300);
     }
 }
 // ========== ЗАКАЗЫ ==========
