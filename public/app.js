@@ -698,14 +698,13 @@ async function initApp() {
 
 // ========== ОБНОВЛЕННАЯ ГЛАВНАЯ СТРАНИЦА С ЛОГОТИПОМ ==========
 function showMainPage() {
-    // В функции showMainPage() замените backgroundStyle на:
-const backgroundStyle = `background: ${category.color};`;
+    const page = document.getElementById('main-page');
     
     page.innerHTML = `
         <!-- Шапка только с логотипом -->
         <div class="header-with-logo">
             <div class="logo-container">
-                <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" onerror="this.style.display='none'">
+                <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" onerror="handleLogoError(this)">
                 <div class="logo-fallback" style="display: none;">
                     <div class="logo-svg">
                         🍵
@@ -737,23 +736,23 @@ const backgroundStyle = `background: ${category.color};`;
                     <i class="fas fa-filter"></i> Категории чая
                 </h2>
                 <div class="category-grid">
-                    ${teaCategories.map((category, index) => {
-                        const teasInCategory = category.id === 'all' 
+                    ${teaCategories.map((cat, index) => {
+                        const teasInCategory = cat.id === 'all' 
                             ? teaCatalog.length 
-                            : teaCatalog.filter(t => t.category === category.id).length;
+                            : teaCatalog.filter(t => t.category === cat.id).length;
                         const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} вида`;
                         
                         return `
-                        <div class="category-item" onclick="showCatalogPage('${category.id}')" 
+                        <div class="category-item" onclick="showCatalogPage('${cat.id}')" 
                              style="cursor: pointer; animation-delay: ${0.1 + index * 0.05}s"
-                             aria-label="${category.name}">
+                             aria-label="${cat.name}">
                             <div class="category-image-container" 
-                                 style="background: ${category.color};">
+                                 style="background: ${cat.color};">
                                 <div class="category-overlay">
-                                    <i class="${category.icon}"></i>
+                                    <i class="${cat.icon}"></i>
                                 </div>
                             </div>
-                            <div class="category-name">${category.name}</div>
+                            <div class="category-name">${cat.name}</div>
                             <div class="category-count">${countText}</div>
                         </div>
                         `;
@@ -801,6 +800,14 @@ const backgroundStyle = `background: ${category.color};`;
     }, 100);
 }
 
+// Добавьте эту функцию для обработки ошибок логотипа
+function handleLogoError(img) {
+    img.style.display = 'none';
+    const fallback = img.parentElement.querySelector('.logo-fallback');
+    if (fallback) {
+        fallback.style.display = 'flex';
+    }
+}
 // ========== ОБНОВЛЕННАЯ СТРАНИЦА ТОВАРА С ПОЛНЫМ ОПИСАНИЕМ ==========
 function showProductPage(productId) {
     const product = teaCatalog.find(p => p.id === productId);
