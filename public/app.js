@@ -597,7 +597,7 @@ const teaCategories = [
         name: 'Все сорта', 
         icon: 'fas fa-mug-hot', 
         color: 'var(--tea-green)',
-        image: 'all_tea.jpg'
+        image: 'all_tea_v3.jpg'
     },
     { 
         id: 'puer', 
