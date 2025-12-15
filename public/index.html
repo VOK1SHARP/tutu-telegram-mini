@@ -2,90 +2,56 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4CAF50" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1E1E1E" media="(prefers-color-scheme: dark)">
     <title>ТИ•ТИ ЧАЙ</title>
+    <meta name="description" content="Онлайн-заказ китайского чая в Telegram Mini App">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            background: #FFF8F0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* iOS Specific Fixes */
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --vh: 1vh;
         }
         
         .quick-loader {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: linear-gradient(135deg, #4CAF50, #2E7D32);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             color: white;
             text-align: center;
-            padding: 20px;
         }
-        
         .quick-loader i {
             font-size: 60px;
             margin-bottom: 20px;
             animation: spin 2s linear infinite;
         }
-        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
-        #app {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            background: white;
+        /* Фикс для 100vh на iOS */
+        .min-height-ios {
+            min-height: -webkit-fill-available;
             min-height: 100vh;
-            position: relative;
-        }
-        
-        .page {
-            display: none;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        /* Фикс для безопасных зон */
-        .safe-top {
-            padding-top: env(safe-area-inset-top, 0px);
-        }
-        
-        .safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
     </style>
 </head>
-<body>
-    <div class="quick-loader" id="loader">
+<body class="min-height-ios">
+    <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
             <h2>ТИ•ТИ ЧАЙ</h2>
@@ -120,81 +86,53 @@
     <script src="app.js"></script>
     
     <script>
-        // Простой запуск приложения
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, запускаем приложение...');
-            
-            // Скрываем лоадер и показываем приложение
-            setTimeout(function() {
-                var loader = document.getElementById('loader');
-                var app = document.getElementById('app');
+        // Фикс для viewport на iOS
+        function fixViewportHeight() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                document.body.classList.add('ios-device');
                 
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.viewportHeight = window.innerHeight;
+                }
+            }
+        }
+        
+        window.addEventListener('load', function() {
+            fixViewportHeight();
+            
+            setTimeout(() => {
+                const loader = document.querySelector('.quick-loader');
                 if (loader) {
-                    loader.style.transition = 'opacity 0.5s ease';
+                    loader.style.transition = 'opacity 0.5s';
                     loader.style.opacity = '0';
-                    setTimeout(function() {
+                    setTimeout(() => {
                         loader.style.display = 'none';
+                        const app = document.getElementById('app');
+                        if (app) app.style.display = 'block';
                     }, 500);
                 }
-                
-                if (app) {
-                    app.style.display = 'block';
-                    app.style.opacity = '0';
-                    setTimeout(function() {
-                        app.style.transition = 'opacity 0.5s ease';
-                        app.style.opacity = '1';
-                    }, 100);
-                }
-                
-                // Запускаем основное приложение
-                if (typeof initApp === 'function') {
-                    setTimeout(initApp, 100);
-                } else {
-                    console.error('Функция initApp не найдена!');
-                    // Резервный показ главной страницы
-                    showMainPage();
-                }
-            }, 1000);
+            }, 500);
         });
         
-        // Резервная функция если app.js не загрузился
-        function showMainPage() {
-            var mainPage = document.getElementById('main-page');
-            if (mainPage) {
-                mainPage.innerHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <h1>ТИ•ТИ ЧАЙ</h1>
-                        <p>Чайная гармония</p>
-                        <button onclick="showCatalogPage()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; margin-top: 20px;">
-                            Перейти в каталог
-                        </button>
-                    </div>
-                `;
-                mainPage.classList.add('active');
+        window.addEventListener('resize', fixViewportHeight);
+        
+        // Определение устройства
+        function detectDevice() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            if (isIOS) {
+                document.body.classList.add('ios-device');
+            }
+            if (isAndroid) {
+                document.body.classList.add('android-device');
             }
         }
         
-        function showCatalogPage() {
-            var mainPage = document.getElementById('main-page');
-            var catalogPage = document.getElementById('catalog-page');
-            if (mainPage && catalogPage) {
-                mainPage.classList.remove('active');
-                catalogPage.classList.add('active');
-                catalogPage.innerHTML = `
-                    <div style="padding: 20px;">
-                        <button onclick="showMainPage()" style="padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; margin-bottom: 20px;">
-                            Назад
-                        </button>
-                        <h2>Каталог чая</h2>
-                        <p>Здесь будут сорта чая</p>
-                    </div>
-                `;
-            }
-        }
-        
-        // Экспорт функций в глобальную область видимости
-        window.showMainPage = showMainPage;
-        window.showCatalogPage = showCatalogPage;
+        window.addEventListener('load', detectDevice);
     </script>
 </body>
 </html>
