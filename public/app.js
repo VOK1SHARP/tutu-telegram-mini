@@ -135,7 +135,41 @@ function toggleTheme(theme) {
         }
     }
 }
+// ========== ФУНКЦИИ ДЛЯ ОБРАБОТКИ ИЗОБРАЖЕНИЙ ==========
 
+// Обработка ошибок логотипа
+function handleLogoError(img) {
+    console.log('Логотип не загрузился, показываем fallback');
+    img.style.display = 'none';
+    const fallback = img.parentElement.querySelector('.logo-fallback');
+    if (fallback) {
+        fallback.style.display = 'flex';
+    }
+}
+
+// Обработка ошибок изображений в каталоге
+function handleImageError(element) {
+    console.log('Изображение не загрузилось, показываем fallback');
+    // Скрываем основное изображение
+    element.style.display = 'none';
+    
+    // Находим fallback элемент (следующий элемент в контейнере)
+    const container = element.parentElement;
+    const fallback = container.querySelector('.catalog-product-fallback');
+    if (fallback) {
+        fallback.style.display = 'flex';
+    }
+}
+
+// Обработка ошибок изображений на странице товара
+function handleProductImageError(element) {
+    console.log('Изображение товара не загрузилось, показываем fallback');
+    element.style.display = 'none';
+    const fallback = element.nextElementSibling;
+    if (fallback) {
+        fallback.style.display = 'flex';
+    }
+}
 // ========== НАВИГАЦИЯ ПО КАТАЛОГУ ==========
 function showCatalogPage(categoryId = 'all') {
     const page = document.getElementById('catalog-page');
@@ -723,7 +757,8 @@ function showMainPage() {
 <div class="header-with-logo">
     <div class="logo-container">
         <img src="logo.png" alt="ТИ•ТИ ЧАЙ" class="main-logo" 
-             onerror="handleLogoError(this)">
+     onerror="handleLogoError(this)"
+     onload="console.log('Логотип загружен успешно')">
         <div class="logo-fallback" style="display: none;">
             <div class="logo-svg">
                 🍵
@@ -841,7 +876,7 @@ function showProductPage(productId) {
     
     const page = document.getElementById('product-page');
     
-    // Определяем способ заваривания в зависимости от типа чая
+    // Определяем способ заваривания
     const getBrewingMethod = (type) => {
         const methods = {
             'Шу Пуэр': {
@@ -932,9 +967,14 @@ function showProductPage(productId) {
         return methods[type] || methods['Шу Пуэр'];
     };
     
-    const brewing = getBrewingMethod(product.type);
+     const brewing = getBrewingMethod(product.type);
     
     page.innerHTML = `
+        <!-- Размытый фон изображения чая -->
+        <div class="product-page-background" 
+             style="background-image: url('${product.image}');"
+             onerror="this.style.display='none'"></div>
+        
         <div class="page-header">
             <div class="page-header-content">
                 <button class="back-button" onclick="showCatalogPage()" aria-label="Назад к каталогу">
@@ -953,14 +993,13 @@ function showProductPage(productId) {
             <div class="product-card">
                 <div class="product-card-header">
                     <div class="product-image-container">
-    <div class="product-image ${getTeaTypeClass(product.type)}" 
-         style="background-image: url('${product.image}');"
-         onerror="handleProductImageError(this)">
-    </div>
-    <div class="product-image-fallback ${getTeaTypeClass(product.type)}" style="display: none;">
-        <i class="${product.icon}"></i>
-    </div>
-</div>
+                        <div class="product-image ${getTeaTypeClass(product.type)}" 
+                             style="background-image: url('${product.image}');"
+                             onerror="handleProductImageError(this)">
+                        </div>
+                        <div class="product-image-fallback ${getTeaTypeClass(product.type)}" style="display: none;">
+                            <i class="${product.icon}"></i>
+                        </div>
                     </div>
                     <div class="product-title">
                         <h2>${product.name}</h2>
@@ -1066,7 +1105,6 @@ function showProductPage(productId) {
     
     showPage('product');
 }
-
 // ========== КОРЗИНА ==========
 async function loadCart() {
     const key = `tea_cart_${userId}`;
