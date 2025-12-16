@@ -2672,3 +2672,44 @@ input[type="submit"] {
 .dark-theme #ios-instructions .modal-body div {
     background: rgba(255, 255, 255, 0.1);
 }
+/* Добавить в style.css */
+.ios-device .page {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+    height: 100%;
+}
+
+.ios-device .page.active {
+    position: fixed;
+    width: 100%;
+}
+/* Добавить в CSS */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.dark-theme .skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+}
+// Возможность свайпа для удаления
+function setupSwipeActions() {
+    let startX, currentX;
+    
+    document.addEventListener('touchstart', e => {
+        const item = e.target.closest('.cart-item');
+        if (item) {
+            startX = e.touches[0].clientX;
+            item.classList.add('swiping');
+        }
+    });
+    
+    // Реализация свайпа для удаления
+}
