@@ -25,7 +25,7 @@
         .quick-loader {
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            background: linear-gradient(135deg, #1a3c27, #2E7D32);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -48,9 +48,27 @@
             min-height: -webkit-fill-available;
             min-height: 100vh;
         }
+        
+        /* Предзагрузка изображений */
+        .preload-images {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
     </style>
 </head>
 <body class="min-height-ios">
+    <!-- Скрытая предзагрузка изображений -->
+    <div class="preload-images">
+        <img src="logo.png" alt="preload">
+        <img src="categories/all_tea_v3.jpg" alt="preload">
+        <img src="categories/category_puer.jpg" alt="preload">
+        <img src="categories/category_oolong.jpg" alt="preload">
+        <img src="categories/category_red.jpg" alt="preload">
+    </div>
+
     <div class="quick-loader">
         <div>
             <i class="fas fa-leaf"></i>
@@ -78,6 +96,22 @@
         
         <!-- Страница профиля -->
         <div id="profile-page" class="page"></div>
+        
+        <!-- Модальное окно для увеличения изображения -->
+        <div id="image-modal" class="tea-modal" style="display: none;">
+            <div class="modal-content image-modal-content">
+                <button class="close-image-modal" onclick="closeImageModal()" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-image-container">
+                    <img id="modal-image" src="" alt="Увеличенное изображение чая">
+                    <div class="modal-image-fallback" id="modal-image-fallback">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                </div>
+                <div class="image-modal-info" id="modal-image-info"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Уведомления -->
@@ -103,6 +137,9 @@
         window.addEventListener('load', function() {
             fixViewportHeight();
             
+            // Начинаем загрузку изображений сразу
+            preloadCriticalImages();
+            
             setTimeout(() => {
                 const loader = document.querySelector('.quick-loader');
                 if (loader) {
@@ -111,10 +148,17 @@
                     setTimeout(() => {
                         loader.style.display = 'none';
                         const app = document.getElementById('app');
-                        if (app) app.style.display = 'block';
+                        if (app) {
+                            app.style.display = 'block';
+                            app.style.opacity = '0';
+                            setTimeout(() => {
+                                app.style.transition = 'opacity 0.5s ease';
+                                app.style.opacity = '1';
+                            }, 50);
+                        }
                     }, 500);
                 }
-            }, 500);
+            }, 800);
         });
         
         window.addEventListener('resize', fixViewportHeight);
@@ -133,6 +177,26 @@
         }
         
         window.addEventListener('load', detectDevice);
+        
+        // Функция предзагрузки критически важных изображений
+        function preloadCriticalImages() {
+            const images = [
+                'logo.png',
+                'categories/all_tea_v3.jpg',
+                'categories/category_puer.jpg',
+                'categories/category_oolong.jpg',
+                'categories/category_red.jpg',
+                'categories/category_green.jpg',
+                'categories/category_white.jpg',
+                'categories/gabo_mao.jpg',
+                'categories/nabor.jpg'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
     </script>
 </body>
 </html>
