@@ -1,7 +1,7 @@
 // ===========================================
 // ТИ•ТИ - ЧАЙНАЯ ГАРМОНИЯ
 // Telegram Mini App для заказа чая
-// ОБНОВЛЕННАЯ ВЕРСИЯ С ВСЕМИ ИЗМЕНЕНИЯМИ
+// ОБНОВЛЕННАЯ ВЕРСИЯ С ВСЕМИ ИСПРАВЛЕНИЯМИ
 // ===========================================
 
 // Глобальные переменные
@@ -13,10 +13,87 @@ let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
 let isTransitioning = false;
+
+// ========== ОПТИМИЗАЦИЯ ИЗОБРАЖЕНИЙ ==========
+const imageCache = new Map();
+
+// Функция для оптимизированной загрузки изображений
+function loadImage(src, alt, type) {
+    return new Promise((resolve, reject) => {
+        // Проверяем кэш
+        if (imageCache.has(src)) {
+            resolve(imageCache.get(src));
+            return;
+        }
+        
+        const img = new Image();
+        
+        // Устанавливаем приоритет загрузки
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        
+        img.onload = () => {
+            const result = {
+                src: src,
+                width: img.width,
+                height: img.height,
+                status: 'loaded'
+            };
+            imageCache.set(src, result);
+            resolve(result);
+        };
+        
+        img.onerror = () => {
+            console.log(`Ошибка загрузки: ${src}`);
+            const result = {
+                src: '',
+                type: type,
+                status: 'error'
+            };
+            imageCache.set(src, result);
+            resolve(result);
+        };
+        
+        img.src = src;
+        
+        // Таймаут для длительной загрузки
+        setTimeout(() => {
+            if (!img.complete) {
+                console.log(`Таймаут загрузки: ${src}`);
+                const result = {
+                    src: '',
+                    type: type,
+                    status: 'timeout'
+                };
+                imageCache.set(src, result);
+                resolve(result);
+            }
+        }, 5000);
+    });
+}
+
+// Предзагрузка изображений категорий
+async function preloadCategoryImages() {
+    const categoryImages = teaCategories
+        .filter(cat => cat.image)
+        .map(cat => loadImage(cat.image, cat.name, 'category'));
+    
+    await Promise.allSettled(categoryImages);
+}
+
+// Предзагрузка изображений товаров
+async function preloadProductImages() {
+    const productImages = teaCatalog
+        .filter(tea => tea.image)
+        .map(tea => loadImage(tea.image, tea.name, tea.type));
+    
+    await Promise.allSettled(productImages.slice(0, 8)); // Загружаем первые 8
+}
+
 // ========== КОНФЕТТИ-ЭФФЕКТ ==========
 function createConfetti() {
     const colors = ['#4CAF50', '#FF5722', '#FF9800', '#2196F3', '#9C27B0', '#FF4081'];
-    const confettiCount = 100;
+    const confettiCount = 80;
     
     for (let i = 0; i < confettiCount; i++) {
         const confetti = document.createElement('div');
@@ -24,7 +101,7 @@ function createConfetti() {
         
         // Случайные свойства
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const size = Math.random() * 10 + 5;
+        const size = Math.random() * 8 + 4;
         const left = Math.random() * 100;
         const animationDuration = Math.random() * 2 + 1;
         
@@ -73,48 +150,76 @@ function createConfetti() {
         document.head.appendChild(styles);
     }
 }
+
 // Определение платформы
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isAndroid = /Android/.test(navigator.userAgent);
-// ========== ФИКСЫ ДЛЯ iOS ==========
-function isIOSDevice() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// ========== МОДАЛЬНОЕ ОКНО ДЛЯ ИЗОБРАЖЕНИЙ ==========
+function openImageModal(imageUrl, teaName, teaType) {
+    const modal = document.getElementById('image-modal');
+    const modalImage = document.getElementById('modal-image');
+    const modalFallback = document.getElementById('modal-image-fallback');
+    const modalInfo = document.getElementById('modal-image-info');
+    
+    modalInfo.textContent = teaName;
+    
+    // Устанавливаем fallback цвет
+    const colorClass = getTeaTypeClass(teaType);
+    modalFallback.className = `modal-image-fallback ${colorClass}`;
+    
+    // Показываем скелетон
+    modalImage.style.display = 'none';
+    modalFallback.style.display = 'flex';
+    
+    // Загружаем изображение
+    const img = new Image();
+    img.onload = () => {
+        modalImage.src = imageUrl;
+        modalImage.style.display = 'block';
+        modalFallback.style.display = 'none';
+        
+        // Добавляем возможность зума
+        modalImage.addEventListener('click', function() {
+            this.classList.toggle('zoomed');
+        });
+    };
+    
+    img.onerror = () => {
+        modalImage.style.display = 'none';
+        modalFallback.style.display = 'flex';
+    };
+    
+    img.src = imageUrl;
+    
+    // Показываем модальное окно
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Блокируем скролл основного контента
+    document.body.style.overflow = 'hidden';
 }
 
-// Улучшенная функция открытия ссылок для iOS
-function openTelegramLink(url) {
-    console.log('Открываем ссылку на устройстве:', isIOSDevice() ? 'iOS' : 'Другое');
-    
-    // iOS фикс: проверяем длину URL
-    if (url.length > 1800 && isIOSDevice()) {
-        console.warn('⚠️ Ссылка слишком длинная для iOS, укорачиваем...');
-        // Альтернатива: отправляем только номер заказа
-        const orderMatch = url.match(/заказ #(\w+)/i);
-        if (orderMatch) {
-            const shortMessage = `Заказ ${orderMatch[1]} готов к обработке`;
-            url = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortMessage)}`;
-        }
-    }
-    
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
-        try {
-            Telegram.WebApp.openLink(url);
-        } catch (error) {
-            console.error('Telegram WebApp.openLink failed:', error);
-            // Fallback для iOS
-            window.location.href = url;
-        }
-    } else if (isIOSDevice()) {
-        // iOS специальный метод
-        window.location.href = url;
-    } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
-    }
+function closeImageModal() {
+    const modal = document.getElementById('image-modal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
 }
+
+// Закрытие по клику вне изображения
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('image-modal');
+    if (modal.style.display === 'flex' && !e.target.closest('.modal-content')) {
+        closeImageModal();
+    }
+});
+
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 function getWelcomeMessage() {
     const hour = new Date().getHours();
-    // Учитываем глубокую ночь
     if (hour >= 0 && hour < 6) return 'Доброй ночи! 🌙';
     if (hour < 12) return 'Доброе утро! ☀️';
     if (hour < 18) return 'Добрый день! 🌤️';
@@ -134,7 +239,7 @@ function getTeaTypeClass(type) {
     };
     return classes[type] || 'puer';
 }
-// ДОБАВЬТЕ эту новую функцию для получения цвета:
+
 function getTeaTypeColor(type) {
     const colors = {
         'Шу Пуэр': 'linear-gradient(135deg, #5D4037, #8D6E63)',
@@ -147,6 +252,7 @@ function getTeaTypeColor(type) {
     };
     return colors[type] || 'linear-gradient(135deg, #5D4037, #8D6E63)';
 }
+
 function setupTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const savedTheme = localStorage.getItem('tea_theme') || 'auto';
@@ -230,11 +336,9 @@ function toggleTheme(theme) {
         }
     }
 }
-// ========== ФУНКЦИИ ДЛЯ ОБРАБОТКИ ИЗОБРАЖЕНИЙ ==========
 
-// Обработка ошибок логотипа
+// ========== ОБРАБОТКА ОШИБОК ИЗОБРАЖЕНИЙ ==========
 function handleLogoError(img) {
-    console.log('Логотип не загрузился, показываем fallback');
     img.style.display = 'none';
     const fallback = img.parentElement.querySelector('.logo-fallback');
     if (fallback) {
@@ -242,13 +346,8 @@ function handleLogoError(img) {
     }
 }
 
-// Обработка ошибок изображений в каталоге
 function handleImageError(element) {
-    console.log('Изображение не загрузилось, показываем fallback');
-    // Скрываем основное изображение
     element.style.display = 'none';
-    
-    // Находим fallback элемент (следующий элемент в контейнере)
     const container = element.parentElement;
     const fallback = container.querySelector('.catalog-product-fallback');
     if (fallback) {
@@ -256,86 +355,15 @@ function handleImageError(element) {
     }
 }
 
-// Обработка ошибок изображений на странице товара
 function handleProductImageError(element) {
-    console.log('Изображение товара не загрузилось, показываем fallback');
     element.style.display = 'none';
     const fallback = element.nextElementSibling;
     if (fallback) {
         fallback.style.display = 'flex';
     }
 }
-// ========== НАВИГАЦИЯ ПО КАТАЛОГУ ==========
-function showCatalogPage(categoryId = 'all') {
-    const page = document.getElementById('catalog-page');
-    const filteredTeas = categoryId === 'all' 
-        ? teaCatalog 
-        : teaCatalog.filter(tea => tea.category === categoryId);
-    
-    const category = teaCategories.find(c => c.id === categoryId) || teaCategories[0];
-    
-    page.innerHTML = `
-        <div class="page-header">
-            <div class="page-header-content">
-                <button class="back-button" onclick="showMainPage()" aria-label="Назад">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <div class="page-title">
-                    <i class="${category.icon}"></i>
-                    <span>${category.name}</span>
-                </div>
-                <div style="width: 40px;"></div>
-            </div>
-        </div>
-        
-        <div class="catalog-filters">
-            <div class="filter-buttons">
-                ${teaCategories.map(cat => `
-                    <button class="filter-btn ${categoryId === cat.id ? 'active' : ''}" 
-                            onclick="showCatalogPage('${cat.id}')"
-                            aria-label="${cat.name}">
-                        ${cat.name}
-                    </button>
-                `).join('')}
-            </div>
-        </div>
-        
-        <div class="catalog-list">
-            ${filteredTeas.map((tea, index) => `
-                <div class="catalog-product-item" onclick="showProductPage(${tea.id})" 
-                     style="cursor: pointer; animation-delay: ${index * 0.05}s"
-                     aria-label="${tea.name}">
-                   <div class="catalog-product-icon-container">
-    <div class="catalog-product-image ${getTeaTypeClass(tea.type)}" 
-         style="background-image: url('${tea.image}');"
-         onerror="handleImageError(this)">
-    </div>
-    <div class="catalog-product-fallback ${getTeaTypeClass(tea.type)}" style="display: none;">
-        <i class="${tea.icon}"></i>
-    </div>
-</div>
-                    <div class="catalog-product-info">
-                        <div class="catalog-product-name">${tea.name}</div>
-                        <div class="catalog-product-subtitle">${tea.subtitle}</div>
-                        <div class="catalog-product-effect">${tea.effect}</div>
-                    </div>
-                    <div class="catalog-product-actions">
-                        <span class="catalog-product-price">${tea.price}₽</span>
-                        <button class="catalog-add-btn" 
-                                onclick="event.stopPropagation(); addToCart(${tea.id});" 
-                                aria-label="Добавить ${tea.name} в корзину">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    
-    showPage('catalog');
-}
 
-// ========== УТИЛИТЫ НАВИГАЦИИ ==========
+// ========== НАВИГАЦИЯ ==========
 function showPage(pageName) {
     // Скрыть все страницы
     document.querySelectorAll('.page').forEach(page => {
@@ -355,7 +383,7 @@ function showPage(pageName) {
     }
 }
 
-// ========== ОБНОВЛЕННЫЙ КАТАЛОГ ЧАЯ С ВСЕМИ ИЗМЕНЕНИЯМИ ==========
+// ========== ОБНОВЛЕННЫЙ КАТАЛОГ ЧАЯ ==========
 const teaCatalog = [
     // Пуэры
     {
@@ -374,7 +402,7 @@ const teaCatalog = [
             taste: 'Ореховый, древесный с яркими фруктами и отчетливым черносливом',
             region: 'Юньнань, Китай',
             harvest: '2022 год',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Это полностью ферментированный чай, произведённый в провинции Юньнань, Китай. Он представляет собой классический шу пуэр, который за время хранения приобрёл глубокий и богатый характер.
 
@@ -399,7 +427,7 @@ const teaCatalog = [
             taste: 'Сочный, чистый и гладкий, маслянистый, сладковатый, с ягодной кислинкой и бархатистым послевкусием',
             region: 'Юньнань, Китай',
             harvest: '2009 год',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Это выдержанный чай, произведённый в провинции Юньнань, Китай. Он изготовлен из сырья, собранного со старых чайных деревьев, что придаёт ему уникальный характер и глубину.
 
@@ -424,7 +452,7 @@ const teaCatalog = [
             aroma: 'Напоминает влажные листья и пропаренный рис',
             taste: 'Древесно-землистые ноты, кукурузно-травяной вкус с оттенками сухофруктов',
             region: 'Юньнань, Китай',
-            weight: '8г (прессованный)'
+            weight: '8 г (прессованный)'
         },
         fullDescription: `Это особый вид пуэра, в котором чайные листья ферментируются совместно с травой Ноу Ми Сян, что придаёт напитку узнаваемый аромат и вкус клейкого риса.
 
@@ -437,7 +465,7 @@ const teaCatalog = [
     {
         id: 4,
         name: 'ПАВЛИН ИЗ БУЛАНЬ',
-        subtitle: '2018г',
+        subtitle: '2018 год',
         type: 'Шу Пуэр',
         category: 'puer',
         price: 500,
@@ -450,7 +478,7 @@ const teaCatalog = [
             taste: 'Доминируют шоколадно-ореховые тона с выраженными нотами чернослива, спелого персика и карамели',
             region: 'Юньнань, Китай',
             harvest: '2018 год',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Шу пуэр 2018 года — это выдержанный чай, произведённый в провинции Юньнань, Китай. Его аромат и вкус формируются благодаря многолетней выдержке, качественному сырью и особенностям региона происхождения.
 
@@ -475,7 +503,7 @@ const teaCatalog = [
             aroma: 'Сбалансированный, с оттенками цветов и свежескошенной травы',
             taste: 'Плотный, маслянистый, ноты цветочной и кондитерской сладости',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Полуферментированный улун, занимающий промежуточное положение между зелёными и красными чаями. В Китае его относят к «сине зелёным» (бирюзовым) чаям.
 
@@ -499,7 +527,7 @@ const teaCatalog = [
             aroma: 'Ноты корочки ржаного хлеба, корицы и карамели',
             taste: 'Насыщенный, с терпкостью. Слегка горьковатый, но быстро переходит в сладость. Также в гамме присутствуют кислые ноты',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Это утёсный улун из провинции Фуцзянь, Китай. Название переводится как «мясистая корица с сильным ароматом» и точно отражает его главные особенности: насыщенный пряный профиль и глубину вкуса.
 
@@ -524,7 +552,7 @@ const teaCatalog = [
             aroma: 'Яркий и плотный, с ноткой цитрусовых печеных фруктов и свежих ягод',
             taste: 'Легкий, кисло-сладкий, с приятным медово-цветочным оттенком',
             region: 'Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Габа Мао Ча - это несортированный чай с повышенным содержанием гамма аминомасляной кислота, прошедший особую ферментацию в бескислородной среде.
 
@@ -549,7 +577,7 @@ const teaCatalog = [
             aroma: 'Медовые, хлебные ноты',
             taste: 'Пряные, хлебные, медовые, сухофруктовые ноты',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Премиальный красный чай из северной части провинции Фуцзянь (Китай). Его вкусовой профиль отличается объёмностью, плотностью и многослойностью, с выраженной сладостью и характерными «кондитерскими» нотами.
 
@@ -573,7 +601,7 @@ const teaCatalog = [
             aroma: 'Медово-карамельный. С добавлением сладких шоколадных и хлебных оттенков',
             taste: 'Ягодные и сухофруктовые ноты с тонким акцентом печеных орехов',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Один из самых известных китайских красных чаёв. Его родина - горный хребет Уишань в провинции Фуцзянь, где чайные кусты выращивают на высоте более тысячи метров над уровнем моря.
 
@@ -597,7 +625,7 @@ const teaCatalog = [
             aroma: 'Медовые и травяные ноты, оттенки сухофруктов и корицы',
             taste: 'Преобладает сладость фруктов с ягодной терпкостью в послевкусии',
             region: 'Юньнань/Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Китайский красный чай, изготовленный из листьев древних чайных деревьев, возрастом от десятков до сотен лет. Производится в основном в провинциях Юньнань и Фуцзянь.
 
@@ -621,7 +649,7 @@ const teaCatalog = [
             aroma: 'Приглушенный сладкий аромат с нотами свежей выпечки',
             taste: 'Нотки шоколада, легкая медовая сладость, оттенки выпечки и сухофруктов',
             region: 'Юньнань, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `По китайской классификации относится к красным чаям, в европейской традиции - к чёрным. Название буквально означает «красный чай из Дяньси» (историческое название провинции Юньнань).
 
@@ -646,7 +674,7 @@ const teaCatalog = [
             aroma: 'Свежие оттенки цветов и луговых трав',
             taste: 'Гладкий, освежающий, с легкой кислинкой. Послевкусие сладкое и цветочное',
             region: 'Хэнань, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Один из самых известных китайских зелёных чаёв, входит в «Десятку знаменитых чаёв Китая». Название отражает внешний вид: чайные почки и листья покрыты мелкими серебристо белыми ворсинками, а форма чаинок напоминает острые лезвия.
 
@@ -670,7 +698,7 @@ const teaCatalog = [
             aroma: 'Цветочный, жасминовый',
             taste: 'Мягкий, освежающий, сладковатый. Жасминовая терпкость и сладость',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Это традиционный китайский чай с тысячелетней историей, эталон естественного ароматизирования. Чайные листья насыщаются ароматом свежих цветков жасмина без использования искусственных добавок.
 
@@ -695,7 +723,7 @@ const teaCatalog = [
             aroma: 'Медовые, слегка ореховые оттенки, а также легкий шлейф сухих цветов',
             taste: 'Мягкая сладость, напоминающая горный мёд, затем появляется легкая терпкость',
             region: 'Фуцзянь, Китай',
-            weight: '50г'
+            weight: '50 г'
         },
         fullDescription: `Белый чай с минимальной обработкой, поэтому в нём максимально сохраняются природные биологические активные вещества.
 
@@ -718,12 +746,12 @@ const teaCatalog = [
         effect: 'Познание',
         details: {
             composition: '8 уникальных сортов чая по 8 грамм: 1. Лао Ча Тоу (Шу Пуэр), 2. Хэй Цзинь (Красный чай), 3. Жоу Гуй Нун Сян (Улун), 4. Дянь Хун (Красный чай), 5. Габа Мао Ча (Улун), 6. Гу Шу Хун Ча (Красный чай), 7. Те Гуань Инь (Улун), 8. Мо Ли Хуа Ча (Зеленый чай)',
-            region: 'Разные регионы Китая',
-            weight: '64г (8 × 8г)'
+            weight: '64 г (8 × 8 г)'
         },
         fullDescription: `Коллекция китайского чая для знакомства
 
-8 уникальных сортов чая по 8 грамм: 
+В наборе представлены 8 уникальных сортов чая по 8 грамм каждый:
+
 1. Лао Ча Тоу (Шу Пуэр) 
 2. Хэй Цзинь (Красный чай) 
 3. Жоу Гуй Нун Сян (Улун)
@@ -737,7 +765,7 @@ const teaCatalog = [
     }
 ];
 
-// Обновленные категории с изображениями
+// Обновленные категории (убрали регион)
 const teaCategories = [
     { 
         id: 'all', 
@@ -812,6 +840,12 @@ async function initApp() {
     userId = generateUserId();
     isTelegramUser = userData.id !== null;
     
+    // Предзагрузка изображений в фоне
+    setTimeout(() => {
+        preloadCategoryImages();
+        preloadProductImages();
+    }, 1000);
+    
     // Загружаем корзину и заказы
     await loadCart();
     await loadOrders();
@@ -840,35 +874,29 @@ async function initApp() {
         showMainPage();
         
         console.log('✅ Приложение успешно загружено');
-    }, 1000);
+    }, 1500);
 }
 
-// ========== ОБНОВЛЕННАЯ ГЛАВНАЯ СТРАНИЦА С ЛОГОТИПОМ ==========
+// ========== ОБНОВЛЕННАЯ ГЛАВНАЯ СТРАНИЦА ==========
 function showMainPage() {
     const page = document.getElementById('main-page');
     
     page.innerHTML = `
-<!-- Шапка только с логотипом -->
+<!-- Шапка только с логотипом и паттерном -->
 <div class="header-with-logo">
     <div class="logo-container">
         <div class="logo-wrapper">
-            <!-- Изображение логотипа (показывается по умолчанию) -->
+            <!-- Изображение логотипа -->
             <div class="logo-image" 
-                 style="background-image: url('logo.png'); 
-                        width: 220px; 
-                        height: 80px; 
-                        background-size: contain; 
-                        background-position: center; 
-                        background-repeat: no-repeat;
-                        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));"
+                 style="background-image: url('logo.png');"
                  onerror="handleLogoError(this)">
             </div>
-            <!-- Fallback иконка (скрыта по умолчанию) -->
+            <!-- Fallback иконка -->
             <div class="logo-fallback" style="display: none;">
                 <div class="logo-svg">
                     🍵
                 </div>
-                <h2 style="margin-top: 10px; color: var(--tea-text); font-weight: 700;">ТИ•ТИ ЧАЙ</h2>
+                <h2>ТИ•ТИ ЧАЙ</h2>
             </div>
         </div>
     </div>
@@ -904,7 +932,6 @@ function showMainPage() {
                             : teaCatalog.filter(t => t.category === cat.id).length;
                         const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} вида`;
                         
-                        // Проверяем есть ли изображение
                         const hasImage = cat.image && cat.image !== '';
                         const backgroundStyle = hasImage 
                             ? `background-image: url('${cat.image}'); background-size: cover; background-position: center;`
@@ -968,15 +995,77 @@ function showMainPage() {
     }, 100);
 }
 
-// Добавьте эту функцию для обработки ошибок логотипа
-function handleLogoError(img) {
-    img.style.display = 'none';
-    const fallback = img.parentElement.querySelector('.logo-fallback');
-    if (fallback) {
-        fallback.style.display = 'flex';
-    }
+// ========== КАТАЛОГ ==========
+function showCatalogPage(categoryId = 'all') {
+    const page = document.getElementById('catalog-page');
+    const filteredTeas = categoryId === 'all' 
+        ? teaCatalog 
+        : teaCatalog.filter(tea => tea.category === categoryId);
+    
+    const category = teaCategories.find(c => c.id === categoryId) || teaCategories[0];
+    
+    page.innerHTML = `
+        <div class="page-header">
+            <div class="page-header-content">
+                <button class="back-button" onclick="showMainPage()" aria-label="Назад">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-title">
+                    <i class="${category.icon}"></i>
+                    <span>${category.name}</span>
+                </div>
+                <div style="width: 40px;"></div>
+            </div>
+        </div>
+        
+        <div class="catalog-filters">
+            <div class="filter-buttons">
+                ${teaCategories.map(cat => `
+                    <button class="filter-btn ${categoryId === cat.id ? 'active' : ''}" 
+                            onclick="showCatalogPage('${cat.id}')"
+                            aria-label="${cat.name}">
+                        ${cat.name}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="catalog-list">
+            ${filteredTeas.map((tea, index) => `
+                <div class="catalog-product-item" onclick="showProductPage(${tea.id})" 
+                     style="cursor: pointer; animation-delay: ${index * 0.05}s"
+                     aria-label="${tea.name}">
+                   <div class="catalog-product-icon-container" onclick="event.stopPropagation(); openImageModal('${tea.image}', '${tea.name}', '${tea.type}')">
+    <div class="catalog-product-image ${getTeaTypeClass(tea.type)}" 
+         style="background-image: url('${tea.image}');"
+         onerror="handleImageError(this)">
+    </div>
+    <div class="catalog-product-fallback ${getTeaTypeClass(tea.type)}" style="display: none;">
+        <i class="${tea.icon}"></i>
+    </div>
+</div>
+                    <div class="catalog-product-info">
+                        <div class="catalog-product-name">${tea.name}</div>
+                        <div class="catalog-product-subtitle">${tea.subtitle}</div>
+                        <div class="catalog-product-effect">${tea.effect}</div>
+                    </div>
+                    <div class="catalog-product-actions">
+                        <span class="catalog-product-price">${tea.price}₽</span>
+                        <button class="catalog-add-btn" 
+                                onclick="event.stopPropagation(); addToCart(${tea.id});" 
+                                aria-label="Добавить ${tea.name} в корзину">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    showPage('catalog');
 }
-// ========== ОБНОВЛЕННАЯ СТРАНИЦА ТОВАРА С ПОЛНЫМ ОПИСАНИЕМ ==========
+
+// ========== ОБНОВЛЕННАЯ СТРАНИЦА ТОВАРА ==========
 function showProductPage(productId) {
     const product = teaCatalog.find(p => p.id === productId);
     if (!product) return;
@@ -1077,11 +1166,6 @@ function showProductPage(productId) {
      const brewing = getBrewingMethod(product.type);
     
     page.innerHTML = `
-        <!-- Размытый фон изображения чая -->
-        <div class="product-page-background" 
-             style="background-image: url('${product.image}');"
-             onerror="this.style.display='none'"></div>
-        
         <div class="page-header">
             <div class="page-header-content">
                 <button class="back-button" onclick="showCatalogPage()" aria-label="Назад к каталогу">
@@ -1099,7 +1183,7 @@ function showProductPage(productId) {
             <!-- Карточка продукта -->
             <div class="product-card">
                 <div class="product-card-header">
-                    <div class="product-image-container">
+                    <div class="product-image-container" onclick="openImageModal('${product.image}', '${product.name}', '${product.type}')">
                         <div class="product-image ${getTeaTypeClass(product.type)}" 
                              style="background-image: url('${product.image}');"
                              onerror="handleProductImageError(this)">
@@ -1179,6 +1263,8 @@ function showProductPage(productId) {
                             composition: 'Состав'
                         };
                         
+                        // Убираем регион из отображения
+                        if (key === 'region') return '';
                         if (key === 'effect') return '';
                         
                         return `
@@ -1212,6 +1298,7 @@ function showProductPage(productId) {
     
     showPage('product');
 }
+
 // ========== КОРЗИНА ==========
 async function loadCart() {
     const key = `tea_cart_${userId}`;
@@ -1299,7 +1386,9 @@ function addToCart(productId, quantity = 1) {
             type: product.type,
             category: product.category,
             quantity: quantity,
-            weight: product.details.weight
+            weight: product.details.weight,
+            image: product.image,
+            icon: product.icon
         });
     }
     
@@ -1400,12 +1489,10 @@ function showCartPage() {
                 <div class="cart-empty" aria-label="Корзина пуста">
                     <i class="fas fa-shopping-cart"></i>
                     <h3>Корзина пуста</h3>
-                    <p>Добавьте товары из каталога</p>
+                    <p>Добавьте товары из нашего каталога</p>
                     <button onclick="showCatalogPage()" 
                             aria-label="Перейти в каталог"
-                            style="margin-top: 20px; padding: 12px 24px; background: var(--tea-green); 
-                                   color: white; border: none; border-radius: var(--radius-round); 
-                                   font-weight: 600; cursor: pointer;">
+                            style="margin-top: 30px;">
                         <i class="fas fa-mug-hot"></i> Перейти в каталог
                     </button>
                 </div>
@@ -1413,12 +1500,12 @@ function showCartPage() {
                 <div class="cart-items-list">
                     ${cart.map((item, index) => `
                         <div class="cart-item" style="animation-delay: ${index * 0.05}s">
-                            <div class="cart-item-image ${getTeaTypeClass(item.type)}">
-                                <i class="fas fa-leaf"></i>
+                            <div class="cart-item-image ${getTeaTypeClass(item.type)}" style="${item.image ? `background-image: url('${item.image}'); background-size: cover;` : ''}">
+                                ${!item.image ? `<i class="${item.icon || 'fas fa-leaf'}"></i>` : ''}
                             </div>
                             <div class="cart-item-info">
                                 <div class="cart-item-name">${item.name}</div>
-                                <div class="cart-item-weight">${item.weight || '50г'}</div>
+                                <div class="cart-item-weight">${item.weight || '50 г'}</div>
                                 <div class="cart-item-price">${item.price}₽</div>
                             </div>
                             <div class="cart-item-controls">
@@ -1477,6 +1564,7 @@ function updateCartQuantity(productId, delta) {
         showCartPage();
     }
 }
+
 // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
 function startCheckout() {
     if (cart.length === 0) {
@@ -1498,6 +1586,10 @@ function showCheckoutModal(total, totalItems) {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-labelledby', 'checkout-title');
     
+    // Используем имя пользователя, если он из Telegram
+    const userName = userData.first_name || 'Гость';
+    const username = userData.username ? `@${userData.username}` : '';
+    
     modal.innerHTML = `
         <div class="modal-content" role="document">
             <div class="modal-header">
@@ -1511,6 +1603,7 @@ function showCheckoutModal(total, totalItems) {
                     <h4>Сумма заказа</h4>
                     <div class="order-total">${total}₽</div>
                     <p class="order-items">${totalItems} товаров</p>
+                    ${username ? `<p class="order-user">Заказчик: ${userName} (${username})</p>` : `<p class="order-user">Заказчик: ${userName}</p>`}
                 </div>
                 
                 <div class="order-details">
@@ -1553,7 +1646,7 @@ function closeCheckoutModal() {
     }
     document.body.style.overflow = '';
 }
-// ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
+
 async function confirmCheckout() {
     const total = getCartTotal();
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -1565,7 +1658,7 @@ async function confirmCheckout() {
     }
     
     try {
-        const orderId = Date.now().toString().slice(-6);
+        const orderId = 'TEA' + Date.now().toString().slice(-6);
         const userName = userData.first_name || 'Гость';
         const username = userData.username ? `@${userData.username}` : '';
         const timestamp = new Date().toLocaleString('ru-RU', {
@@ -1573,19 +1666,21 @@ async function confirmCheckout() {
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+            minute: '2-digit'
         });
         
         // ПРАВИЛЬНЫЙ ФОРМАТ СООБЩЕНИЯ
-        const orderMessage = `Новый заказ #${orderId}
-Имя: ${userName} ${username ? `(${username})` : ''}
-Сумма: ${total}₽
-Товаров: ${totalItems}
-Дата: ${timestamp}
+        const orderMessage = `📦 Новый заказ #${orderId}
 
-Состав заказа:
-${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.quantity}₽`).join('\n')}`;
+👤 Заказчик: ${userName} ${username ? `(${username})` : ''}
+💰 Сумма: ${total}₽
+📦 Товаров: ${totalItems}
+📅 Дата: ${timestamp}
+
+📋 Состав заказа:
+${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.quantity}₽`).join('\n')}
+
+🕐 ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
         
         const encodedMessage = encodeURIComponent(orderMessage);
         const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
@@ -1602,7 +1697,7 @@ ${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.q
                 quantity: item.quantity,
                 price: item.price,
                 total: item.price * item.quantity,
-                weight: item.weight || '50г'
+                weight: item.weight || '50 г'
             })),
             total: total,
             items_count: totalItems,
@@ -1647,6 +1742,7 @@ ${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.q
         }
     }
 }
+
 // Функция показа инструкций для iOS
 function showIOSInstructions(orderId, orderMessage) {
     const isDarkTheme = document.body.classList.contains('dark-theme');
@@ -1679,7 +1775,7 @@ function showIOSInstructions(orderId, orderMessage) {
                 <p style="color: ${secondaryText}; font-size: 14px; line-height: 1.4;">Теперь нужно отправить его менеджеру</p>
             </div>
             
-            <!-- Менеджер - без контуров -->
+            <!-- Менеджер -->
             <div style="margin-bottom: 24px; background: ${cardBg}; padding: 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.1'});">
                 <div style="display: flex; align-items: center; margin-bottom: 16px;">
                     <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0;">
@@ -1722,7 +1818,7 @@ ${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 </div>
             </div>
             
-            <!-- Инструкция - без контуров -->
+            <!-- Инструкция -->
             <div style="background: linear-gradient(135deg, ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}, ${isDarkTheme ? '#2a2a2a' : '#fff0e0'}); padding: 16px; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.05'});">
                 <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
                     <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'}; font-size: 18px; margin-top: 2px; flex-shrink: 0;"></i>
@@ -1774,16 +1870,13 @@ ${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
 
 // Функция копирования текста
 function copyOrderText(text) {
-    // Используем современный API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
             showNotification('✅ Весь текст заказа скопирован!', 'green');
         }).catch(() => {
-            // Fallback
             fallbackCopyText(text);
         });
     } else {
-        // Fallback для старых браузеров
         fallbackCopyText(text);
     }
 }
@@ -1825,6 +1918,98 @@ function closeIOSInstructions() {
         }, 300);
     }
 }
+
+// ========== УТИЛИТЫ И УВЕДОМЛЕНИЯ ==========
+function showNotification(message, type = 'green') {
+    const container = document.getElementById('notification-container');
+    
+    if (container.children.length >= 3) {
+        container.removeChild(container.firstChild);
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `tea-notification notification-${type} swipe-notification`;
+    
+    const hasEmoji = /^[^\w\s]/.test(message);
+    const displayMessage = hasEmoji ? message : `✅ ${message}`;
+    
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'green' ? 'check-circle' : type === 'red' ? 'exclamation-circle' : type === 'gold' ? 'info-circle' : 'bell'}"></i>
+        <span>${displayMessage}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    let startX = 0;
+    let currentX = 0;
+    let isSwiping = false;
+    
+    notification.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        notification.classList.add('swiping');
+    }, { passive: true });
+    
+    notification.addEventListener('touchmove', (e) => {
+        if (!startX) return;
+        
+        currentX = e.touches[0].clientX;
+        const swipeDistance = currentX - startX;
+        
+        if (swipeDistance > 0) {
+            notification.style.transform = `translateX(${Math.min(swipeDistance, 100)}px)`;
+            notification.style.opacity = `${1 - Math.min(swipeDistance, 100) / 200}`;
+            isSwiping = true;
+        }
+    }, { passive: true });
+    
+    notification.addEventListener('touchend', () => {
+        notification.classList.remove('swiping');
+        
+        const swipeDistance = currentX - startX;
+        if (swipeDistance > 60) {
+            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        } else {
+            notification.style.transition = 'transform 0.3s ease';
+            notification.style.transform = 'translateX(0)';
+            notification.style.opacity = '1';
+        }
+        
+        startX = 0;
+        currentX = 0;
+        isSwiping = false;
+    }, { passive: true });
+    
+    const autoRemove = setTimeout(() => {
+        if (notification.parentNode && !isSwiping) {
+            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 3000);
+    
+    notification.addEventListener('touchstart', () => {
+        clearTimeout(autoRemove);
+    }, { once: true });
+}
+
+// Остальные функции остаются без изменений (loadOrders, saveOrder, showOrdersPage, showOrderDetails, reorder, contactSupport, showProfilePage, clearCart, clearHistory)
+
+// ... [остальной код функций loadOrders, saveOrder, showOrdersPage, showOrderDetails, reorder, contactSupport, showProfilePage, clearCart, clearHistory остается без изменений] ...
+
 // ========== ЗАКАЗЫ ==========
 async function loadOrders() {
     const key = `tea_orders_${userId}`;
@@ -2014,7 +2199,12 @@ function contactSupport(orderId) {
     const encodedMessage = encodeURIComponent(message);
     const telegramUrl = `https://t.me/ivan_likhov?text=${encodedMessage}`;
     
-    openTelegramLink(telegramUrl);
+    // Используем существующую функцию
+    if (typeof openTelegramLink === 'function') {
+        openTelegramLink(telegramUrl);
+    } else {
+        window.open(telegramUrl, '_blank');
+    }
 }
 
 // ========== ПРОФИЛЬ ==========
@@ -2171,95 +2361,6 @@ function clearHistory() {
     }
 }
 
-// ========== УТИЛИТЫ И УВЕДОМЛЕНИЯ ==========
-function showNotification(message, type = 'green') {
-    const container = document.getElementById('notification-container');
-    
-    if (container.children.length >= 3) {
-        container.removeChild(container.firstChild);
-    }
-    
-    const notification = document.createElement('div');
-    notification.className = `tea-notification notification-${type} swipe-notification`;
-    
-    const hasEmoji = /^[^\w\s]/.test(message);
-    const displayMessage = hasEmoji ? message : `✅ ${message}`;
-    
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'green' ? 'check-circle' : type === 'red' ? 'exclamation-circle' : type === 'gold' ? 'info-circle' : 'bell'}"></i>
-        <span>${displayMessage}</span>
-    `;
-    
-    container.appendChild(notification);
-    
-    let startX = 0;
-    let currentX = 0;
-    let isSwiping = false;
-    
-    notification.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-        notification.classList.add('swiping');
-    }, { passive: true });
-    
-    notification.addEventListener('touchmove', (e) => {
-        if (!startX) return;
-        
-        currentX = e.touches[0].clientX;
-        const swipeDistance = currentX - startX;
-        
-        if (swipeDistance > 0) {
-            notification.style.transform = `translateX(${Math.min(swipeDistance, 100)}px)`;
-            notification.style.opacity = `${1 - Math.min(swipeDistance, 100) / 200}`;
-            isSwiping = true;
-        }
-    }, { passive: true });
-    
-    notification.addEventListener('touchend', () => {
-        notification.classList.remove('swiping');
-        
-        const swipeDistance = currentX - startX;
-        if (swipeDistance > 60) {
-            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-            notification.style.transform = 'translateX(100%)';
-            notification.style.opacity = '0';
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        } else {
-            notification.style.transition = 'transform 0.3s ease';
-            notification.style.transform = 'translateX(0)';
-            notification.style.opacity = '1';
-        }
-        
-        startX = 0;
-        currentX = 0;
-        isSwiping = false;
-    }, { passive: true });
-    
-    const autoRemove = setTimeout(() => {
-        if (notification.parentNode && !isSwiping) {
-            notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-            notification.style.transform = 'translateX(100%)';
-            notification.style.opacity = '0';
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        }
-    }, 3000);
-    
-    notification.addEventListener('touchstart', () => {
-        clearTimeout(autoRemove);
-    }, { once: true });
-}
-
-
-
 // ========== СЕРВИС ВОРКЕР ==========
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -2293,7 +2394,6 @@ window.startCheckout = startCheckout;
 window.confirmCheckout = confirmCheckout;
 window.reorder = reorder;
 window.contactSupport = contactSupport;
-window.openTelegramLink = openTelegramLink;
 window.clearCart = clearCart;
 window.clearHistory = clearHistory;
 window.closeCheckoutModal = closeCheckoutModal;
@@ -2301,3 +2401,32 @@ window.toggleTheme = toggleTheme;
 window.copyOrderText = copyOrderText;
 window.showIOSInstructions = showIOSInstructions;
 window.closeIOSInstructions = closeIOSInstructions;
+window.openImageModal = openImageModal;
+window.closeImageModal = closeImageModal;
+
+// Функция для открытия ссылок Telegram (добавляем, если её нет)
+function openTelegramLink(url) {
+    console.log('Открываем ссылку на устройстве:', isIOS ? 'iOS' : 'Другое');
+    
+    if (url.length > 1800 && isIOS) {
+        console.warn('⚠️ Ссылка слишком длинная для iOS, укорачиваем...');
+        const orderMatch = url.match(/заказ #(\w+)/i);
+        if (orderMatch) {
+            const shortMessage = `Заказ ${orderMatch[1]} готов к обработке`;
+            url = `https://t.me/ivan_likhov?text=${encodeURIComponent(shortMessage)}`;
+        }
+    }
+    
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
+        try {
+            Telegram.WebApp.openLink(url);
+        } catch (error) {
+            console.error('Telegram WebApp.openLink failed:', error);
+            window.location.href = url;
+        }
+    } else if (isIOS) {
+        window.location.href = url;
+    } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+}
