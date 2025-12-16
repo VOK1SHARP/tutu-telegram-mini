@@ -57,16 +57,22 @@
             overflow: hidden;
             opacity: 0;
         }
+        
+        /* Фикс для модального окна изображений */
+        #image-modal {
+            display: none;
+        }
+        #image-modal.show {
+            display: flex !important;
+        }
     </style>
 </head>
 <body class="min-height-ios">
     <!-- Скрытая предзагрузка изображений -->
     <div class="preload-images">
         <img src="logo.png" alt="preload">
+        <img src="/tu-tu-pattern.png" alt="preload">
         <img src="categories/all_tea_v3.jpg" alt="preload">
-        <img src="categories/category_puer.jpg" alt="preload">
-        <img src="categories/category_oolong.jpg" alt="preload">
-        <img src="categories/category_red.jpg" alt="preload">
     </div>
 
     <div class="quick-loader">
@@ -182,14 +188,9 @@
         function preloadCriticalImages() {
             const images = [
                 'logo.png',
+                '/tu-tu-pattern.png',
                 'categories/all_tea_v3.jpg',
-                'categories/category_puer.jpg',
-                'categories/category_oolong.jpg',
-                'categories/category_red.jpg',
-                'categories/category_green.jpg',
-                'categories/category_white.jpg',
-                'categories/gabo_mao.jpg',
-                'categories/nabor.jpg'
+                'categories/category_puer.jpg'
             ];
             
             images.forEach(src => {
@@ -197,6 +198,16 @@
                 img.src = src;
             });
         }
+        
+        // Глобальный обработчик для закрытия модального окна по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('image-modal');
+                if (modal.style.display === 'flex' || modal.classList.contains('show')) {
+                    closeImageModal();
+                }
+            }
+        });
     </script>
 </body>
 </html>
