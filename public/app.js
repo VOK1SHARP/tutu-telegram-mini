@@ -78,6 +78,17 @@ function createConfetti() {
 // Определение платформы
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isAndroid = /Android/.test(navigator.userAgent);
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+// Добавление классов для разных устройств
+if (isIOS) {
+    document.body.classList.add('ios-device');
+}
+if (isAndroid) {
+    document.body.classList.add('android-device');
+}
+if (isMobile) {
+    document.body.classList.add('mobile-device');
+}
 
 // ========== ФИКСЫ ДЛЯ iOS ==========
 function isIOSDevice() {
@@ -335,18 +346,46 @@ function showCatalogPage(categoryId = 'all') {
 
 // ========== УТИЛИТЫ НАВИГАЦИИ ==========
 function showPage(pageName) {
-    document.querySelectorAll('.page').forEach(page => {
+    const allPages = document.querySelectorAll('.page');
+    const targetPage = document.getElementById(`${pageName}-page`);
+    
+    // Прячем все страницы
+    allPages.forEach(page => {
         page.classList.remove('active');
-        page.classList.add('exiting');
+        page.classList.add('hidden');
     });
     
-    const targetPage = document.getElementById(`${pageName}-page`);
+    // Показываем целевую страницу
     if (targetPage) {
-        targetPage.classList.remove('exiting');
-        targetPage.classList.add('active');
-        currentPage = pageName;
-        
-        setTimeout(updateMainCartFooter, 100);
+        targetPage.classList.remove('hidden');
+        setTimeout(() => {
+            targetPage.classList.add('active');
+            currentPage = pageName;
+            
+            // Прокручиваем в начало
+            window.scrollTo(0, 0);
+            targetPage.scrollTop = 0;
+            
+            updateMainCartFooter();
+        }, 10);
+    }
+}
+function goBack() {
+    switch(currentPage) {
+        case 'cart':
+            showMainPage();
+            break;
+        case 'orders':
+            showMainPage();
+            break;
+        case 'profile':
+            showMainPage();
+            break;
+        case 'product':
+            showCatalogPage();
+            break;
+        default:
+            showMainPage();
     }
 }
 
