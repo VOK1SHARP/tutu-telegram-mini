@@ -2571,3 +2571,463 @@ input[type="submit"] {
 .dark-theme .skeleton {
     background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
 }
+/* Добавьте эти стили в существующий CSS */
+
+/* ---------- ЛОГОТИП С ПАТТЕРНОМ ---------- */
+.logo-image-pattern {
+    background: linear-gradient(135deg, 
+        rgba(76, 175, 80, 0.1) 0%, 
+        rgba(76, 175, 80, 0.2) 25%, 
+        rgba(46, 125, 50, 0.1) 50%, 
+        rgba(46, 125, 50, 0.2) 75%);
+    border-radius: 20px;
+    padding: 25px 40px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.logo-image-pattern::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(76, 175, 80, 0.05) 20px,
+        rgba(76, 175, 80, 0.05) 40px
+    );
+    z-index: 0;
+    animation: patternMove 20s linear infinite;
+}
+
+@keyframes patternMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(40px, 40px); }
+}
+
+.logo-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--tea-green);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo-first, .logo-second {
+    font-family: 'SF Pro Display', -apple-system, sans-serif;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-sep {
+    color: var(--tea-gold);
+    margin: 0 4px;
+    font-size: 32px;
+}
+
+.logo-subtitle {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--tea-text-light);
+    margin-top: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.dark-theme .logo-image-pattern {
+    background: linear-gradient(135deg, 
+        rgba(76, 175, 80, 0.2) 0%, 
+        rgba(76, 175, 80, 0.3) 25%, 
+        rgba(46, 125, 50, 0.2) 50%, 
+        rgba(46, 125, 50, 0.3) 75%);
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+/* ---------- ПОЛНОЭКРАННОЕ ИЗОБРАЖЕНИЕ ---------- */
+.fullscreen-image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(20px);
+}
+
+.fullscreen-image-modal.show {
+    opacity: 1;
+}
+
+.fullscreen-image-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.fullscreen-image-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: max(env(safe-area-inset-top, 20px), 20px) 20px 20px;
+    background: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 0.8) 0%, 
+        rgba(0, 0, 0, 0) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.close-fullscreen-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.close-fullscreen-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.fullscreen-image-title {
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+    flex: 1;
+    padding: 0 20px;
+}
+
+.fullscreen-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: zoom-out;
+}
+
+.fullscreen-image.loaded {
+    opacity: 1;
+}
+
+.fullscreen-image-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Подсказка клика по изображению */
+.image-click-hint {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.catalog-product-icon-container:hover .image-click-hint,
+.product-image-container:hover .image-zoom-hint {
+    opacity: 1;
+}
+
+.image-zoom-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.image-zoom-small {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.cart-item-image-container:hover .image-zoom-small {
+    opacity: 1;
+}
+
+/* ---------- УЛУЧШЕННАЯ ПУСТАЯ КОРЗИНА ---------- */
+.cart-empty {
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeInUp 0.8s ease both;
+}
+
+.cart-empty-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 30px;
+    background: linear-gradient(135deg, 
+        rgba(76, 175, 80, 0.1), 
+        rgba(76, 175, 80, 0.2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: var(--tea-green);
+    border: 2px dashed rgba(76, 175, 80, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+.cart-empty h3 {
+    font-size: 24px;
+    color: var(--tea-text);
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.cart-empty p {
+    font-size: 16px;
+    color: var(--tea-text-light);
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.cart-empty-btn {
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    min-width: 200px;
+}
+
+.cart-empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.cart-empty-btn:active {
+    transform: translateY(0);
+}
+
+/* ---------- УЛУЧШЕННАЯ КОРЗИНА С ИЗОБРАЖЕНИЯМИ ---------- */
+.cart-item-image-container {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.cart-item-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.3s ease;
+}
+
+.cart-item-image-container:hover .cart-item-image {
+    transform: scale(1.05);
+}
+
+/* ---------- ПРАВКИ ДЛЯ КОМПЬЮТЕРА ---------- */
+@media (min-width: 768px) {
+    .logo-text {
+        font-size: 48px;
+    }
+    
+    .logo-sep {
+        font-size: 40px;
+    }
+    
+    .logo-subtitle {
+        font-size: 14px;
+    }
+}
+
+/* ---------- ОПТИМИЗАЦИЯ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ ---------- */
+.catalog-product-image,
+.category-image-container,
+.product-image {
+    background-color: var(--tea-bg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s ease;
+}
+
+/* Скелетон для загрузки */
+.image-skeleton {
+    background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.05) 25%, 
+        rgba(0, 0, 0, 0.1) 50%, 
+        rgba(0, 0, 0, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ---------- ПРАВКИ ДЛЯ АНДРОИД ---------- */
+@media (hover: none) and (pointer: coarse) {
+    .image-click-hint,
+    .image-zoom-hint,
+    .image-zoom-small {
+        opacity: 0.5;
+    }
+    
+    /* Улучшаем тач-цели */
+    .catalog-add-btn,
+    .quantity-btn,
+    .back-button,
+    .modal-btn,
+    .profile-btn {
+        min-height: 48px;
+        min-width: 48px;
+    }
+}
+
+/* ---------- ПРАВКИ ТЕКСТА ---------- */
+.product-price-main {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--tea-green);
+    text-align: center;
+    margin: 20px 0;
+}
+
+.product-price-main::after {
+    content: '';
+    display: block;
+    font-size: 14px;
+    color: var(--tea-text-light);
+    font-weight: 400;
+    margin-top: 4px;
+}
+
+.detail-content p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--tea-text);
+}
+
+/* Убираем регион из деталей */
+.detail-item:has(h4:contains('Регион')) {
+    display: none;
+}
+
+/* ---------- АДАПТИВНОСТЬ ---------- */
+@media (max-width: 480px) {
+    .logo-image-pattern {
+        padding: 20px 30px;
+    }
+    
+    .logo-text {
+        font-size: 28px;
+    }
+    
+    .logo-sep {
+        font-size: 24px;
+    }
+    
+    .logo-subtitle {
+        font-size: 10px;
+    }
+    
+    .cart-empty-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+    }
+    
+    .cart-empty-btn {
+        padding: 14px 24px;
+        font-size: 15px;
+    }
+}
