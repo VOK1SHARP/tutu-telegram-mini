@@ -5,111 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#4CAF50">
+    <meta name="theme-color" content="#4CAF50" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1E1E1E" media="(prefers-color-scheme: dark)">
     <title>ТИ•ТИ ЧАЙ</title>
     <meta name="description" content="Онлайн-заказ китайского чая в Telegram Mini App">
     <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@@ -15,69 +14,47 @@
     <link rel="manifest" href="manifest.json">
-    
+
     <style>
-        /* Оптимизация загрузки */
+        /* iOS Specific Fixes */
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --vh: 1vh;
+        }
+        
         .quick-loader {
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            background: linear-gradient(135deg, #1a3c27, #2E7D32);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             color: white;
             text-align: center;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
-        .loader-content {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .loader-icon {
-            font-size: 64px;
+        .quick-loader i {
+            font-size: 60px;
             margin-bottom: 20px;
-            animation: leafFloat 2s ease-in-out infinite;
+            animation: spin 2s linear infinite;
         }
-        
-        @keyframes leafFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        /* Фикс для 100vh на iOS */
+        .min-height-ios {
+            min-height: -webkit-fill-available;
+            min-height: 100vh;
+        }
+
+        /* Предзагрузка изображений */
+        .preload-images {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+
+        /* Фикс для модального окна изображений */
+        #image-modal {
+            display: none;
+        }
+        #image-modal.show {
+            display: flex !important;
+
+
         }
     </style>
 </head>
-<body>
+<body class="min-height-ios">
+    <!-- Скрытая предзагрузка изображений -->
+    <div class="preload-images">
+        <img src="logo.png" alt="preload">
+        <img src="/tu-tu-pattern.png" alt="preload">
+        <img src="categories/all_tea_v3.jpg" alt="preload">
+    </div>
+
     <div class="quick-loader">
-        <div class="loader-content">
-            <div class="loader-icon">
-                <i class="fas fa-leaf"></i>
-            </div>
+        <div>
+            <i class="fas fa-leaf"></i>
+
+
             <h2>ТИ•ТИ ЧАЙ</h2>
             <p>Загружаем чайную гармонию...</p>
         </div>
-    </div>
+@@ -102,22 +79,6 @@
 
-    <!-- Основной контейнер -->
-    <div id="app" style="display: none;">
-        <!-- Главная страница -->
-        <div id="main-page" class="page"></div>
-        
-        <!-- Страница каталога -->
-        <div id="catalog-page" class="page"></div>
-        
-        <!-- Страница товара -->
-        <div id="product-page" class="page"></div>
-        
-        <!-- Страница корзины -->
-        <div id="cart-page" class="page"></div>
-        
-        <!-- Страница заказов -->
-        <div id="orders-page" class="page"></div>
-        
         <!-- Страница профиля -->
         <div id="profile-page" class="page"></div>
+        
+        <!-- Модальное окно для увеличения изображения -->
+        <div id="image-modal" class="tea-modal" style="display: none;">
+            <div class="modal-content image-modal-content">
+                <button class="close-image-modal" onclick="closeImageModal()" aria-label="Закрыть">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-image-container">
+                    <img id="modal-image" src="" alt="Увеличенное изображение чая">
+                    <div class="modal-image-fallback" id="modal-image-fallback">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                </div>
+                <div class="image-modal-info" id="modal-image-info"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Уведомления -->
-    <div id="notification-container"></div>
-
+@@ -126,88 +87,29 @@
     <script src="app.js"></script>
-    
+
     <script>
-        // Оптимизация загрузки
+        // Фикс для viewport на iOS
+        function fixViewportHeight() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                document.body.classList.add('ios-device');
+                
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.viewportHeight = window.innerHeight;
+                }
+            }
+        }
+        
         window.addEventListener('load', function() {
+            fixViewportHeight();
+            
+            // Начинаем загрузку изображений сразу
+            preloadCriticalImages();
+            
             setTimeout(() => {
                 const loader = document.querySelector('.quick-loader');
                 if (loader) {
-                    loader.style.transition = 'opacity 0.5s ease';
+                    loader.style.transition = 'opacity 0.5s';
                     loader.style.opacity = '0';
                     setTimeout(() => {
                         loader.style.display = 'none';
                         const app = document.getElementById('app');
                         if (app) {
                             app.style.display = 'block';
-                            setTimeout(() => app.style.opacity = '1', 50);
+                            app.style.opacity = '0';
+                            setTimeout(() => {
+                                app.style.transition = 'opacity 0.5s ease';
+                                app.style.opacity = '1';
+                            }, 50);
                         }
                     }, 500);
                 }
             }, 800);
         });
+
+        window.addEventListener('resize', fixViewportHeight);
         
-        // Фикс для iOS
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-            document.body.classList.add('ios-device');
+        // Определение устройства
+        function detectDevice() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            if (isIOS) {
+                document.body.classList.add('ios-device');
+            }
+            if (isAndroid) {
+                document.body.classList.add('android-device');
+            }
         }
+        
+        window.addEventListener('load', detectDevice);
+        
+        // Функция предзагрузки критически важных изображений
+        function preloadCriticalImages() {
+            const images = [
+                'logo.png',
+                '/tu-tu-pattern.png',
+                'categories/all_tea_v3.jpg',
+                'categories/category_puer.jpg'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+        
+        // Глобальный обработчик для закрытия модального окна по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('image-modal');
+                if (modal.style.display === 'flex' || modal.classList.contains('show')) {
+                    closeImageModal();
+                }
+            }
+        });
     </script>
 </body>
 </html>
