@@ -771,7 +771,7 @@ function showMainPage() {
                         const teasInCategory = cat.id === 'all' 
                             ? teaCatalog.length 
                             : teaCatalog.filter(t => t.category === cat.id).length;
-                        const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} вида`;
+                        const countText = teasInCategory === 1 ? '1 вид' : `${teasInCategory} видов`;
                         
                         const hasImage = cat.image && cat.image !== '';
                         const backgroundStyle = hasImage 
