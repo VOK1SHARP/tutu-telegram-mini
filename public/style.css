@@ -2635,7 +2635,7 @@ input[type="submit"] {
 .cart-item-image {
     width: 60px;
     height: 60px;
-    border-radius: var(--radius-sm);
+    border-radius: 50%; /* ← КРУГЛЫЕ вместо овальных */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2645,6 +2645,9 @@ input[type="submit"] {
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
+    overflow: hidden; /* ← Добавить для обрезки углов */
+    border: 2px solid rgba(255, 255, 255, 0.3); /* ← Необязательно, но красиво */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* ← Необязательная тень */
 }
 
 /* ---------- ОПТИМИЗАЦИЯ ИЗОБРАЖЕНИЙ ---------- */
@@ -2758,4 +2761,8 @@ button:disabled {
     background: #3a3a3a !important;
     border: 1px solid #555 !important;
     color: #ddd !important;
+}
+.dark-theme .cart-item-image {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
