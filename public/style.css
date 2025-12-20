@@ -19,6 +19,7 @@
     --tea-purple-light: #BA68C8;
     --tea-blue: #2196F3;
     --tea-blue-light: #64B5F6;
+    --tea-orange: #FF5722;
     
     /* Фоны */
     --tea-bg: #FFF8F0;
@@ -86,7 +87,7 @@ body.dark-theme {
 .dark-theme .modal-content,
 .dark-theme .filter-btn,
 .dark-theme select,
-.dark-theme .contact-support-item {
+.dark-theme .contact-item {
     background: var(--tea-card) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
     color: var(--tea-text) !important;
@@ -98,13 +99,19 @@ body.dark-theme {
     border-color: var(--tea-green) !important;
 }
 
-.dark-theme .product-detail-section,
-.dark-theme .product-detail-description {
+.dark-theme .product-description {
     background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .dark-theme input[type="checkbox"] {
     filter: invert(1);
+}
+
+/* ИСПРАВЛЕНИЕ: МИНУС В КОРЗИНЕ БЕЛЫЙ В ТЕМНОЙ ТЕМЕ */
+.dark-theme .quantity-btn.minus {
+    background: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    color: #fff !important;
 }
 
 /* ---------- Сброс и базовые стили ---------- */
@@ -145,7 +152,10 @@ body {
 /* ---------- Прелоадер ---------- */
 .quick-loader {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: linear-gradient(135deg, #1a3c27, #2E7D32);
     display: flex;
     justify-content: center;
@@ -153,7 +163,6 @@ body {
     z-index: 9999;
     color: white;
     text-align: center;
-    padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
 
 .quick-loader i {
@@ -198,7 +207,7 @@ body {
     transition: none;
     will-change: transform, opacity;
     padding-top: var(--safe-top);
-    padding-bottom: calc(var(--safe-bottom) + 80px); /* + высота футера корзины */
+    padding-bottom: calc(var(--safe-bottom) + 80px);
 }
 
 .page.active {
@@ -209,9 +218,8 @@ body {
     z-index: 2;
 }
 
-.page.exiting {
-    position: fixed;
-    z-index: 1;
+.page.hidden {
+    display: none !important;
 }
 
 @keyframes pageEnter {
@@ -225,18 +233,7 @@ body {
     }
 }
 
-@keyframes pageExit {
-    0% {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-}
-
-/* ---------- ШАПКА С ЛОГОТИПОМ И ПАТТЕРНОМ ---------- */
+/* ---------- ШАПКА С ЛОГОТИПОМ ---------- */
 .header-with-logo {
     background: linear-gradient(135deg, #1a3c27, #2E7D32);
     position: relative;
@@ -283,18 +280,16 @@ body {
     display: inline-block;
 }
 
-.logo-image {
-    width: 240px;
-    height: 90px;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
-    border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 10px;
+.main-logo {
+    max-width: 220px;
+    height: auto;
+    max-height: 80px;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    object-fit: contain;
+}
+
+.dark-theme .main-logo {
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.1)) brightness(1.1);
 }
 
 .logo-fallback {
@@ -306,7 +301,6 @@ body {
     background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(46, 125, 50, 0.9));
     border-radius: 20px;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -430,6 +424,12 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
     margin-top: var(--space-md);
+}
+
+@media (max-width: 480px) {
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .category-item {
@@ -663,11 +663,21 @@ body {
     margin-bottom: 4px;
 }
 
+/* ИСПРАВЛЕНИЕ: РУБЛИ И ГРАММЫ — ПРОБЕЛ */
 .catalog-product-price {
     color: var(--tea-green);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 16px;
     transition: all 0.3s var(--ease-smooth);
+    white-space: nowrap;
+}
+
+.catalog-product-price::after {
+    content: " / 50 г";
+    font-size: 12px;
+    opacity: 0.8;
+    font-weight: normal;
+    margin-left: 2px;
 }
 
 .catalog-product-item:hover .catalog-product-price {
@@ -768,6 +778,11 @@ body {
     transition: all 0.3s var(--ease-smooth);
 }
 
+/* ИСПРАВЛЕНИЕ: КРУЖОЧКИ ОВАЛЬНЫЕ НА iOS */
+.ios-device .product-image-container {
+    border-radius: 20px !important;
+}
+
 .product-image-container:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
@@ -836,6 +851,7 @@ body {
     display: inline-block;
 }
 
+/* ИСПРАВЛЕНИЕ: РУБЛИ И ГРАММЫ — ПРОБЕЛ */
 .product-price-main {
     font-size: 36px;
     font-weight: 800;
@@ -846,6 +862,19 @@ body {
     background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), transparent);
     border-radius: var(--radius-md);
     animation: pricePulse 3s infinite alternate;
+}
+
+.product-price-main::after {
+    content: " / 50 г";
+    font-size: 20px;
+    opacity: 0.8;
+    font-weight: normal;
+    margin-left: 4px;
+}
+
+/* Исключение для набора */
+.sets .product-price-main::after {
+    content: " / 64 г";
 }
 
 @keyframes pricePulse {
@@ -877,78 +906,6 @@ body {
     white-space: pre-line;
     line-height: 1.8;
     font-size: 15px;
-}
-
-/* Способы заваривания */
-.tea-brewing {
-    background: var(--tea-bg);
-    padding: var(--space-lg);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-lg);
-    border: 1px solid rgba(142, 110, 99, 0.1);
-}
-
-.tea-brewing h3 {
-    font-size: 18px;
-    color: var(--tea-text);
-    margin-bottom: var(--space-md);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.brewing-methods {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-}
-
-@media (min-width: 480px) {
-    .brewing-methods {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.brewing-method {
-    background: var(--tea-card);
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(142, 110, 99, 0.1);
-    transition: all 0.3s var(--ease-smooth);
-}
-
-.brewing-method:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px var(--tea-shadow);
-    border-color: var(--tea-green);
-}
-
-.brewing-method h4 {
-    font-size: 16px;
-    color: var(--tea-green);
-    margin-bottom: var(--space-sm);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.brewing-details {
-    font-size: 14px;
-    color: var(--tea-text);
-}
-
-.brewing-details p {
-    margin-bottom: 8px;
-}
-
-.brewing-details ol {
-    padding-left: 20px;
-    margin-top: 8px;
-}
-
-.brewing-details li {
-    margin-bottom: 4px;
-    color: var(--tea-text-light);
 }
 
 /* Детали чая */
@@ -1010,6 +967,11 @@ body {
     font-size: 14px;
     color: var(--tea-text-light);
     line-height: 1.6;
+}
+
+/* ИСПРАВЛЕНИЕ: УБРАТЬ РЕГИОН */
+.detail-item:has(h4:contains('Регион')) {
+    display: none !important;
 }
 
 .product-detail-actions {
@@ -1268,9 +1230,6 @@ body {
     z-index: 1000;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s var(--ease-smooth), opacity 0.3s var(--ease-smooth);
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: transform;
     padding-bottom: calc(12px + var(--safe-bottom));
 }
 
@@ -1378,6 +1337,7 @@ body {
     }
 }
 
+/* ИСПРАВЛЕНИЕ: КАРТИНКИ В КОРЗИНЕ */
 .cart-item-image {
     width: 60px;
     height: 60px;
@@ -1388,6 +1348,9 @@ body {
     color: white;
     font-size: 24px;
     flex-shrink: 0;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
 }
 
 .cart-item-info {
@@ -1418,6 +1381,7 @@ body {
     gap: var(--space-sm);
 }
 
+/* ИСПРАВЛЕНИЕ: МИНУС В КОРЗИНЕ ПРОСТО БЕЛЫЙ */
 .quantity-btn {
     width: 32px;
     height: 32px;
@@ -1502,7 +1466,7 @@ body {
 
 .cart-empty button {
     padding: 16px 32px;
-    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light);
     color: white;
     border: none;
     border-radius: var(--radius-round);
@@ -1569,6 +1533,8 @@ body {
 .profile-name {
     margin-bottom: 4px;
     color: var(--tea-text);
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .profile-username {
@@ -1640,6 +1606,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 16px;
 }
 
 .contact-list {
@@ -1660,6 +1627,7 @@ body {
 
 .contact-item i {
     color: var(--tea-blue);
+    font-size: 18px;
 }
 
 .contact-item.phone i {
@@ -1670,6 +1638,7 @@ body {
     color: var(--tea-blue);
     font-weight: 600;
     flex: 1;
+    font-size: 14px;
 }
 
 .contact-item.phone span {
@@ -1685,6 +1654,7 @@ body {
     font-size: 12px;
     cursor: pointer;
     transition: all 0.3s var(--ease-smooth);
+    min-height: 32px;
 }
 
 .contact-item.phone button {
@@ -1740,6 +1710,7 @@ body {
     transition: all 0.3s var(--ease-smooth);
     min-height: 44px;
     touch-action: manipulation;
+    font-size: 15px;
 }
 
 .telegram-btn {
@@ -1782,7 +1753,7 @@ body {
 }
 
 .tea-notification {
-    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light);
     color: white;
     padding: 14px 20px;
     border-radius: var(--radius-md);
@@ -1816,15 +1787,18 @@ body {
     }
 }
 
-.notification-green { background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light)); }
-.notification-gold { background: linear-gradient(135deg, var(--tea-gold), var(--tea-gold-light)); }
-.notification-red { background: linear-gradient(135deg, var(--tea-red), var(--tea-red-light)); }
-.notification-purple { background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light)); }
+.notification-green { background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light); }
+.notification-gold { background: linear-gradient(135deg, var(--tea-gold), var(--tea-gold-light); }
+.notification-red { background: linear-gradient(135deg, var(--tea-red), var(--tea-red-light); }
+.notification-purple { background: linear-gradient(135deg, var(--tea-purple), var(--tea-purple-light); }
 
 /* ---------- МОДАЛЬНЫЕ ОКНА ---------- */
 .tea-modal {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: var(--tea-overlay);
     backdrop-filter: blur(15px);
     display: flex;
@@ -1939,6 +1913,7 @@ body {
     cursor: pointer;
     min-height: 44px;
     touch-action: manipulation;
+    font-size: 15px;
 }
 
 .modal-btn.cancel {
@@ -1947,7 +1922,7 @@ body {
 }
 
 .modal-btn.confirm {
-    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light));
+    background: linear-gradient(135deg, var(--tea-green), var(--tea-green-light);
     color: white;
 }
 
@@ -2016,6 +1991,7 @@ body {
     cursor: zoom-in;
 }
 
+/* ИСПРАВЛЕНИЕ: УВЕЛИЧЕНИЕ КАРТИНОК НА iOS */
 #modal-image.zoomed {
     transform: scale(1.5);
     cursor: zoom-out;
@@ -2158,6 +2134,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
+    font-size: 14px;
 }
 
 .info-value {
@@ -2182,6 +2159,7 @@ body {
 .order-items-card h3 {
     margin-bottom: 12px;
     color: var(--tea-text);
+    font-size: 18px;
 }
 
 .order-item-row {
@@ -2228,6 +2206,7 @@ body {
     transition: all 0.3s var(--ease-smooth);
     min-height: 44px;
     touch-action: manipulation;
+    font-size: 15px;
 }
 
 .action-btn.primary {
@@ -2360,17 +2339,24 @@ select:focus {
         font-size: 32px;
     }
     
+    .product-price-main::after {
+        font-size: 16px;
+    }
+    
     .profile-stats {
         grid-template-columns: 1fr;
     }
     
-    .logo-image {
-        width: 200px;
-        height: 75px;
+    .main-logo {
+        max-width: 180px;
     }
     
     .header-with-logo {
         height: 180px;
+    }
+    
+    .catalog-product-price::after {
+        font-size: 10px;
     }
 }
 
@@ -2470,6 +2456,12 @@ input[type="submit"] {
     width: 60px;
     height: 60px;
     flex-shrink: 0;
+}
+
+/* ИСПРАВЛЕНИЕ: КРУЖОЧКИ ОВАЛЬНЫЕ НА iOS */
+.ios-device .catalog-product-icon-container {
+    border-radius: 16px !important;
+    overflow: hidden;
 }
 
 .catalog-product-image {
@@ -2573,176 +2565,3 @@ input[type="submit"] {
 .dark-theme .skeleton {
     background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
 }
-/* Добавьте только эти изменения в существующий CSS */
-
-/* ---------- ЛОГОТИП ---------- */
-.logo-container {
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 120px;
-}
-
-.main-logo {
-    max-width: 220px;
-    height: auto;
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-    max-height: 80px;
-    object-fit: contain;
-}
-
-/* Для темной темы */
-.dark-theme .main-logo {
-    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.1)) 
-            brightness(1.1) contrast(1.1);
-}
-
-/* ---------- ИСПРАВЛЕНИЯ ДЛЯ ПУСТОЙ КОРЗИНЫ ---------- */
-.cart-empty {
-    text-align: center;
-    padding: 80px 20px;
-    animation: fadeInUp 0.8s ease both;
-}
-
-.cart-empty i {
-    font-size: 64px;
-    color: var(--tea-green);
-    margin-bottom: 20px;
-    animation: leafFloat 3s ease-in-out infinite;
-}
-
-@keyframes leafFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(5deg); }
-}
-
-.cart-empty h3 {
-    color: var(--tea-text);
-    margin-bottom: 12px;
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.cart-empty p {
-    color: var(--tea-text-light);
-    font-size: 16px;
-    margin-bottom: 30px;
-    line-height: 1.5;
-}
-
-/* ---------- ИСПРАВЛЕНИЯ В КОРЗИНЕ ---------- */
-.cart-item-image {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    flex-shrink: 0;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-}
-
-/* ---------- ОПТИМИЗАЦИЯ ИЗОБРАЖЕНИЙ ---------- */
-.catalog-product-image,
-.category-image-container,
-.product-image {
-    background-color: var(--tea-bg);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-image 0.3s ease;
-}
-
-/* Предзагрузка изображений */
-.image-preloader {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* ---------- ИСПРАВЛЕНИЕ КНОПОК ---------- */
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* Проверка всех кнопок */
-.catalog-add-btn, 
-.quantity-btn, 
-.back-button, 
-.modal-btn, 
-.profile-btn,
-.checkout-button {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.catalog-add-btn:hover:not(:disabled),
-.quantity-btn:hover:not(:disabled),
-.back-button:hover:not(:disabled),
-.modal-btn:hover:not(:disabled),
-.profile-btn:hover:not(:disabled),
-.checkout-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-}
-
-/* ---------- ФИКС ДЛЯ АНДРОИД ---------- */
-.android-device .catalog-product-image,
-.android-device .product-image {
-    background-size: contain;
-}
-
-/* ---------- ПРАВКИ ТЕКСТА ---------- */
-.product-price-main::after {
-    content: none;
-}
-
-.detail-content p {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--tea-text);
-}
-
-/* Убираем регион из деталей */
-.detail-item:has(h4:contains('Регион')) {
-    display: none;
-}
-
-/* Форматирование веса и года */
-.product-detail .detail-content p {
-    white-space: pre-wrap;
-}
-
-/* ---------- АДАПТИВНОСТЬ ---------- */
-@media (max-width: 480px) {
-    .main-logo {
-        max-width: 180px;
-    }
-    
-    .cart-empty {
-        padding: 60px 20px;
-    }
-    
-    .cart-empty i {
-        font-size: 48px;
-    }
-}
-
-/* ---------- ФИКС ДЛЯ iOS ---------- */
-.ios-device .page {
-    -webkit-overflow-scrolling: touch;
-}
-
-.ios-device button {
-    min-height: 44px;
-       }
