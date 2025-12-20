@@ -2746,3 +2746,16 @@ button:disabled {
 .ios-device button {
     min-height: 44px;
        }
+
+/* СРОЧНОЕ ИСПРАВЛЕНИЕ: МИНУС В КОРЗИНЕ */
+.quantity-btn.minus {
+    background: #f8f8f8 !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #666 !important;
+}
+
+.dark-theme .quantity-btn.minus {
+    background: #3a3a3a !important;
+    border: 1px solid #555 !important;
+    color: #ddd !important;
+}
