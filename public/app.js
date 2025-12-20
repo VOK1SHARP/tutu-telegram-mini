@@ -2003,7 +2003,7 @@ function showProfilePage() {
                     </div>
                     <div class="contact-item phone">
                         <i class="fas fa-phone"></i>
-                        <span+7 (930) 887-43-23</span>
+                        <span>+7 (930) 887-43-23</span>
                         <button onclick="window.location.href = 'tel:+79038394670'">
                             Позвонить
                         </button>
