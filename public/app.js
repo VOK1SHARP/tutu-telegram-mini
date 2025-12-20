@@ -12,6 +12,44 @@ let userId = null;
 let isTelegramUser = false;
 let orders = [];
 let currentPage = 'main';
+// ========== ОЧИСТКА СТАРОГО КЭША ==========
+async function clearOldCache() {
+    try {
+        // Очистка Service Worker кэша
+        if ('serviceWorker' in navigator) {
+            const cacheNames = await caches.keys();
+            await Promise.all(
+                cacheNames.map(cacheName => {
+                    // Удаляем все старые версии кэша
+                    if (cacheName.startsWith('tea-cache-')) {
+                        console.log('🗑️ Удаляем старый кэш:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }
+        
+        // Очистка старого localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('tea_') || key.includes('tea')) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            console.log('🗑️ Удаляем localStorage ключ:', key);
+            localStorage.removeItem(key);
+        });
+        
+        console.log('✅ Старый кэш и данные очищены');
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка очистки кэша:', error);
+        return false;
+    }
+}
 
 // ========== КОНФЕТТИ-ЭФФЕКТ ==========
 function createConfetti() {
