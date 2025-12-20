@@ -1379,7 +1379,7 @@ function showCartPage() {
                             </div>
                             <div class="cart-item-info">
                                 <div class="cart-item-name">${item.name}</div>
-                                <div class="cart-item-weight">${item.weight || '50г'}</div>
+                                <div class="cart-item-weight">${item.weight || '50гр'}</div>
                                 <div class="cart-item-price">${item.price}₽</div>
                             </div>
                             <div class="cart-item-controls">
