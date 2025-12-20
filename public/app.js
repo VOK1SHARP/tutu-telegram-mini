@@ -1535,17 +1535,22 @@ ${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.q
         await saveCart();
         
         showNotification(`🎉 Заказ #${orderId} сохранен!`, 'green');
-        createConfetti();
-        
-        // 3. Открываем чат с менеджером
-        setTimeout(() => {
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
-                Telegram.WebApp.openLink(telegramUrl);
-            } else {
-                window.open(telegramUrl, '_blank');
-            }
-            setTimeout(() => showMainPage(), 1000);
-        }, 1500);
+createConfetti();
+
+// 3. Для iOS показываем модальное окно с инструкциями
+if (isIOS) {
+    showIOSInstructions(orderId, orderMessage);
+} else {
+    // Для Android/ПК - обычный метод
+    setTimeout(() => {
+        if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
+            Telegram.WebApp.openLink(telegramUrl);
+        } else {
+            window.open(telegramUrl, '_blank');
+        }
+        setTimeout(() => showMainPage(), 1000);
+    }, 1500);
+}
         
     } catch (error) {
         console.error('Ошибка:', error);
@@ -1557,7 +1562,181 @@ ${cart.map(item => `• ${item.name} × ${item.quantity} = ${item.price * item.q
         }
     }
 }
+// ========== iOS ИНСТРУКЦИИ ==========
+function showIOSInstructions(orderId, orderMessage) {
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    
+    const modal = document.createElement('div');
+    modal.id = 'ios-instructions';
+    modal.className = 'tea-modal';
+    modal.setAttribute('aria-modal', 'true');
+    
+    // Стили в зависимости от темы
+    const bgColor = isDarkTheme ? '#2d2d2d' : '#ffffff';
+    const textColor = isDarkTheme ? '#ffffff' : '#333333';
+    const secondaryText = isDarkTheme ? '#aaaaaa' : '#666666';
+    const cardBg = isDarkTheme ? '#3a3a3a' : '#f8f8f8';
+    const borderColor = isDarkTheme ? '#444444' : '#e0e0e0';
+    
+    modal.innerHTML = `
+    <div class="modal-content" style="max-width: 420px; background: ${bgColor}; color: ${textColor}; border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.2'});">
+        <div class="modal-header" style="padding: 20px 20px 10px; border-bottom: none;">
+            <h3 style="color: ${textColor}; text-align: center; margin: 0;">
+                <i class="fas fa-mobile-alt" style="margin-right: 8px;"></i> Инструкция для iOS
+            </h3>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 48px; color: #007AFF; margin-bottom: 12px;">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h4 style="color: ${textColor}; margin-bottom: 8px; font-size: 18px;">Заказ оформлен!</h4>
+                <p style="color: ${secondaryText}; font-size: 14px; line-height: 1.4;">Теперь нужно отправить его менеджеру</p>
+            </div>
+            
+            <!-- Менеджер -->
+            <div style="margin-bottom: 24px; background: ${cardBg}; padding: 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.1'});">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div style="background: linear-gradient(135deg, #4CAF50, #2E7D32); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0;">
+                        <i class="fas fa-user-headset" style="color: white; font-size: 20px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: ${textColor}; font-size: 16px; margin-bottom: 4px;">Менеджер поддержки</div>
+                        <div style="color: ${secondaryText}; font-size: 14px;">@tea_tea_info</div>
+                    </div>
+                </div>
+                
+                <button onclick="window.open('https://t.me/tea_tea_info', '_blank')" 
+                       style="width: 100%; padding: 16px; background: linear-gradient(135deg, #0088cc, #00a2ff); color: white; border: none; border-radius: 28px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; transition: transform 0.2s, opacity 0.2s;"
+                       onmouseover="this.style.transform='scale(0.99)';"
+                       onmouseout="this.style.transform='scale(1)';">
+                    <i class="fab fa-telegram" style="font-size: 18px;"></i>
+                    Перейти к менеджеру
+                </button>
+            </div>
+            
+            <!-- Номер заказа и кнопка копирования -->
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: ${cardBg}; padding: 14px; border-radius: 12px;">
+                    <span style="color: ${textColor}; font-weight: 600;">Номер заказа:</span>
+                    <span style="font-family: monospace; font-weight: 700; color: #4CAF50; font-size: 17px; letter-spacing: 1px;">#${orderId}</span>
+                </div>
+                
+                <button id="copy-order-btn" 
+                        style="width: 100%; padding: 16px; margin-bottom: 12px; background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: none; border-radius: 28px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; transition: transform 0.2s, opacity 0.2s;"
+                        onmouseover="this.style.transform='scale(0.99)';"
+                        onmouseout="this.style.transform='scale(1)';">
+                    <i class="fas fa-copy"></i> Скопировать весь текст заказа
+                </button>
+            </div>
+            
+            <!-- Текст заказа -->
+            <div style="background: ${isDarkTheme ? '#3a3a3a' : '#f8f9fa'}; padding: 16px; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.05'});">
+                <div style="font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 13px; line-height: 1.5; color: ${textColor}; white-space: pre-wrap;">
+${orderMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                </div>
+            </div>
+            
+            <!-- Инструкция -->
+            <div style="background: linear-gradient(135deg, ${isDarkTheme ? '#3a3a3a' : '#fff8f0'}, ${isDarkTheme ? '#2a2a2a' : '#fff0e0'}); padding: 16px; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, ${isDarkTheme ? '0.2' : '0.05'});">
+                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+                    <i class="fas fa-info-circle" style="color: ${isDarkTheme ? '#FF9800' : '#F57C00'}; font-size: 18px; margin-top: 2px; flex-shrink: 0;"></i>
+                    <div>
+                        <div style="font-weight: 600; color: ${textColor}; margin-bottom: 8px; font-size: 15px;">Как отправить заказ:</div>
+                        <ol style="margin: 0; padding-left: 20px; color: ${secondaryText}; font-size: 14px; line-height: 1.5;">
+                            <li>Нажмите "Перейти к менеджеру"</li>
+                            <li>Вставьте скопированный текст в чат</li>
+                            <li>Отправьте сообщение</li>
+                            <li>Менеджер свяжется с вами</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeIOSInstructions()" 
+                    style="width: 100%; padding: 16px; background: transparent; color: ${secondaryText}; border: 2px solid ${borderColor}; border-radius: 28px; cursor: pointer; font-weight: 600; font-size: 15px; transition: background 0.2s, color 0.2s;"
+                    onmouseover="this.style.background='rgba(128, 128, 128, 0.1)';"
+                    onmouseout="this.style.background='transparent';">
+                Закрыть и вернуться в магазин
+            </button>
+        </div>
+    </div>
+`;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Добавляем обработчик для кнопки копирования
+    setTimeout(() => {
+        const copyBtn = document.getElementById('copy-order-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                copyOrderText(orderMessage);
+                
+                // Показываем анимацию копирования
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                this.style.background = 'linear-gradient(135deg, #2E7D32, #4CAF50)';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                }, 2000);
+            });
+        }
+    }, 100);
+}
 
+// Функция копирования текста заказа
+function copyOrderText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification('✅ Весь текст заказа скопирован!', 'green');
+        }).catch(() => {
+            fallbackCopyText(text);
+        });
+    } else {
+        fallbackCopyText(text);
+    }
+}
+
+// Fallback метод копирования для старых браузеров
+function fallbackCopyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showNotification('✅ Текст скопирован!', 'green');
+        } else {
+            showNotification('❌ Не удалось скопировать', 'red');
+        }
+    } catch (err) {
+        console.error('Ошибка fallback копирования:', err);
+        showNotification('❌ Ошибка копирования', 'red');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Функция закрытия инструкций iOS
+function closeIOSInstructions() {
+    const modal = document.getElementById('ios-instructions');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+            showMainPage();
+        }, 300);
+    }
+}
 // ========== ЗАКАЗЫ ==========
 async function loadOrders() {
     const key = `tea_orders_${userId}`;
@@ -2054,6 +2233,9 @@ window.clearCart = clearCart;
 window.clearHistory = clearHistory;
 window.closeCheckoutModal = closeCheckoutModal;
 window.toggleTheme = toggleTheme;
+window.copyOrderText = copyOrderText;
+window.showIOSInstructions = showIOSInstructions; // ← Добавить
+window.closeIOSInstructions = closeIOSInstructions; // ← Добавить
 window.showImageModal = showImageModal;
 window.handleLogoError = handleLogoError;
 window.handleImageError = handleImageError;
