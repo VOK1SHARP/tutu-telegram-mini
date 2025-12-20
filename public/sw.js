@@ -1,5 +1,5 @@
 // Service Worker для ТИ•ТИ Чайной лавки
-const CACHE_NAME = 'tea-cache-v2';
+const CACHE_NAME = 'tea-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
